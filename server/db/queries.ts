@@ -261,6 +261,33 @@ export function getAnalytics(semesterId: string, threshold?: number) {
   }
 
   // Calculate recovery based on the new average overall percentage
+  let overallLectureSafeSkips = 0;
+  let overallLabSafeSkips = 0;
+  if (overallPct >= thresholdRatio * 100) {
+    if (totalLectureSessions > 0 && totalLabSessions > 0) {
+      const lecturePct = (totalLectureAttended / totalLectureSessions) * 100;
+      const labPct = (totalLabAttended / totalLabSessions) * 100;
+      
+      const reqLecPct = 2 * thresholdRatio - (labPct / 100);
+      if (reqLecPct <= 0) {
+        overallLectureSafeSkips = 999; // effectively infinite
+      } else {
+        overallLectureSafeSkips = Math.max(0, Math.floor((totalLectureAttended / reqLecPct) - totalLectureSessions));
+      }
+
+      const reqLabPct = 2 * thresholdRatio - (lecturePct / 100);
+      if (reqLabPct <= 0) {
+        overallLabSafeSkips = 999;
+      } else {
+        overallLabSafeSkips = Math.max(0, Math.floor((totalLabAttended / reqLabPct) - totalLabSessions));
+      }
+    } else if (totalLectureSessions > 0) {
+      overallLectureSafeSkips = Math.max(0, Math.floor((totalLectureAttended - thresholdRatio * totalLectureSessions) / thresholdRatio));
+    } else if (totalLabSessions > 0) {
+      overallLabSafeSkips = Math.max(0, Math.floor((totalLabAttended - thresholdRatio * totalLabSessions) / thresholdRatio));
+    }
+  }
+
   let overallLectureRecovery = 0;
   let overallLabRecovery = 0;
 
@@ -306,6 +333,17 @@ export function getAnalytics(semesterId: string, threshold?: number) {
         lecture: overallLectureRecovery,
         lab: overallLabRecovery,
         combinations: getRecoveryCombinations(
+          totalLectureAttended,
+          totalLectureSessions,
+          totalLabAttended,
+          totalLabSessions,
+          thresholdRatio * 100
+        ),
+      },
+      safeSkips: {
+        lecture: overallLectureSafeSkips,
+        lab: overallLabSafeSkips,
+        combinations: getSafeSkipCombinations(
           totalLectureAttended,
           totalLectureSessions,
           totalLabAttended,
@@ -372,6 +410,45 @@ export function getRecoveryCombinations(lectureAttended: number, lectureTotal: n
       combinations.push({ lecture: l, lab: b, resultingPercentage: Math.round(resultingPct * 100) / 100 });
     }
   }
+  if (combinations.length <= 3) return combinations;
+  return [
+    combinations[0],
+    combinations[Math.floor(combinations.length / 2)],
+    combinations[combinations.length - 1],
+  ];
+}
+
+export function getSafeSkipCombinations(lectureAttended: number, lectureTotal: number, labAttended: number, labTotal: number, targetPct: number, maxClasses: number = 30): { lecture: number; lab: number; resultingPercentage: number }[] {
+  const target = targetPct / 100;
+  if (lectureTotal === 0 || labTotal === 0) return [];
+  const currentAverage = ((lectureAttended / lectureTotal) + (labAttended / labTotal)) / 2;
+  if (currentAverage < target) return [];
+
+  const combinations: { lecture: number; lab: number; resultingPercentage: number }[] = [];
+  
+  // Try skipping l lectures and find the maximum labs we can skip alongside
+  for (let l = 1; l <= maxClasses; l++) {
+    const newLecPct = lectureAttended / (lectureTotal + l);
+    const minReqLabPct = 2 * target - newLecPct;
+    
+    if (minReqLabPct > (labAttended / labTotal)) continue;
+    
+    let b = 0;
+    if (minReqLabPct <= 0) {
+      b = maxClasses;
+    } else {
+      b = Math.floor((labAttended / minReqLabPct) - labTotal);
+    }
+    
+    if (b > 0 && b <= maxClasses) {
+      const newLabPct = labAttended / (labTotal + b);
+      const resultingPct = ((newLecPct + newLabPct) / 2) * 100;
+      combinations.push({ lecture: l, lab: b, resultingPercentage: Math.round(resultingPct * 100) / 100 });
+    }
+  }
+
+  // Filter out combinations that are not "maximal" if needed, but since b decreases as l increases, 
+  // these naturally form a pareto frontier of safe combinations.
   if (combinations.length <= 3) return combinations;
   return [
     combinations[0],

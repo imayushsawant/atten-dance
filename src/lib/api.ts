@@ -59,6 +59,7 @@ export type Analytics = {
     total: number;
     percentage: number;
     recovery: { combined: number; lecture: number; lab: number; combinations: { lecture: number; lab: number; resultingPercentage: number }[] };
+    safeSkips: { lecture: number; lab: number; combinations: { lecture: number; lab: number; resultingPercentage: number }[] };
   };
   threshold: number;
 };

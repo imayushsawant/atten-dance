@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ShieldCheck, BookOpen, FlaskConical, AlertTriangle } from 'lucide-react';
+import { ShieldCheck, BookOpen, FlaskConical, AlertTriangle, Target, TrendingUp } from 'lucide-react';
 import { api } from '@/lib/api';
 import type { Analytics } from '@/lib/api';
 
@@ -62,41 +62,89 @@ export default function SafeSkipsPage() {
         </p>
       </div>
 
-      {/* Overall safe skip banner */}
-      <div
-        className={`glass rounded-xl p-6 text-center ${
-          totalMinSafeSkips > 3 ? 'glow-success' : totalMinSafeSkips > 0 ? '' : 'glow-danger'
-        }`}
-      >
-        <ShieldCheck
-          className={`h-10 w-10 mx-auto mb-3 ${
-            totalMinSafeSkips > 3
-              ? 'text-success'
-              : totalMinSafeSkips > 0
-                ? 'text-warning'
-                : 'text-danger'
-          }`}
-        />
-        <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">
-          Minimum safe skips across all subjects
-        </p>
-        <p
-          className={`text-5xl font-bold ${
-            totalMinSafeSkips > 3
-              ? 'text-success'
-              : totalMinSafeSkips > 0
-                ? 'text-warning'
-                : 'text-danger'
-          }`}
-        >
-          {totalMinSafeSkips === Infinity ? '∞' : totalMinSafeSkips}
-        </p>
-        <p className="text-sm text-muted-foreground mt-2">
-          {totalMinSafeSkips > 0
-            ? `You can safely skip ${totalMinSafeSkips} session${totalMinSafeSkips !== 1 ? 's' : ''} of each subject without any dropping below ${threshold}%`
-            : 'You cannot afford to skip any sessions right now ⚠️'}
-        </p>
-      </div>
+      {/* Overall Average Safe Skips */}
+      {analytics.overall.percentage >= threshold ? (
+        <div className="glass rounded-xl p-5 border border-success/20 glow-success">
+          <div className="flex items-center gap-2 mb-3">
+            <TrendingUp className="h-5 w-5 text-success" />
+            <h2 className="text-sm font-semibold">Overall Safe Skips</h2>
+          </div>
+          
+          <div className="space-y-3">
+            <div className="rounded-lg border border-border bg-background/30 p-4">
+              <p className="text-sm text-muted-foreground">
+                Overall average is currently at{' '}
+                <span className="font-bold text-success">
+                  {analytics.overall.percentage.toFixed(2)}%
+                </span>
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Here's how many sessions you can skip before your overall average drops below {threshold}%.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="rounded-lg border border-border bg-background/30 p-3">
+                <div className="flex items-center gap-2 mb-1">
+                  <BookOpen className="h-4 w-4 text-primary" />
+                  <span className="text-xs font-medium text-muted-foreground">If you only skip Lectures</span>
+                </div>
+                {analytics.overall.safeSkips.lecture === 999 ? (
+                  <p className="text-lg font-bold text-primary">Infinite</p>
+                ) : (
+                  <p className="text-lg font-bold text-primary">{analytics.overall.safeSkips.lecture} safe</p>
+                )}
+              </div>
+              <div className="rounded-lg border border-border bg-background/30 p-3">
+                <div className="flex items-center gap-2 mb-1">
+                  <FlaskConical className="h-4 w-4 text-chart-4" />
+                  <span className="text-xs font-medium text-muted-foreground">If you only skip Labs</span>
+                </div>
+                {analytics.overall.safeSkips.lab === 999 ? (
+                  <p className="text-lg font-bold text-chart-4">Infinite</p>
+                ) : (
+                  <p className="text-lg font-bold text-chart-4">{analytics.overall.safeSkips.lab} safe</p>
+                )}
+              </div>
+            </div>
+
+            {/* Dynamic Combinations */}
+            {analytics.overall.safeSkips.combinations?.length > 0 && (
+              <div className="rounded-lg border border-border bg-background/30 p-4">
+                <p className="text-xs font-medium text-muted-foreground mb-3 flex items-center gap-1.5">
+                  <Target className="h-3.5 w-3.5" /> Examples of valid combinations:
+                </p>
+                <div className="flex flex-col gap-2">
+                  {analytics.overall.safeSkips.combinations.map((combo, idx) => (
+                    <div key={idx} className="flex items-center justify-between rounded-md bg-secondary/50 px-3 py-2 text-sm font-medium">
+                      <div className="flex items-center gap-3">
+                        <span className="flex items-center gap-1.5">
+                          <BookOpen className="h-4 w-4 text-primary" /> {combo.lecture} Lecture{combo.lecture !== 1 ? 's' : ''}
+                        </span>
+                        <span className="text-muted-foreground">&amp;</span>
+                        <span className="flex items-center gap-1.5">
+                          <FlaskConical className="h-4 w-4 text-chart-4" /> {combo.lab} Lab{combo.lab !== 1 ? 's' : ''}
+                        </span>
+                      </div>
+                      <span className="text-xs font-bold text-warning bg-warning/10 px-2 py-0.5 rounded">
+                        {combo.resultingPercentage.toFixed(2)}%
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      ) : (
+        <div className="glass rounded-xl p-6 text-center glow-danger">
+          <AlertTriangle className="h-10 w-10 mx-auto mb-3 text-danger" />
+          <h2 className="text-lg font-bold text-danger mb-1">You are currently at {analytics.overall.percentage.toFixed(2)}%</h2>
+          <p className="text-sm text-muted-foreground">
+            Since your overall average is below the {threshold}% threshold, you cannot safely skip any more sessions right now. Head over to the Recovery tab to see how to get back on track!
+          </p>
+        </div>
+      )}
 
       {/* Explanation */}
       <div className="rounded-lg border border-border bg-secondary/30 px-4 py-3 text-xs text-muted-foreground">

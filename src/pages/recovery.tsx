@@ -101,12 +101,102 @@ export default function RecoveryPage() {
 
   return (
     <div className="space-y-6 max-w-3xl mx-auto">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Recovery Planner</h1>
-        <p className="text-muted-foreground">
-          How many consecutive sessions to attend to reach your target
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Recovery Planner</h1>
+          <p className="text-muted-foreground">
+            How many consecutive sessions to attend to reach your target
+          </p>
+        </div>
+        <button 
+          onClick={() => document.getElementById('custom-target-calc')?.scrollIntoView({ behavior: 'smooth' })}
+          className="flex items-center gap-2 rounded-md bg-secondary/50 px-3 py-1.5 text-xs font-medium hover:bg-secondary transition-colors"
+        >
+          <Target className="h-3.5 w-3.5 text-chart-3" /> Calculator
+        </button>
       </div>
+
+      {/* Overall Recovery */}
+      {analytics.overall.percentage < threshold && (analytics.overall.recovery.lecture > 0 || analytics.overall.recovery.lab > 0) && (
+        <div className="glass rounded-xl p-5 border border-primary/20">
+          <div className="flex items-center gap-2 mb-3">
+            <TrendingUp className="h-5 w-5 text-primary" />
+            <h2 className="text-sm font-semibold">Overall Recovery</h2>
+          </div>
+          
+          <div className="space-y-3">
+            <div className="rounded-lg border border-border bg-background/30 p-4">
+              <p className="text-sm text-muted-foreground">
+                Overall average is currently at{' '}
+                <span className="font-bold text-danger">
+                  {analytics.overall.percentage.toFixed(2)}%
+                </span>
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Your college averages total lectures and total labs equally. Missing a lab hurts your average more since they are less frequent!
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="rounded-lg border border-border bg-background/30 p-3">
+                <div className="flex items-center gap-2 mb-1">
+                  <BookOpen className="h-4 w-4 text-primary" />
+                  <span className="text-xs font-medium text-muted-foreground">If you only attend Lectures</span>
+                </div>
+                {analytics.overall.recovery.lecture === -1 ? (
+                  <p className="text-sm font-bold text-danger">Impossible (Lab attendance too low)</p>
+                ) : (
+                  <p className="text-lg font-bold text-primary">{analytics.overall.recovery.lecture} needed</p>
+                )}
+              </div>
+              <div className="rounded-lg border border-border bg-background/30 p-3">
+                <div className="flex items-center gap-2 mb-1">
+                  <FlaskConical className="h-4 w-4 text-chart-4" />
+                  <span className="text-xs font-medium text-muted-foreground">If you only attend Labs</span>
+                </div>
+                {analytics.overall.recovery.lab === -1 ? (
+                  <p className="text-sm font-bold text-danger">Impossible (Lecture attendance too low)</p>
+                ) : (
+                  <p className="text-lg font-bold text-chart-4">{analytics.overall.recovery.lab} needed</p>
+                )}
+              </div>
+            </div>
+            
+            {(analytics.overall.recovery.lecture > 50 || analytics.overall.recovery.lab > 50) && (
+              <p className="text-[10px] text-muted-foreground">
+                * Note: The "Only Lectures" or "Only Labs" numbers can be extremely high because compensating for one type entirely with another requires a massive number of classes due to percentage math. We highly recommend using a combination below.
+              </p>
+            )}
+
+            {/* Dynamic Combinations */}
+            {analytics.overall.recovery.combinations?.length > 0 && (
+              <div className="rounded-lg border border-border bg-background/30 p-4">
+                <p className="text-xs font-medium text-muted-foreground mb-3 flex items-center gap-1.5">
+                  <Target className="h-3.5 w-3.5" /> Examples of valid combinations:
+                </p>
+                <div className="flex flex-col gap-2">
+                  {analytics.overall.recovery.combinations.map((combo, idx) => (
+                    <div key={idx} className="flex items-center justify-between rounded-md bg-secondary/50 px-3 py-2 text-sm font-medium">
+                      <div className="flex items-center gap-3">
+                        <span className="flex items-center gap-1.5">
+                          <BookOpen className="h-4 w-4 text-primary" /> {combo.lecture} Lecture{combo.lecture !== 1 ? 's' : ''}
+                        </span>
+                        <span className="text-muted-foreground">&amp;</span>
+                        <span className="flex items-center gap-1.5">
+                          <FlaskConical className="h-4 w-4 text-chart-4" /> {combo.lab} Lab{combo.lab !== 1 ? 's' : ''}
+                        </span>
+                      </div>
+                      <span className="text-xs font-bold text-success bg-success/10 px-2 py-0.5 rounded">
+                        {combo.resultingPercentage.toFixed(2)}%
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Recovery Status Banner */}
       {analytics.overall.percentage >= threshold ? (
@@ -135,7 +225,7 @@ export default function RecoveryPage() {
       )}
 
       {/* Edge Warning — subjects one skip away from dropping */}
-      {edgeSubjects.length > 0 && (
+      {analytics.overall.percentage >= threshold && edgeSubjects.length > 0 && (
         <div className="glass rounded-xl p-5 border border-[hsl(45,100%,50%)]/30">
           <div className="flex items-center gap-2 mb-3">
             <AlertTriangle className="h-5 w-5 text-[hsl(45,100%,50%)]" />
@@ -177,7 +267,7 @@ export default function RecoveryPage() {
       )}
 
       {/* Safe Subjects — explicitly above threshold */}
-      {safeSubjects.length > 0 && (
+      {analytics.overall.percentage >= threshold && safeSubjects.length > 0 && (
         <div className="glass rounded-xl p-5 border border-success/20">
           <div className="flex items-center gap-2 mb-3">
             <ShieldCheck className="h-5 w-5 text-success" />
@@ -216,82 +306,6 @@ export default function RecoveryPage() {
       {/* Recovery Details (for subjects below threshold) */}
       {!allClear && (
         <div className="space-y-6">
-          {/* Overall Recovery */}
-          {analytics.overall.percentage < threshold && (analytics.overall.recovery.lecture > 0 || analytics.overall.recovery.lab > 0) && (
-            <div className="glass rounded-xl p-5 border border-primary/20">
-              <div className="flex items-center gap-2 mb-3">
-                <TrendingUp className="h-5 w-5 text-primary" />
-                <h2 className="text-sm font-semibold">Overall Recovery</h2>
-              </div>
-              
-              <div className="space-y-3">
-                <div className="rounded-lg border border-border bg-background/30 p-4">
-                  <p className="text-sm text-muted-foreground">
-                    Overall average is currently at{' '}
-                    <span className="font-bold text-danger">
-                      {analytics.overall.percentage.toFixed(2)}%
-                    </span>
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Your college averages total lectures and total labs equally. Missing a lab hurts your average more since they are less frequent!
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="rounded-lg border border-border bg-background/30 p-3">
-                    <div className="flex items-center gap-2 mb-1">
-                      <BookOpen className="h-4 w-4 text-primary" />
-                      <span className="text-xs font-medium text-muted-foreground">If you only attend Lectures</span>
-                    </div>
-                    {analytics.overall.recovery.lecture === -1 ? (
-                      <p className="text-sm font-bold text-danger">Impossible (Lab attendance too low)</p>
-                    ) : (
-                      <p className="text-lg font-bold text-primary">{analytics.overall.recovery.lecture} needed</p>
-                    )}
-                  </div>
-                  <div className="rounded-lg border border-border bg-background/30 p-3">
-                    <div className="flex items-center gap-2 mb-1">
-                      <FlaskConical className="h-4 w-4 text-chart-4" />
-                      <span className="text-xs font-medium text-muted-foreground">If you only attend Labs</span>
-                    </div>
-                    {analytics.overall.recovery.lab === -1 ? (
-                      <p className="text-sm font-bold text-danger">Impossible (Lecture attendance too low)</p>
-                    ) : (
-                      <p className="text-lg font-bold text-chart-4">{analytics.overall.recovery.lab} needed</p>
-                    )}
-                  </div>
-                </div>
-
-                {/* Dynamic Combinations */}
-                {analytics.overall.recovery.combinations?.length > 0 && (
-                  <div className="rounded-lg border border-border bg-background/30 p-4">
-                    <p className="text-xs font-medium text-muted-foreground mb-3 flex items-center gap-1.5">
-                      <Target className="h-3.5 w-3.5" /> Examples of valid combinations:
-                    </p>
-                    <div className="flex flex-col gap-2">
-                      {analytics.overall.recovery.combinations.map((combo, idx) => (
-                        <div key={idx} className="flex items-center justify-between rounded-md bg-secondary/50 px-3 py-2 text-sm font-medium">
-                          <div className="flex items-center gap-3">
-                            <span className="flex items-center gap-1.5">
-                              <BookOpen className="h-4 w-4 text-primary" /> {combo.lecture} Lecture{combo.lecture !== 1 ? 's' : ''}
-                            </span>
-                            <span className="text-muted-foreground">&amp;</span>
-                            <span className="flex items-center gap-1.5">
-                              <FlaskConical className="h-4 w-4 text-chart-4" /> {combo.lab} Lab{combo.lab !== 1 ? 's' : ''}
-                            </span>
-                          </div>
-                          <span className="text-xs font-bold text-success bg-success/10 px-2 py-0.5 rounded">
-                            {combo.resultingPercentage.toFixed(2)}%
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
           {/* Subject-wise Recovery */}
           <div className="space-y-3">
             <h2 className="text-sm font-semibold">Subject-wise Recovery to {threshold}%</h2>
@@ -362,7 +376,7 @@ export default function RecoveryPage() {
       )}
 
       {/* Custom Target Calculator */}
-      <div className="glass rounded-xl p-5">
+      <div id="custom-target-calc" className="glass rounded-xl p-5">
         <div className="flex items-center gap-2 mb-4">
           <Target className="h-5 w-5 text-chart-3" />
           <h2 className="text-sm font-semibold">Custom Target Calculator</h2>
