@@ -108,7 +108,7 @@ export default function RecoveryPage() {
             How many consecutive sessions to attend to reach your target
           </p>
         </div>
-        <button 
+        <button
           onClick={() => document.getElementById('custom-target-calc')?.scrollIntoView({ behavior: 'smooth' })}
           className="flex items-center gap-2 rounded-md bg-secondary/50 px-3 py-1.5 text-xs font-medium hover:bg-secondary transition-colors"
         >
@@ -117,13 +117,38 @@ export default function RecoveryPage() {
       </div>
 
       {/* Overall Recovery */}
+      {/* Recovery Status Banner */}
+      {analytics.overall.percentage >= threshold ? (
+        <div className="glass rounded-xl p-6 text-center glow-success">
+          <CheckCircle2 className="h-10 w-10 mx-auto mb-3 text-success" />
+          <p className="text-lg font-semibold text-success">
+            Overall Attendance: {analytics.overall.percentage.toFixed(2)}% ✅
+          </p>
+          <p className="text-sm text-muted-foreground mt-1">
+            {allClear
+              ? `All subjects are above ${threshold}%. You're cruising!`
+              : `You're above ${threshold}% overall, but ${needsRecovery.length} subject${needsRecovery.length !== 1 ? 's' : ''} still need${needsRecovery.length === 1 ? 's' : ''} attention below.`}
+          </p>
+        </div>
+      ) : (
+        <div className="glass rounded-xl p-6 text-center glow-danger">
+          <HeartPulse className="h-10 w-10 mx-auto mb-3 text-danger" />
+          <p className="text-lg font-semibold text-danger">
+            Overall Attendance: {analytics.overall.percentage.toFixed(2)}% 📉
+          </p>
+          <p className="text-sm text-muted-foreground mt-1">
+            {needsRecovery.length} subject{needsRecovery.length !== 1 ? 's' : ''} below{' '}
+            {threshold}% — here's your recovery plan
+          </p>
+        </div>
+      )}
       {analytics.overall.percentage < threshold && (analytics.overall.recovery.lecture > 0 || analytics.overall.recovery.lab > 0) && (
         <div className="glass rounded-xl p-5 border border-primary/20">
           <div className="flex items-center gap-2 mb-3">
             <TrendingUp className="h-5 w-5 text-primary" />
             <h2 className="text-sm font-semibold">Overall Recovery</h2>
           </div>
-          
+
           <div className="space-y-3">
             <div className="rounded-lg border border-border bg-background/30 p-4">
               <p className="text-sm text-muted-foreground">
@@ -161,7 +186,7 @@ export default function RecoveryPage() {
                 )}
               </div>
             </div>
-            
+
             {(analytics.overall.recovery.lecture > 50 || analytics.overall.recovery.lab > 50) && (
               <p className="text-[10px] text-muted-foreground">
                 * Note: The "Only Lectures" or "Only Labs" numbers can be extremely high because compensating for one type entirely with another requires a massive number of classes due to percentage math. We highly recommend using a combination below.
@@ -198,31 +223,6 @@ export default function RecoveryPage() {
         </div>
       )}
 
-      {/* Recovery Status Banner */}
-      {analytics.overall.percentage >= threshold ? (
-        <div className="glass rounded-xl p-6 text-center glow-success">
-          <CheckCircle2 className="h-10 w-10 mx-auto mb-3 text-success" />
-          <p className="text-lg font-semibold text-success">
-            Overall Attendance: {analytics.overall.percentage.toFixed(2)}% ✅
-          </p>
-          <p className="text-sm text-muted-foreground mt-1">
-            {allClear
-              ? `All subjects are above ${threshold}%. You're cruising!`
-              : `You're above ${threshold}% overall, but ${needsRecovery.length} subject${needsRecovery.length !== 1 ? 's' : ''} still need${needsRecovery.length === 1 ? 's' : ''} attention below.`}
-          </p>
-        </div>
-      ) : (
-        <div className="glass rounded-xl p-6 text-center glow-danger">
-          <HeartPulse className="h-10 w-10 mx-auto mb-3 text-danger" />
-          <p className="text-lg font-semibold text-danger">
-            Overall Attendance: {analytics.overall.percentage.toFixed(2)}% 📉
-          </p>
-          <p className="text-sm text-muted-foreground mt-1">
-            {needsRecovery.length} subject{needsRecovery.length !== 1 ? 's' : ''} below{' '}
-            {threshold}% — here's your recovery plan
-          </p>
-        </div>
-      )}
 
       {/* Edge Warning — subjects one skip away from dropping */}
       {analytics.overall.percentage >= threshold && edgeSubjects.length > 0 && (
@@ -310,68 +310,68 @@ export default function RecoveryPage() {
           <div className="space-y-3">
             <h2 className="text-sm font-semibold">Subject-wise Recovery to {threshold}%</h2>
             {needsRecovery.map((s) => (
-            <div
-              key={s.subjectId}
-              className="glass rounded-xl p-5 border border-danger/20"
-            >
-              <h3 className="text-sm font-semibold mb-3">{s.subjectName}</h3>
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                {s.lecture.total > 0 && s.lecture.percentage < threshold && (
-                  <div className="rounded-lg border border-border bg-background/30 p-3">
-                    <div className="flex items-center gap-2 mb-2">
-                      <BookOpen className="h-4 w-4 text-primary" />
-                      <span className="text-xs font-medium text-muted-foreground">
-                        Lectures
-                      </span>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      Currently at{' '}
-                      <span className="font-medium text-danger">
-                        {s.lecture.percentage.toFixed(2)}%
-                      </span>
-                    </p>
-                    <div className="flex items-center gap-2 mt-2">
-                      <ArrowUp className="h-4 w-4 text-primary" />
-                      <p className="text-sm">
-                        Attend{' '}
-                        <span className="text-lg font-bold text-primary">
-                          {s.recovery.lecture}
-                        </span>{' '}
-                        more consecutive lectures
+              <div
+                key={s.subjectId}
+                className="glass rounded-xl p-5 border border-danger/20"
+              >
+                <h3 className="text-sm font-semibold mb-3">{s.subjectName}</h3>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  {s.lecture.total > 0 && s.lecture.percentage < threshold && (
+                    <div className="rounded-lg border border-border bg-background/30 p-3">
+                      <div className="flex items-center gap-2 mb-2">
+                        <BookOpen className="h-4 w-4 text-primary" />
+                        <span className="text-xs font-medium text-muted-foreground">
+                          Lectures
+                        </span>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Currently at{' '}
+                        <span className="font-medium text-danger">
+                          {s.lecture.percentage.toFixed(2)}%
+                        </span>
                       </p>
+                      <div className="flex items-center gap-2 mt-2">
+                        <ArrowUp className="h-4 w-4 text-primary" />
+                        <p className="text-sm">
+                          Attend{' '}
+                          <span className="text-lg font-bold text-primary">
+                            {s.recovery.lecture}
+                          </span>{' '}
+                          more consecutive lectures
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                )}
-                {s.lab.total > 0 && s.lab.percentage < threshold && (
-                  <div className="rounded-lg border border-border bg-background/30 p-3">
-                    <div className="flex items-center gap-2 mb-2">
-                      <FlaskConical className="h-4 w-4 text-chart-4" />
-                      <span className="text-xs font-medium text-muted-foreground">
-                        Labs
-                      </span>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      Currently at{' '}
-                      <span className="font-medium text-danger">
-                        {s.lab.percentage.toFixed(2)}%
-                      </span>
-                    </p>
-                    <div className="flex items-center gap-2 mt-2">
-                      <ArrowUp className="h-4 w-4 text-chart-4" />
-                      <p className="text-sm">
-                        Attend{' '}
-                        <span className="text-lg font-bold text-chart-4">
-                          {s.recovery.lab}
-                        </span>{' '}
-                        more consecutive labs
+                  )}
+                  {s.lab.total > 0 && s.lab.percentage < threshold && (
+                    <div className="rounded-lg border border-border bg-background/30 p-3">
+                      <div className="flex items-center gap-2 mb-2">
+                        <FlaskConical className="h-4 w-4 text-chart-4" />
+                        <span className="text-xs font-medium text-muted-foreground">
+                          Labs
+                        </span>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Currently at{' '}
+                        <span className="font-medium text-danger">
+                          {s.lab.percentage.toFixed(2)}%
+                        </span>
                       </p>
+                      <div className="flex items-center gap-2 mt-2">
+                        <ArrowUp className="h-4 w-4 text-chart-4" />
+                        <p className="text-sm">
+                          Attend{' '}
+                          <span className="text-lg font-bold text-chart-4">
+                            {s.recovery.lab}
+                          </span>{' '}
+                          more consecutive labs
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
         </div>
       )}
 
@@ -423,7 +423,7 @@ export default function RecoveryPage() {
                     </p>
                   </div>
                 </div>
-                
+
                 <div className="grid grid-cols-2 gap-3 pt-3 border-t border-primary/10">
                   <div>
                     <p className="text-xs text-muted-foreground flex items-center gap-1.5 mb-1">
@@ -446,7 +446,7 @@ export default function RecoveryPage() {
                     )}
                   </div>
                 </div>
-                
+
                 {/* Dynamic Combinations for Custom Target */}
                 {targetResult.overall.sessionsNeeded.combinations?.length > 0 && (
                   <div className="pt-3 border-t border-primary/10">
@@ -478,54 +478,54 @@ export default function RecoveryPage() {
 
             <div className="space-y-2">
               {targetResult.results.map((r) => {
-              const needsLecture = r.lecture.sessionsNeeded > 0;
-              const needsLab = r.lab.sessionsNeeded > 0;
-              if (!needsLecture && !needsLab) return null;
+                const needsLecture = r.lecture.sessionsNeeded > 0;
+                const needsLab = r.lab.sessionsNeeded > 0;
+                if (!needsLecture && !needsLab) return null;
 
-              return (
-                <div
-                  key={r.subjectId}
-                  className="rounded-lg border border-border bg-background/30 px-4 py-3"
-                >
-                  <p className="text-sm font-medium mb-1">{r.subjectName}</p>
-                  <div className="flex flex-wrap gap-4 text-xs">
-                    {needsLecture && (
-                      <span className="flex items-center gap-1.5">
-                        <BookOpen className="h-3 w-3 text-primary" />
-                        <span className="text-muted-foreground">Lectures:</span>
-                        <span className="font-bold text-primary">
-                          {r.lecture.sessionsNeeded}
+                return (
+                  <div
+                    key={r.subjectId}
+                    className="rounded-lg border border-border bg-background/30 px-4 py-3"
+                  >
+                    <p className="text-sm font-medium mb-1">{r.subjectName}</p>
+                    <div className="flex flex-wrap gap-4 text-xs">
+                      {needsLecture && (
+                        <span className="flex items-center gap-1.5">
+                          <BookOpen className="h-3 w-3 text-primary" />
+                          <span className="text-muted-foreground">Lectures:</span>
+                          <span className="font-bold text-primary">
+                            {r.lecture.sessionsNeeded}
+                          </span>
+                          <span className="text-muted-foreground">
+                            more ({r.lecture.current.toFixed(2)}% → {targetPct}%)
+                          </span>
                         </span>
-                        <span className="text-muted-foreground">
-                          more ({r.lecture.current.toFixed(2)}% → {targetPct}%)
+                      )}
+                      {needsLab && (
+                        <span className="flex items-center gap-1.5">
+                          <FlaskConical className="h-3 w-3 text-chart-4" />
+                          <span className="text-muted-foreground">Labs:</span>
+                          <span className="font-bold text-chart-4">
+                            {r.lab.sessionsNeeded}
+                          </span>
+                          <span className="text-muted-foreground">
+                            more ({r.lab.current.toFixed(2)}% → {targetPct}%)
+                          </span>
                         </span>
-                      </span>
-                    )}
-                    {needsLab && (
-                      <span className="flex items-center gap-1.5">
-                        <FlaskConical className="h-3 w-3 text-chart-4" />
-                        <span className="text-muted-foreground">Labs:</span>
-                        <span className="font-bold text-chart-4">
-                          {r.lab.sessionsNeeded}
-                        </span>
-                        <span className="text-muted-foreground">
-                          more ({r.lab.current.toFixed(2)}% → {targetPct}%)
-                        </span>
-                      </span>
-                    )}
+                      )}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
-            {targetResult.results.every(
-              (r) => r.lecture.sessionsNeeded === 0 && r.lab.sessionsNeeded === 0
-            ) && (
-              <div className="text-center py-4 text-sm text-success">
-                <CheckCircle2 className="h-5 w-5 mx-auto mb-2" />
-                All subjects are already at or above {targetPct}%!
-              </div>
-            )}
-          </div>
+                );
+              })}
+              {targetResult.results.every(
+                (r) => r.lecture.sessionsNeeded === 0 && r.lab.sessionsNeeded === 0
+              ) && (
+                  <div className="text-center py-4 text-sm text-success">
+                    <CheckCircle2 className="h-5 w-5 mx-auto mb-2" />
+                    All subjects are already at or above {targetPct}%!
+                  </div>
+                )}
+            </div>
           </div>
         )}
       </div>
