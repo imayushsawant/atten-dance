@@ -35,11 +35,11 @@
   --color-danger-foreground: oklch(0.985 0 0);
 
   /* Chart colors */
-  --color-chart-1: oklch(0.7 0.17 250);
-  --color-chart-2: oklch(0.7 0.18 150);
-  --color-chart-3: oklch(0.75 0.15 60);
-  --color-chart-4: oklch(0.7 0.18 310);
-  --color-chart-5: oklch(0.6 0.2 25);
+  --color-chart-1: #0ea5e9; /* Sky 500 */
+  --color-chart-2: #10b981; /* Emerald 500 */
+  --color-chart-3: #f59e0b; /* Amber 500 */
+  --color-chart-4: #8b5cf6; /* Violet 500 */
+  --color-chart-5: #ef4444; /* Red 500 */
 
   --radius-lg: 1rem;
   --radius-md: 0.75rem;

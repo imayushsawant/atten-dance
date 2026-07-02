@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router';
 import { BookOpen, FlaskConical, TrendingUp, TrendingDown } from 'lucide-react';
 import { api } from '@/lib/api';
 import type { Analytics } from '@/lib/api';
@@ -301,9 +302,9 @@ export default function AnalyticsPage() {
         <h2 className="text-sm font-semibold mb-3">Subject-wise Breakdown</h2>
         <div className="space-y-3">
           {stats.map((s) => (
-            <div key={s.subjectId} className="glass rounded-xl p-5">
+            <Link key={s.subjectId} to={`/history?subjectId=${s.subjectId}`} className="glass rounded-xl p-5 block hover:scale-[1.01] transition-transform duration-300 group cursor-pointer">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-base font-semibold">{s.subjectName}</h3>
+                <h3 className="text-base font-semibold group-hover:text-primary transition-colors">{s.subjectName}</h3>
                 <div className="flex items-center gap-2">
                   {s.combined.percentage >= threshold ? (
                     <TrendingUp className="h-4 w-4 text-success" />
@@ -385,7 +386,7 @@ export default function AnalyticsPage() {
                   </div>
                 )}
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       </div>

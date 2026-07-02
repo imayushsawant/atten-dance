@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
+import { useSearchParams } from 'react-router';
 import { api } from '@/lib/api';
 import type { Subject, AttendanceRecord } from '@/lib/api';
 import { BookOpen, FlaskConical, History as HistoryIcon, Trash2, CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
@@ -11,6 +12,8 @@ export default function HistoryPage() {
   const [loading, setLoading] = useState(true);
   const [noSemester, setNoSemester] = useState(false);
   const [semesterId, setSemesterId] = useState<string | null>(null);
+  const [searchParams] = useSearchParams();
+  const initSubjectId = searchParams.get('subjectId');
 
   const [selectedSubjectId, setSelectedSubjectId] = useState<string | null>(null);
   const [selectedType, setSelectedType] = useState<'lecture' | 'lab'>('lecture');
@@ -34,8 +37,13 @@ export default function HistoryPage() {
       setRecords(allRecords);
 
       if (active.subjects && active.subjects.length > 0) {
-        setSelectedSubjectId(active.subjects[0].id);
-        setSelectedType(active.subjects[0].hasLecture ? 'lecture' : 'lab');
+        const targetId = initSubjectId && active.subjects.find(s => s.id === initSubjectId) 
+          ? initSubjectId 
+          : active.subjects[0].id;
+        
+        setSelectedSubjectId(targetId);
+        const targetSubj = active.subjects.find(s => s.id === targetId);
+        setSelectedType(targetSubj?.hasLecture ? 'lecture' : 'lab');
       }
     } catch {
       // ignore
