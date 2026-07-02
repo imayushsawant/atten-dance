@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { BookOpen, FlaskConical, TrendingUp, TrendingDown } from 'lucide-react';
 import { api } from '@/lib/api';
 import type { Analytics } from '@/lib/api';
+import { useTheme } from '@/lib/theme-provider';
 import {
   BarChart,
   Bar,
@@ -18,9 +19,26 @@ import {
   CartesianGrid,
 } from 'recharts';
 
+function getChartStyles(resolved: 'dark' | 'light') {
+  const isDark = resolved === 'dark';
+  return {
+    tick: isDark ? '#737373' : '#78716C',
+    grid: isDark ? '#1F1F1F' : '#E7E5E4',
+    tooltipBg: isDark ? '#141414' : '#F5F5F4',
+    tooltipBorder: isDark ? '#1F1F1F' : '#E7E5E4',
+    tooltipColor: isDark ? '#E5E5E5' : '#1C1917',
+    legendColor: isDark ? '#737373' : '#78716C',
+    success: isDark ? '#3ECF71' : '#22C55E',
+    danger: isDark ? '#E8665A' : '#DC4A3A',
+    accent1: isDark ? '#A3A3A3' : '#78716C',
+    accent2: isDark ? '#93C5FD' : '#2563EB',
+  };
+}
+
 export default function AnalyticsPage() {
   const [analytics, setAnalytics] = useState<Analytics | null>(null);
   const [loading, setLoading] = useState(true);
+  const { resolved } = useTheme();
 
   useEffect(() => {
     loadAnalytics();
@@ -65,6 +83,7 @@ export default function AnalyticsPage() {
   }
 
   const { stats, overall, threshold } = analytics;
+  const cs = getChartStyles(resolved);
 
   // Chart data
   const barChartData = stats.map((s) => ({
@@ -74,8 +93,8 @@ export default function AnalyticsPage() {
   }));
 
   const pieData = [
-    { name: 'Attended', value: overall.attended, fill: 'oklch(0.7 0.18 150)' },
-    { name: 'Skipped', value: overall.total - overall.attended, fill: 'oklch(0.6 0.2 25)' },
+    { name: 'Attended', value: overall.attended, fill: cs.success },
+    { name: 'Skipped', value: overall.total - overall.attended, fill: cs.danger },
   ].filter((d) => d.value > 0);
 
   // Compute cumulative trend from all records
@@ -90,11 +109,11 @@ export default function AnalyticsPage() {
   })();
 
   const tooltipStyle = {
-    background: 'oklch(0.2 0.005 260)',
-    border: '1px solid oklch(0.3 0.01 260)',
+    background: cs.tooltipBg,
+    border: `1px solid ${cs.tooltipBorder}`,
     borderRadius: '8px',
     fontSize: '12px',
-    color: 'oklch(0.985 0 0)',
+    color: cs.tooltipColor,
   };
 
   return (
@@ -163,26 +182,26 @@ export default function AnalyticsPage() {
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={barChartData} barCategoryGap="20%">
-                <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.3 0.01 260)" />
+                <CartesianGrid strokeDasharray="3 3" stroke={cs.grid} />
                 <XAxis
                   dataKey="name"
-                  tick={{ fill: 'oklch(0.65 0.01 260)', fontSize: 11 }}
+                  tick={{ fill: cs.tick, fontSize: 11 }}
                   axisLine={false}
                   tickLine={false}
                 />
                 <YAxis
                   domain={[0, 100]}
-                  tick={{ fill: 'oklch(0.65 0.01 260)', fontSize: 11 }}
+                  tick={{ fill: cs.tick, fontSize: 11 }}
                   axisLine={false}
                   tickLine={false}
                   tickFormatter={(v) => `${v}%`}
                 />
                 <Tooltip contentStyle={tooltipStyle} formatter={(value: number) => [`${value.toFixed(1)}%`]} />
                 <Legend
-                  wrapperStyle={{ fontSize: '12px', color: 'oklch(0.65 0.01 260)' }}
+                  wrapperStyle={{ fontSize: '12px', color: cs.legendColor }}
                 />
-                <Bar dataKey="Lectures" fill="oklch(0.7 0.17 250)" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="Labs" fill="oklch(0.7 0.18 310)" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="Lectures" fill={cs.accent1} radius={[4, 4, 0, 0]} />
+                <Bar dataKey="Labs" fill={cs.accent2} radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -210,7 +229,7 @@ export default function AnalyticsPage() {
                 </Pie>
                 <Tooltip contentStyle={tooltipStyle} />
                 <Legend
-                  wrapperStyle={{ fontSize: '12px', color: 'oklch(0.65 0.01 260)' }}
+                  wrapperStyle={{ fontSize: '12px', color: cs.legendColor }}
                 />
               </PieChart>
             </ResponsiveContainer>
@@ -223,16 +242,16 @@ export default function AnalyticsPage() {
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={trendData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.3 0.01 260)" />
+                <CartesianGrid strokeDasharray="3 3" stroke={cs.grid} />
                 <XAxis
                   dataKey="name"
-                  tick={{ fill: 'oklch(0.65 0.01 260)', fontSize: 11 }}
+                  tick={{ fill: cs.tick, fontSize: 11 }}
                   axisLine={false}
                   tickLine={false}
                 />
                 <YAxis
                   domain={[0, 100]}
-                  tick={{ fill: 'oklch(0.65 0.01 260)', fontSize: 11 }}
+                  tick={{ fill: cs.tick, fontSize: 11 }}
                   axisLine={false}
                   tickLine={false}
                   tickFormatter={(v) => `${v}%`}
@@ -241,15 +260,15 @@ export default function AnalyticsPage() {
                 <Line
                   type="monotone"
                   dataKey="percentage"
-                  stroke="oklch(0.7 0.17 250)"
+                  stroke={cs.accent1}
                   strokeWidth={2}
-                  dot={{ fill: 'oklch(0.7 0.17 250)', r: 4 }}
+                  dot={{ fill: cs.accent1, r: 4 }}
                   name="Attendance %"
                 />
                 <Line
                   type="monotone"
                   dataKey="threshold"
-                  stroke="oklch(0.6 0.2 25)"
+                  stroke={cs.danger}
                   strokeWidth={1}
                   strokeDasharray="8 4"
                   dot={false}
@@ -290,7 +309,7 @@ export default function AnalyticsPage() {
                 {s.lecture.total > 0 && (
                   <div className="rounded-lg border border-border bg-background/30 p-3">
                     <div className="flex items-center gap-2 mb-2">
-                      <BookOpen className="h-4 w-4 text-primary" />
+                      <BookOpen className="h-4 w-4 text-muted-foreground" />
                       <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                         Lectures
                       </span>
@@ -310,7 +329,7 @@ export default function AnalyticsPage() {
                     <div className="mt-2 h-1.5 rounded-full bg-secondary overflow-hidden">
                       <div
                         className={`h-full rounded-full transition-all duration-500 ${
-                          s.lecture.percentage >= threshold ? 'bg-primary' : 'bg-danger'
+                          s.lecture.percentage >= threshold ? 'bg-success' : 'bg-danger'
                         }`}
                         style={{ width: `${Math.min(s.lecture.percentage, 100)}%` }}
                       />
@@ -322,7 +341,7 @@ export default function AnalyticsPage() {
                 {s.lab.total > 0 && (
                   <div className="rounded-lg border border-border bg-background/30 p-3">
                     <div className="flex items-center gap-2 mb-2">
-                      <FlaskConical className="h-4 w-4 text-chart-4" />
+                      <FlaskConical className="h-4 w-4 text-muted-foreground" />
                       <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                         Labs
                       </span>
@@ -342,7 +361,7 @@ export default function AnalyticsPage() {
                     <div className="mt-2 h-1.5 rounded-full bg-secondary overflow-hidden">
                       <div
                         className={`h-full rounded-full transition-all duration-500 ${
-                          s.lab.percentage >= threshold ? 'bg-chart-4' : 'bg-danger'
+                          s.lab.percentage >= threshold ? 'bg-success' : 'bg-danger'
                         }`}
                         style={{ width: `${Math.min(s.lab.percentage, 100)}%` }}
                       />

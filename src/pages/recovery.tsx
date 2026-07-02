@@ -105,7 +105,7 @@ export default function RecoveryPage() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Recovery Planner</h1>
           <p className="text-muted-foreground">
-            How many consecutive sessions to attend to reach your target
+            Sessions needed to reach your target
           </p>
         </div>
         <button
@@ -189,7 +189,7 @@ export default function RecoveryPage() {
 
             {(analytics.overall.recovery.lecture > 50 || analytics.overall.recovery.lab > 50) && (
               <p className="text-[10px] text-muted-foreground">
-                * Note: The "Only Lectures" or "Only Labs" numbers can be extremely high because compensating for one type entirely with another requires a massive number of classes due to percentage math. We highly recommend using a combination below.
+                * Note: Attending only one type requires many more sessions due to combined percentage math. We recommend using a combination.
               </p>
             )}
 
@@ -226,27 +226,35 @@ export default function RecoveryPage() {
 
       {/* Edge Warning — subjects one skip away from dropping */}
       {analytics.overall.percentage >= threshold && edgeSubjects.length > 0 && (
-        <div className="glass rounded-xl p-5 border border-[hsl(45,100%,50%)]/30">
-          <div className="flex items-center gap-2 mb-3">
-            <AlertTriangle className="h-5 w-5 text-[hsl(45,100%,50%)]" />
-            <h2 className="text-sm font-semibold text-[hsl(45,100%,50%)]">On Thin Ice ⚠️</h2>
-          </div>
-          <p className="text-xs text-muted-foreground mb-3">
-            These subjects are above {threshold}% but even <span className="font-bold text-[hsl(45,100%,50%)]">one more skip</span> will drop you below the threshold.
-          </p>
-          <div className="space-y-2">
-            {edgeSubjects.map((s) => {
-              const lectureEdge = s.lecture.total > 0 && s.lecture.percentage >= threshold && s.safeSkips.lecture === 0;
-              const labEdge = s.lab.total > 0 && s.lab.percentage >= threshold && s.safeSkips.lab === 0;
-              return (
-                <div key={s.subjectId} className="rounded-lg border border-[hsl(45,100%,50%)]/20 bg-[hsl(45,100%,50%)]/5 px-4 py-3">
+        <div className="relative rounded-3xl p-6 overflow-hidden">
+          <div className="absolute inset-0 bg-warning/10 border border-warning/30 rounded-3xl" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 h-3/4 bg-warning/20 blur-3xl rounded-full pointer-events-none" />
+          
+          <div className="relative z-10">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-warning/20 glow-primary" style={{ boxShadow: '0 0 20px -5px var(--color-warning)' }}>
+                <AlertTriangle className="h-5 w-5 text-warning" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-warning">On Thin Ice</h2>
+                <p className="text-sm text-warning/80">
+                  One more skip will drop these below {threshold}%
+                </p>
+              </div>
+            </div>
+            <div className="space-y-3">
+              {edgeSubjects.map((s) => {
+                const lectureEdge = s.lecture.total > 0 && s.lecture.percentage >= threshold && s.safeSkips.lecture === 0;
+                const labEdge = s.lab.total > 0 && s.lab.percentage >= threshold && s.safeSkips.lab === 0;
+                return (
+                  <div key={s.subjectId} className="rounded-xl border border-warning/20 bg-background/40 backdrop-blur-md px-5 py-4">
                   <p className="text-sm font-medium mb-1">{s.subjectName}</p>
                   <div className="flex flex-wrap gap-3 text-xs">
                     {lectureEdge && (
                       <span className="flex items-center gap-1.5">
                         <BookOpen className="h-3 w-3 text-primary" />
                         <span className="text-muted-foreground">Lectures at</span>
-                        <span className="font-bold text-[hsl(45,100%,50%)]">{s.lecture.percentage.toFixed(2)}%</span>
+                        <span className="font-bold text-warning">{s.lecture.percentage.toFixed(2)}%</span>
                         <span className="text-muted-foreground">— 0 skips left</span>
                       </span>
                     )}
@@ -254,7 +262,7 @@ export default function RecoveryPage() {
                       <span className="flex items-center gap-1.5">
                         <FlaskConical className="h-3 w-3 text-chart-4" />
                         <span className="text-muted-foreground">Labs at</span>
-                        <span className="font-bold text-[hsl(45,100%,50%)]">{s.lab.percentage.toFixed(2)}%</span>
+                        <span className="font-bold text-warning">{s.lab.percentage.toFixed(2)}%</span>
                         <span className="text-muted-foreground">— 0 skips left</span>
                       </span>
                     )}
@@ -262,6 +270,7 @@ export default function RecoveryPage() {
                 </div>
               );
             })}
+            </div>
           </div>
         </div>
       )}

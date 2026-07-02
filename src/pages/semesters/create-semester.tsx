@@ -153,7 +153,7 @@ export default function CreateSemester() {
                       <div
                         className={`flex h-8 items-center gap-1.5 rounded-md px-3 text-xs font-medium transition-all ${
                           subject.hasLab
-                            ? 'bg-chart-4/15 text-chart-4 border border-chart-4/30'
+                            ? 'bg-foreground/10 text-foreground border border-foreground/20'
                             : 'bg-secondary text-muted-foreground border border-transparent hover:bg-secondary/80'
                         }`}
                         onClick={() =>
@@ -198,7 +198,7 @@ export default function CreateSemester() {
           <button
             type="submit"
             disabled={saving}
-            className="rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground transition-all hover:opacity-90 glow-primary disabled:opacity-50"
+            className="rounded-lg bg-foreground px-6 py-2.5 text-sm font-semibold text-background transition-all hover:opacity-90 disabled:opacity-50"
           >
             {saving ? 'Creating…' : 'Create Semester'}
           </button>

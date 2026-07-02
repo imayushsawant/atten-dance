@@ -88,7 +88,7 @@ export default function SemesterList() {
             <div
               key={sem.id}
               className={`glass rounded-xl p-4 transition-all ${
-                sem.isActive ? 'ring-1 ring-primary/40 glow-primary' : ''
+                sem.isActive ? 'ring-1 ring-foreground/20' : ''
               }`}
             >
               <div className="flex items-center justify-between">

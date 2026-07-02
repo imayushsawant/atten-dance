@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react';
-import { Settings as SettingsIcon, Save, RotateCcw, Download, Upload } from 'lucide-react';
+import { Settings as SettingsIcon, Save, RotateCcw, Download, Sun, Moon, Monitor } from 'lucide-react';
 import { api } from '@/lib/api';
+import { useTheme } from '@/lib/theme-provider';
+import { cn } from '@/lib/utils';
 
 export default function SettingsPage() {
   const [threshold, setThreshold] = useState(75);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [loading, setLoading] = useState(true);
+  const { theme, setTheme } = useTheme();
 
   useEffect(() => {
     loadSettings();
@@ -91,6 +94,12 @@ export default function SettingsPage() {
     );
   }
 
+  const themeOptions = [
+    { value: 'dark' as const, icon: Moon, label: 'Dark' },
+    { value: 'light' as const, icon: Sun, label: 'Light' },
+    { value: 'system' as const, icon: Monitor, label: 'System' },
+  ];
+
   return (
     <div className="space-y-6 max-w-2xl mx-auto">
       <div>
@@ -98,10 +107,38 @@ export default function SettingsPage() {
         <p className="text-muted-foreground">Configure your attendance tracker</p>
       </div>
 
+      {/* Appearance */}
+      <div className="glass rounded-xl p-5">
+        <div className="flex items-center gap-2 mb-4">
+          <Sun className="h-5 w-5 text-muted-foreground" />
+          <h2 className="text-sm font-semibold">Appearance</h2>
+        </div>
+        <p className="text-xs text-muted-foreground mb-4">
+          Choose your preferred theme. System will follow your device settings.
+        </p>
+        <div className="grid grid-cols-3 gap-2">
+          {themeOptions.map((opt) => (
+            <button
+              key={opt.value}
+              onClick={() => setTheme(opt.value)}
+              className={cn(
+                'flex flex-col items-center gap-2 rounded-lg border px-3 py-3 text-xs font-medium transition-all',
+                theme === opt.value
+                  ? 'border-foreground/30 bg-foreground/5 text-foreground'
+                  : 'border-border text-muted-foreground hover:border-foreground/20 hover:text-foreground'
+              )}
+            >
+              <opt.icon className="h-5 w-5" />
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Threshold */}
       <div className="glass rounded-xl p-5">
         <div className="flex items-center gap-2 mb-4">
-          <SettingsIcon className="h-5 w-5 text-primary" />
+          <SettingsIcon className="h-5 w-5 text-muted-foreground" />
           <h2 className="text-sm font-semibold">Attendance Threshold</h2>
         </div>
         <p className="text-xs text-muted-foreground mb-4">
@@ -114,7 +151,7 @@ export default function SettingsPage() {
             <label className="text-xs font-medium text-muted-foreground">
               Threshold
             </label>
-            <span className="text-sm font-bold text-primary">{threshold}%</span>
+            <span className="text-sm font-bold">{threshold}%</span>
           </div>
           <input
             type="range"
@@ -122,7 +159,7 @@ export default function SettingsPage() {
             max="100"
             value={threshold}
             onChange={(e) => setThreshold(Number(e.target.value))}
-            className="w-full h-1.5 rounded-full appearance-none bg-secondary cursor-pointer accent-primary"
+            className="w-full h-1.5 rounded-full appearance-none bg-secondary cursor-pointer accent-foreground"
           />
           <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
             <span>50%</span>
@@ -134,7 +171,7 @@ export default function SettingsPage() {
         <button
           onClick={handleSave}
           disabled={saving}
-          className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-all hover:opacity-90 disabled:opacity-50"
+          className="flex items-center gap-2 rounded-lg bg-foreground px-4 py-2.5 text-sm font-semibold text-background transition-all hover:opacity-90 disabled:opacity-50"
         >
           {saved ? (
             <>
@@ -155,7 +192,7 @@ export default function SettingsPage() {
       {/* Data Management */}
       <div className="glass rounded-xl p-5">
         <div className="flex items-center gap-2 mb-4">
-          <RotateCcw className="h-5 w-5 text-warning" />
+          <RotateCcw className="h-5 w-5 text-muted-foreground" />
           <h2 className="text-sm font-semibold">Data Management</h2>
         </div>
 
@@ -164,7 +201,7 @@ export default function SettingsPage() {
             onClick={handleExport}
             className="flex w-full items-center gap-3 rounded-lg border border-border px-4 py-3 text-sm font-medium text-foreground hover:bg-secondary transition-colors"
           >
-            <Download className="h-4 w-4 text-primary" />
+            <Download className="h-4 w-4 text-muted-foreground" />
             <div className="text-left">
               <p className="font-medium">Export Data</p>
               <p className="text-xs text-muted-foreground">
@@ -180,7 +217,7 @@ export default function SettingsPage() {
         <h2 className="text-sm font-semibold mb-3">About</h2>
         <div className="space-y-2 text-xs text-muted-foreground">
           <p>
-            <span className="text-gradient font-bold text-sm">Atten-Dance</span> — Because
+            <span className="font-bold text-sm text-foreground">Atten-Dance</span> — Because
             college makes you dance for attendance 💃
           </p>
           <p>Track your lectures, calculate safe bunks, and never get caught off-guard.</p>

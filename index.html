@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -9,6 +9,25 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
     <title>Atten-Dance</title>
+    <script>
+      // Prevent flash of wrong theme
+      (function() {
+        var t = localStorage.getItem('theme');
+        if (t === 'light') {
+          document.documentElement.classList.remove('dark');
+          document.documentElement.classList.add('light');
+        } else if (t === 'dark') {
+          document.documentElement.classList.remove('light');
+          document.documentElement.classList.add('dark');
+        } else {
+          // system
+          if (window.matchMedia('(prefers-color-scheme: light)').matches) {
+            document.documentElement.classList.remove('dark');
+            document.documentElement.classList.add('light');
+          }
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

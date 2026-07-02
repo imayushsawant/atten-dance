@@ -58,7 +58,7 @@ export default function SafeSkipsPage() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Safe Skips</h1>
         <p className="text-muted-foreground">
-          How many sessions you can skip before dropping below {threshold}%
+          Skips remaining before hitting {threshold}%
         </p>
       </div>
 
@@ -79,7 +79,7 @@ export default function SafeSkipsPage() {
                 </span>
               </p>
               <p className="text-xs text-muted-foreground mt-1">
-                Here's how many sessions you can skip before your overall average drops below {threshold}%.
+                Sessions you can skip before hitting {threshold}%.
               </p>
             </div>
 
@@ -141,20 +141,11 @@ export default function SafeSkipsPage() {
           <AlertTriangle className="h-10 w-10 mx-auto mb-3 text-danger" />
           <h2 className="text-lg font-bold text-danger mb-1">You are currently at {analytics.overall.percentage.toFixed(2)}%</h2>
           <p className="text-sm text-muted-foreground">
-            Since your overall average is below the {threshold}% threshold, you cannot safely skip any more sessions right now. Head over to the Recovery tab to see how to get back on track!
+            You cannot safely skip any more sessions right now. Check the Recovery tab.
           </p>
         </div>
       )}
 
-      {/* Explanation */}
-      <div className="rounded-lg border border-border bg-secondary/30 px-4 py-3 text-xs text-muted-foreground">
-        <p className="font-medium text-foreground mb-1">How is this calculated?</p>
-        <p>
-          Safe skips = ⌊(attended − {threshold}% × total) ÷ {threshold}%⌋. The "combined" number
-          is the minimum of lecture and lab safe skips — meaning you can skip that many of{' '}
-          <strong>each type</strong> without either one dropping below the threshold.
-        </p>
-      </div>
 
       {/* Per-subject breakdown */}
       <div className="space-y-3">
