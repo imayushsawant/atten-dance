@@ -17,6 +17,7 @@ import {
 import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/lib/theme-provider';
+import Logo from '@/assets/Logo.svg';
 
 const navItems = [
   { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
@@ -58,8 +59,8 @@ export default function AppShell() {
       >
         {/* Logo */}
         <Link to="/" className="flex h-20 items-center gap-3 border-b border-border/50 px-6 hover:bg-secondary/50 transition-colors">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/20 glow-primary">
-            <GraduationCap className="h-5 w-5 text-primary" />
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/20 glow-primary p-2">
+            <img src={Logo} alt="Atten-Dance Logo" className="h-full w-full object-contain" />
           </div>
           <div>
             <h1 className="text-lg font-bold tracking-tight text-primary">
@@ -132,7 +133,7 @@ export default function AppShell() {
               {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
             <div className="flex items-center gap-2">
-              <GraduationCap className="h-5 w-5 text-foreground" />
+              <img src={Logo} alt="Atten-Dance Logo" className="h-7 w-7" />
               <span className="font-bold">Atten-Dance</span>
             </div>
           </div>
