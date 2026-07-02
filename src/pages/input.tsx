@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router';
 import { format } from 'date-fns';
 import {
   CalendarDays,
@@ -26,9 +27,10 @@ type EntryRow = {
 };
 
 export default function InputPage() {
+  const [searchParams] = useSearchParams();
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [semesterId, setSemesterId] = useState<string | null>(null);
-  const [date, setDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+  const [date, setDate] = useState(searchParams.get('date') || format(new Date(), 'yyyy-MM-dd'));
   const [entries, setEntries] = useState<EntryRow[]>([]);
   const [dayRecords, setDayRecords] = useState<AttendanceRecord[]>([]);
   const [loading, setLoading] = useState(true);

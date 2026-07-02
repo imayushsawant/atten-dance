@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
-import { useSearchParams } from 'react-router';
+import { useSearchParams, useNavigate } from 'react-router';
 import {
   format,
   startOfMonth,
@@ -29,6 +29,7 @@ import type { Subject, AttendanceRecord } from '@/lib/api';
 import { cn } from '@/lib/utils';
 
 export default function CalendarPage() {
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<string | null>(
@@ -259,9 +260,17 @@ export default function CalendarPage() {
                 </p>
 
                 {selectedRecords.length === 0 ? (
-                  <p className="text-xs text-muted-foreground mt-4 text-center py-4">
-                    No entries for this day
-                  </p>
+                  <div className="flex flex-col items-center justify-center py-6">
+                    <p className="text-xs text-muted-foreground mb-4">
+                      No entries for this day
+                    </p>
+                    <button
+                      onClick={() => navigate(`/input?date=${selectedDate}`)}
+                      className="rounded-md bg-primary px-4 py-2 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+                    >
+                      Log Attendance
+                    </button>
+                  </div>
                 ) : (
                   <div className="mt-3 space-y-1">
                     <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
@@ -274,6 +283,13 @@ export default function CalendarPage() {
                         {selectedSkipped.length} skipped
                       </span>
                     </div>
+                    
+                    <button
+                      onClick={() => navigate(`/input?date=${selectedDate}`)}
+                      className="mt-3 w-full rounded-md border border-border bg-background/50 px-3 py-1.5 text-xs font-medium hover:bg-secondary transition-colors"
+                    >
+                      Edit Attendance
+                    </button>
                   </div>
                 )}
               </div>

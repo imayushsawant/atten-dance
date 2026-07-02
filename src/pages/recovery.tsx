@@ -150,7 +150,7 @@ export default function RecoveryPage() {
           </div>
 
           <div className="space-y-3">
-            <div className="rounded-lg border border-border bg-background/30 p-4">
+            {/* <div className="rounded-lg border border-border bg-background/30 p-4">
               <p className="text-sm text-muted-foreground">
                 Overall average is currently at{' '}
                 <span className="font-bold text-danger">
@@ -160,7 +160,7 @@ export default function RecoveryPage() {
               <p className="text-xs text-muted-foreground mt-1">
                 Your college averages total lectures and total labs equally. Missing a lab hurts your average more since they are less frequent!
               </p>
-            </div>
+            </div> */}
 
             <div className="grid grid-cols-2 gap-3">
               <div className="rounded-lg border border-border bg-background/30 p-3">
