@@ -29,10 +29,10 @@ function getChartStyles(resolved: 'dark' | 'light') {
     tooltipBorder: isDark ? '#1F1F1F' : '#E7E5E4',
     tooltipColor: isDark ? '#E5E5E5' : '#1C1917',
     legendColor: isDark ? '#737373' : '#78716C',
-    success: isDark ? '#3ECF71' : '#22C55E',
-    danger: isDark ? '#E8665A' : '#DC4A3A',
-    accent1: isDark ? '#A3A3A3' : '#78716C',
-    accent2: isDark ? '#93C5FD' : '#2563EB',
+    success: '#10b981',
+    danger: '#ef4444',
+    accent1: '#0ea5e9', // Sky 500 for Lectures
+    accent2: '#8b5cf6', // Violet 500 for Labs
   };
 }
 

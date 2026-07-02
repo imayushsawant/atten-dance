@@ -30,9 +30,9 @@ function getChartStyles(resolved: 'dark' | 'light') {
     tooltipBg: isDark ? '#141414' : '#F5F5F4',
     tooltipBorder: isDark ? '#1F1F1F' : '#E7E5E4',
     tooltipColor: isDark ? '#E5E5E5' : '#1C1917',
-    success: isDark ? '#3ECF71' : '#22C55E',
-    warning: isDark ? '#D4A843' : '#CA8A04',
-    danger: isDark ? '#E8665A' : '#DC4A3A',
+    success: '#10b981',
+    warning: '#f59e0b',
+    danger: '#ef4444',
   };
 }
 

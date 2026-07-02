@@ -27,12 +27,12 @@
   --color-ring: oklch(0.7 0.17 250);
 
   /* Semantic colors */
-  --color-success: oklch(0.7 0.18 150);
-  --color-success-foreground: oklch(0.15 0.05 150);
-  --color-warning: oklch(0.75 0.15 60);
-  --color-warning-foreground: oklch(0.15 0.05 60);
-  --color-danger: oklch(0.6 0.2 25);
-  --color-danger-foreground: oklch(0.985 0 0);
+  --color-success: #10b981;
+  --color-success-foreground: #ffffff;
+  --color-warning: #f59e0b;
+  --color-warning-foreground: #ffffff;
+  --color-danger: #ef4444;
+  --color-danger-foreground: #ffffff;
 
   /* Chart colors */
   --color-chart-1: #0ea5e9; /* Sky 500 */
@@ -68,12 +68,12 @@
   --color-input: #E5E5E2;
   --color-ring: oklch(0.55 0.15 260);
 
-  --color-success: oklch(0.55 0.18 150);
-  --color-success-foreground: #FFFFFF;
-  --color-warning: oklch(0.65 0.15 60);
-  --color-warning-foreground: #111111;
-  --color-danger: oklch(0.55 0.2 25);
-  --color-danger-foreground: #FFFFFF;
+  --color-success: #10b981;
+  --color-success-foreground: #ffffff;
+  --color-warning: #f59e0b;
+  --color-warning-foreground: #ffffff;
+  --color-danger: #ef4444;
+  --color-danger-foreground: #ffffff;
 }
 
 @layer base {
