@@ -49,6 +49,7 @@ export default function InputPage() {
   const [date, setDate] = useState(searchParams.get('date') || format(new Date(), 'yyyy-MM-dd'));
   const [entries, setEntries] = useState<EntryRow[]>([]);
   const [dayRecords, setDayRecords] = useState<AttendanceRecord[]>([]);
+  const [loggedDates, setLoggedDates] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [noSemester, setNoSemester] = useState(false);
@@ -108,6 +109,8 @@ export default function InputPage() {
       }
       setSemesterId(active.id);
       setSubjects(active.subjects || []);
+      const allRecords = await api.attendance.getBySemester(active.id);
+      setLoggedDates(new Set(allRecords.map(r => r.date)));
       // Entries will be built by loadDayRecords
     } catch {
       // ignore
@@ -130,6 +133,13 @@ export default function InputPage() {
           const existing = prev.find(p => p.subjectId === ne.subjectId && p.type === ne.type);
           return existing ? { ...ne, status: existing.status } : ne;
         });
+      });
+      // Also update logged dates if the current day has records or not
+      setLoggedDates(prev => {
+        const next = new Set(prev);
+        if (records.length > 0) next.add(date);
+        else next.delete(date);
+        return next;
       });
     } catch {
       // ignore
@@ -410,6 +420,7 @@ export default function InputPage() {
                     const today = isToday(day);
                     const future = isFuture(day) && !today;
                     const isSelected = date === dateStr;
+                    const hasLog = loggedDates.has(dateStr);
 
                     return (
                       <button
@@ -426,7 +437,8 @@ export default function InputPage() {
                           future && "opacity-20 cursor-not-allowed",
                           isSelected && "bg-primary text-primary-foreground font-bold shadow-sm",
                           !isSelected && !future && "hover:bg-secondary",
-                          today && !isSelected && "ring-1 ring-primary/30 text-primary font-bold"
+                          today && !isSelected && !hasLog && "ring-1 ring-primary/30 text-primary font-bold",
+                          hasLog && !isSelected && "ring-1 ring-inset ring-primary/40 text-primary bg-primary/5"
                         )}
                       >
                         {format(day, 'd')}

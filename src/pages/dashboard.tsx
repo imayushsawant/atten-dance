@@ -137,12 +137,12 @@ export default function Dashboard() {
       {/* Hero Stats Layout */}
       <div className="flex flex-col gap-8 lg:flex-row">
         {/* Massive Overall Hero */}
-        <div className="relative flex flex-col items-center justify-center p-8 lg:w-1/3">
-          <div className="absolute inset-0 rounded-[3rem] bg-card opacity-5 blur-3xl transition-all duration-700"
+        <Link to="/analytics" className="relative flex flex-col items-center justify-center p-8 lg:w-1/3 group hover:scale-[1.02] transition-transform duration-300">
+          <div className="absolute inset-0 rounded-[3rem] bg-card opacity-5 blur-3xl transition-all duration-700 group-hover:opacity-10"
                style={{ backgroundColor: overall.percentage >= threshold ? 'var(--color-success)' : 'var(--color-danger)' }} />
           
           <div className="relative z-10 text-center space-y-2">
-            <span className="text-sm font-bold uppercase tracking-widest text-muted-foreground">
+            <span className="text-sm font-bold uppercase tracking-widest text-muted-foreground group-hover:text-foreground transition-colors">
               Overall
             </span>
             <div className="flex items-center justify-center">
@@ -151,7 +151,7 @@ export default function Dashboard() {
               </p>
             </div>
             <div className="flex flex-col items-center gap-1 mt-4">
-              <p className="text-sm font-medium text-muted-foreground">
+              <p className="text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors">
                 {overall.attended} / {overall.total} Sessions
               </p>
               {(() => {
@@ -160,7 +160,7 @@ export default function Dashboard() {
                 const labTotal = stats.reduce((a, s) => a + s.lab.total, 0);
                 const labAttended = stats.reduce((a, s) => a + s.lab.attended, 0);
                 return (
-                  <div className="flex items-center gap-3 text-xs text-muted-foreground/70">
+                  <div className="flex items-center gap-3 text-xs text-muted-foreground/70 group-hover:text-foreground/70 transition-colors">
                     {lTotal > 0 && <span>{lAttended}/{lTotal} Lectures</span>}
                     {lTotal > 0 && labTotal > 0 && <span>•</span>}
                     {labTotal > 0 && <span>{labAttended}/{labTotal} Labs</span>}
@@ -169,7 +169,7 @@ export default function Dashboard() {
               })()}
             </div>
           </div>
-        </div>
+        </Link>
 
         {/* Secondary Glass Cards */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 lg:w-2/3">
