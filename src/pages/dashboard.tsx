@@ -141,39 +141,37 @@ export default function Dashboard() {
           {/* Progress bar */}
           <div className="mt-3 h-1.5 rounded-full bg-secondary overflow-hidden">
             <div
-              className={`h-full rounded-full transition-all duration-700 ${
-                overall.percentage >= threshold ? 'bg-success' : 'bg-danger'
-              }`}
+              className={`h-full rounded-full transition-all duration-700 ${overall.percentage >= threshold ? 'bg-success' : 'bg-danger'
+                }`}
               style={{ width: `${Math.min(overall.percentage, 100)}%` }}
             />
           </div>
         </div>
 
         {/* Safe Skips */}
-        <div className="glass rounded-xl p-5">
+        <Link to="/safe-skips" className="glass rounded-xl p-5 block hover:bg-secondary/30 transition-colors group">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider group-hover:text-foreground transition-colors">
               Safe Skips
             </span>
-            <ShieldCheck className="h-4 w-4 text-primary" />
+            <ShieldCheck className="h-4 w-4 text-primary group-hover:scale-110 transition-transform" />
           </div>
-          <p className={`text-3xl font-bold ${
-            totalSafeSkips > 3 ? 'text-success' : totalSafeSkips > 0 ? 'text-warning' : 'text-danger'
-          }`}>
+          <p className={`text-3xl font-bold ${totalSafeSkips > 3 ? 'text-success' : totalSafeSkips > 0 ? 'text-warning' : 'text-danger'
+            }`}>
             {totalSafeSkips === Infinity ? '∞' : totalSafeSkips}
           </p>
           <p className="text-xs text-muted-foreground mt-1">
             sessions you can safely skip
           </p>
-        </div>
+        </Link>
 
         {/* Subjects Below Threshold */}
-        <div className="glass rounded-xl p-5">
+        <Link to="/recovery" className="glass rounded-xl p-5 block hover:bg-secondary/30 transition-colors group">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider group-hover:text-foreground transition-colors">
               At Risk
             </span>
-            <BookOpen className="h-4 w-4 text-warning" />
+            <BookOpen className="h-4 w-4 text-warning group-hover:scale-110 transition-transform" />
           </div>
           <p className={`text-3xl font-bold ${subjectsBelow > 0 ? 'text-danger' : 'text-success'}`}>
             {subjectsBelow}
@@ -181,21 +179,21 @@ export default function Dashboard() {
           <p className="text-xs text-muted-foreground mt-1">
             subjects below {threshold}%
           </p>
-        </div>
+        </Link>
 
         {/* Total Subjects */}
-        <div className="glass rounded-xl p-5">
+        <Link to="/calendar" className="glass rounded-xl p-5 block hover:bg-secondary/30 transition-colors group">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider group-hover:text-foreground transition-colors">
               Subjects
             </span>
-            <FlaskConical className="h-4 w-4 text-chart-4" />
+            <FlaskConical className="h-4 w-4 text-chart-4 group-hover:scale-110 transition-transform" />
           </div>
           <p className="text-3xl font-bold text-foreground">{stats.length}</p>
           <p className="text-xs text-muted-foreground mt-1">
             in {semester.name}
           </p>
-        </div>
+        </Link>
       </div>
 
       {/* Chart */}
@@ -305,17 +303,16 @@ export default function Dashboard() {
         <h2 className="text-sm font-semibold mb-3">Subject Overview</h2>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {stats.map((s) => (
-            <div key={s.subjectId} className="glass rounded-xl p-4">
+            <Link to="/calendar" key={s.subjectId} className="glass rounded-xl p-4 block hover:bg-secondary/30 transition-colors group">
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-sm font-semibold truncate">{s.subjectName}</h3>
+                <h3 className="text-sm font-semibold truncate group-hover:text-primary transition-colors">{s.subjectName}</h3>
                 <span
-                  className={`text-xs font-bold px-2 py-0.5 rounded-full ${
-                    s.combined.percentage >= threshold
+                  className={`text-xs font-bold px-2 py-0.5 rounded-full ${s.combined.percentage >= threshold
                       ? 'bg-success/15 text-success'
                       : s.combined.percentage >= threshold - 10
                         ? 'bg-warning/15 text-warning'
                         : 'bg-danger/15 text-danger'
-                  }`}
+                    }`}
                 >
                   {s.combined.percentage.toFixed(1)}%
                 </span>
@@ -326,9 +323,8 @@ export default function Dashboard() {
                     <BookOpen className="h-3 w-3 text-muted-foreground" />
                     <span className="text-muted-foreground">Lectures:</span>
                     <span className="font-medium">{s.lecture.attended}/{s.lecture.total}</span>
-                    <span className={`ml-auto font-medium ${
-                      s.lecture.percentage >= threshold ? 'text-success' : 'text-danger'
-                    }`}>
+                    <span className={`ml-auto font-medium ${s.lecture.percentage >= threshold ? 'text-success' : 'text-danger'
+                      }`}>
                       {s.lecture.percentage.toFixed(1)}%
                     </span>
                   </div>
@@ -338,9 +334,8 @@ export default function Dashboard() {
                     <FlaskConical className="h-3 w-3 text-muted-foreground" />
                     <span className="text-muted-foreground">Labs:</span>
                     <span className="font-medium">{s.lab.attended}/{s.lab.total}</span>
-                    <span className={`ml-auto font-medium ${
-                      s.lab.percentage >= threshold ? 'text-success' : 'text-danger'
-                    }`}>
+                    <span className={`ml-auto font-medium ${s.lab.percentage >= threshold ? 'text-success' : 'text-danger'
+                      }`}>
                       {s.lab.percentage.toFixed(1)}%
                     </span>
                   </div>
@@ -348,13 +343,12 @@ export default function Dashboard() {
               </div>
               <div className="mt-2 h-1 rounded-full bg-secondary overflow-hidden">
                 <div
-                  className={`h-full rounded-full transition-all duration-500 ${
-                    s.combined.percentage >= threshold ? 'bg-success' : 'bg-danger'
-                  }`}
+                  className={`h-full rounded-full transition-all duration-500 ${s.combined.percentage >= threshold ? 'bg-success' : 'bg-danger'
+                    }`}
                   style={{ width: `${Math.min(s.combined.percentage, 100)}%` }}
                 />
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       </div>

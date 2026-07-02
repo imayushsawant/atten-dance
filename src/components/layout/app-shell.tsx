@@ -1,4 +1,4 @@
-import { NavLink, Outlet, useLocation } from 'react-router';
+import { NavLink, Link, Outlet, useLocation } from 'react-router';
 import {
   LayoutDashboard,
   PenLine,
@@ -43,7 +43,7 @@ export default function AppShell() {
         )}
       >
         {/* Logo */}
-        <div className="flex h-16 items-center gap-3 border-b border-border px-5">
+        <Link to="/" className="flex h-16 items-center gap-3 border-b border-border px-5 hover:bg-secondary/20 transition-colors">
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/15">
             <GraduationCap className="h-5 w-5 text-primary" />
           </div>
@@ -55,7 +55,7 @@ export default function AppShell() {
               Because college makes you dance
             </p>
           </div>
-        </div>
+        </Link>
 
         {/* Navigation */}
         <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
