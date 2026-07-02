@@ -2,7 +2,7 @@
 
 > *Because college makes you dance for attendance.*
 
-A sleek, dark-mode attendance tracker built for students who want to know exactly how many classes they can skip — and how many they need to attend to recover.
+A sleek, dark-mode attendance tracker built for students who want to know exactly how many classes they can skip — and how many they need to attend to recover. Featuring a premium glassmorphism UI and deep analytics.
 
 ![React](https://img.shields.io/badge/React-19-blue?logo=react)
 ![Vite](https://img.shields.io/badge/Vite-8-purple?logo=vite)
@@ -14,41 +14,31 @@ A sleek, dark-mode attendance tracker built for students who want to know exactl
 
 ## ✨ Features
 
-### 📊 Dashboard
-- Overall attendance percentage at a glance (averaged across lectures & labs)
-- Subject-wise breakdown with visual progress bars
-- Quick stats: total attended, total skipped, streak tracking
+### 🎨 Stunning UI & Design
+- **Glassmorphism Theme**: Custom dark-mode interface featuring frosted glass panels and subtle dynamic glow effects.
+- **Responsive Layout**: Integrated navigation shell with a custom logo that seamlessly adapts to mobile and desktop screens.
 
-### 📅 Calendar View
-- Google Calendar–style monthly view of all your lectures
-- Click any date to see which subjects you attended, bunked, or didn't have that day
-- Color-coded entries for instant visual feedback
+### 📊 Dashboard & Analytics
+- **Dashboard Overview**: Overall attendance percentage (averaged across lectures & labs) and subject-wise visual progress bars.
+- **Deep Analytics**: Trend charts powered by Recharts detailing your attendance distribution, progress patterns, and habits over time.
 
-### ✍️ Mark Attendance
-- Mark lectures and labs as attended or skipped per day
-- Add entries anytime during the day — no end-of-day restriction
-- Already-marked subjects collapse to avoid clutter, with option to expand and edit
+### 📅 Log & Track Attendance
+- **Smart Input**: Mark lectures and labs as attended or skipped per day. Already-marked subjects collapse to avoid clutter.
+- **Calendar Integration**: Log attendance with visual cues — pre-marked dates show up right on the calendar to prevent double entries.
+- **History View**: Dedicated historical timeline of your attendance, letting you review exactly what happened on past days.
 
-### 🛡️ Safe Skips
-- Know exactly how many lectures/labs you can still skip per subject without dropping below threshold
-- Subject-wise and type-wise (lecture vs lab) breakdown
+### 🛡️ Safe Skips & Target Planning
+- **Safe Skips Calculator**: Know exactly how many lectures/labs you can still skip per subject without dropping below your minimum threshold.
+- **Recovery Planner**:
+  - **Status Banner**: Overall status with exact percentage deficit/surplus.
+  - **"On Thin Ice" Warnings**: Alerts for subjects that are currently safe but one skip away from danger.
+  - **Dynamic Combinations**: Algorithm-generated recovery paths (e.g., "Attend 3 Lectures & 2 Labs → 76.54%").
+  - **Custom Target Slider**: Simulate recovery strategies for any target percentage (50–100%).
 
-### 🏥 Recovery Planner
-- **Overall status banner**: Green if above threshold, red if below — with your exact percentage
-- **On Thin Ice warnings**: Subjects that are above threshold but one skip away from dropping
-- **Subject-wise recovery**: Exact number of consecutive lectures/labs needed per subject
-- **Overall recovery**: How many lectures-only, labs-only, or mixed combinations to attend
-- **Dynamic combinations**: Algorithm-generated examples like "3 Lectures & 2 Labs → 76.54%"
-- **Custom target calculator**: Slider to simulate recovery to any percentage (50–100%)
-- **Impossible state detection**: Tells you when recovering via only one type is mathematically impossible
-
-### 📈 Analytics
-- Trend charts with Recharts
-- Attendance distribution and patterns
-
-### ⚙️ Settings
-- Configurable attendance threshold (default: 75%)
-- Semester management with subject setup (lecture/lab toggles)
+### ⚙️ Semester & App Management
+- **Semester Lifecycle**: Fully manage semesters — create, edit details, and end them when the term is over.
+- **Flexible Subjects**: Setup classes with toggleable lecture/lab configurations.
+- **Custom Thresholds**: Configure your required attendance threshold globally (e.g., 75%, 80%).
 
 ---
 
@@ -60,7 +50,7 @@ A sleek, dark-mode attendance tracker built for students who want to know exactl
 Overall % = (Total Lecture % + Total Lab %) / 2
 ```
 
-This means missing a lab (which happens less frequently) hurts your average significantly more than missing a lecture.
+This ensures missing a lab (which happens less frequently) impacts your average significantly more than a standard lecture.
 
 **Safe Skips:**
 ```
@@ -72,7 +62,7 @@ floor((attended - threshold × total) / threshold)
 ceil((threshold × total - attended) / (1 - threshold))
 ```
 
-**Combination Recovery** simulates adding `L` lectures and `B` labs to find all `(L, B)` pairs where the resulting average crosses the threshold.
+**Combination Recovery** simulates adding `L` lectures and `B` labs to find all `(L, B)` pairs where the resulting average safely crosses the threshold.
 
 ---
 
@@ -128,25 +118,27 @@ atten-dance/
 ├── server/                 # Express backend
 │   ├── db/
 │   │   ├── schema.ts       # Drizzle schema (semesters, subjects, attendance)
-│   │   ├── queries.ts      # All DB queries, analytics, recovery math
+│   │   ├── queries.ts      # DB queries, analytics, recovery math
 │   │   └── index.ts        # Database connection
 │   ├── routes/
-│   │   ├── semesters.ts    # CRUD for semesters & subjects
+│   │   ├── semesters.ts    # CRUD for semesters, subjects, and archiving
 │   │   ├── attendance.ts   # Attendance record management
-│   │   └── analytics.ts    # Analytics & target calculation endpoints
+│   │   ├── analytics.ts    # Analytics & target calculation endpoints
+│   │   └── settings.ts     # Global configuration API
 │   └── index.ts            # Express server entry point
 ├── src/                    # React frontend
 │   ├── pages/
 │   │   ├── dashboard.tsx   # Main dashboard with overview
+│   │   ├── input.tsx       # Mark attendance with calendar
 │   │   ├── calendar.tsx    # Monthly calendar view
-│   │   ├── input.tsx       # Mark attendance
+│   │   ├── history.tsx     # Past attendance records tracker
 │   │   ├── safe-skips.tsx  # Safe skips calculator
-│   │   ├── recovery.tsx    # Recovery planner
-│   │   ├── analytics.tsx   # Charts & trends
-│   │   └── settings.tsx    # App settings
-│   ├── components/         # Reusable UI components
-│   ├── lib/
-│   │   └── api.ts          # API client & TypeScript types
+│   │   ├── recovery.tsx    # Recovery planner & combinations
+│   │   ├── analytics.tsx   # Charts & trends visualization
+│   │   ├── settings.tsx    # App settings & threshold configuration
+│   │   └── semesters/      # Semester management (create, edit, list)
+│   ├── components/         # Reusable UI components & app shell
+│   ├── lib/                # API client & TypeScript types
 │   └── main.tsx            # App entry with routing
 ├── package.json
 ├── vite.config.ts
