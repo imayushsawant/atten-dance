@@ -196,7 +196,13 @@ export default function AnalyticsPage() {
                   tickLine={false}
                   tickFormatter={(v) => `${v}%`}
                 />
-                <Tooltip contentStyle={tooltipStyle} formatter={(value: number) => [`${value.toFixed(1)}%`]} />
+                <Tooltip 
+                  cursor={{ fill: 'var(--color-secondary)' }}
+                  contentStyle={tooltipStyle}
+                  itemStyle={{ color: cs.tooltipColor }}
+                  labelStyle={{ color: cs.tooltipColor, fontWeight: 'bold', marginBottom: '4px' }}
+                  formatter={(value: number) => [`${value.toFixed(1)}%`]}
+                />
                 <Legend
                   wrapperStyle={{ fontSize: '12px', color: cs.legendColor }}
                 />
@@ -227,7 +233,11 @@ export default function AnalyticsPage() {
                     <Cell key={index} fill={entry.fill} />
                   ))}
                 </Pie>
-                <Tooltip contentStyle={tooltipStyle} />
+                <Tooltip 
+                  contentStyle={tooltipStyle}
+                  itemStyle={{ color: cs.tooltipColor }}
+                  labelStyle={{ color: cs.tooltipColor, fontWeight: 'bold', marginBottom: '4px' }}
+                />
                 <Legend
                   wrapperStyle={{ fontSize: '12px', color: cs.legendColor }}
                 />
@@ -256,7 +266,13 @@ export default function AnalyticsPage() {
                   tickLine={false}
                   tickFormatter={(v) => `${v}%`}
                 />
-                <Tooltip contentStyle={tooltipStyle} formatter={(value: number) => [`${value.toFixed(1)}%`]} />
+                <Tooltip 
+                  cursor={{ stroke: 'var(--color-border)', strokeWidth: 2, strokeDasharray: '4 4' }}
+                  contentStyle={tooltipStyle}
+                  itemStyle={{ color: cs.tooltipColor }}
+                  labelStyle={{ color: cs.tooltipColor, fontWeight: 'bold', marginBottom: '4px' }}
+                  formatter={(value: number) => [`${value.toFixed(1)}%`]}
+                />
                 <Line
                   type="monotone"
                   dataKey="percentage"

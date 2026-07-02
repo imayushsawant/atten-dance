@@ -7,6 +7,7 @@ import AnalyticsPage from '@/pages/analytics';
 import SafeSkipsPage from '@/pages/safe-skips';
 import RecoveryPage from '@/pages/recovery';
 import SettingsPage from '@/pages/settings';
+import HistoryPage from '@/pages/history';
 import SemesterList from '@/pages/semesters/semester-list';
 import CreateSemester from '@/pages/semesters/create-semester';
 
@@ -21,6 +22,7 @@ export default function App() {
           <Route path="analytics" element={<AnalyticsPage />} />
           <Route path="safe-skips" element={<SafeSkipsPage />} />
           <Route path="recovery" element={<RecoveryPage />} />
+          <Route path="history" element={<HistoryPage />} />
           <Route path="settings" element={<SettingsPage />} />
           <Route path="semesters" element={<SemesterList />} />
           <Route path="semesters/new" element={<CreateSemester />} />

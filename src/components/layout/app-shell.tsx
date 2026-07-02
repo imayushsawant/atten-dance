@@ -13,6 +13,7 @@ import {
   Sun,
   Moon,
   Monitor,
+  History as HistoryIcon,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
@@ -26,6 +27,7 @@ const navItems = [
   { to: '/analytics', icon: BarChart3, label: 'Analytics' },
   { to: '/safe-skips', icon: ShieldCheck, label: 'Safe Skips' },
   { to: '/recovery', icon: HeartPulse, label: 'Recovery' },
+  { to: '/history', icon: HistoryIcon, label: 'History' },
   { to: '/settings', icon: Settings, label: 'Settings' },
 ];
 
@@ -66,8 +68,8 @@ export default function AppShell() {
             <h1 className="text-lg font-bold tracking-tight text-primary">
               Atten-Dance
             </h1>
-            <p className="text-[10px] leading-tight text-muted-foreground">
-              attendance tracker
+            <p className="text-[10px] leading-tight text-muted-foreground mt-0.5 opacity-80 max-w-[140px]">
+              Because colleges make you dance for attendance
             </p>
           </div>
         </Link>
