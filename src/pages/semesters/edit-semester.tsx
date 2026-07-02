@@ -1,23 +1,64 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router';
-import { Plus, Trash2, BookOpen, FlaskConical, GraduationCap } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
+import { useNavigate, useParams } from 'react-router';
+import { Plus, Trash2, BookOpen, FlaskConical, GraduationCap, Settings as SettingsIcon } from 'lucide-react';
 import { api } from '@/lib/api';
 
 type SubjectInput = {
+  id?: string;
   name: string;
   hasLecture: boolean;
   hasLab: boolean;
 };
 
-export default function CreateSemester() {
+export default function EditSemester() {
+  const { id } = useParams();
   const navigate = useNavigate();
   const [name, setName] = useState('');
   const [threshold, setThreshold] = useState(75);
-  const [subjects, setSubjects] = useState<SubjectInput[]>([
-    { name: '', hasLecture: true, hasLab: false },
-  ]);
+  const [subjects, setSubjects] = useState<SubjectInput[]>([]);
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [modalError, setModalError] = useState('');
+  const [usage, setUsage] = useState<Record<string, { lecture: number, lab: number }>>({});
+
+  useEffect(() => {
+    if (id) {
+      loadSemester(id);
+    }
+  }, [id]);
+
+  async function loadSemester(semesterId: string) {
+    try {
+      const [data, attendance] = await Promise.all([
+        api.semesters.get(semesterId),
+        api.attendance.getBySemester(semesterId)
+      ]);
+      
+      setName(data.name);
+      setThreshold(data.threshold);
+      setSubjects(
+        data.subjects.map(s => ({
+          id: s.id,
+          name: s.name,
+          hasLecture: s.hasLecture,
+          hasLab: s.hasLab
+        }))
+      );
+
+      const stats: Record<string, { lecture: number, lab: number }> = {};
+      attendance.forEach(r => {
+        if (!stats[r.subjectId]) stats[r.subjectId] = { lecture: 0, lab: 0 };
+        stats[r.subjectId][r.type as 'lecture' | 'lab']++;
+      });
+      setUsage(stats);
+    } catch (err) {
+      setError('Failed to load semester data.');
+    } finally {
+      setLoading(false);
+    }
+  }
 
   function addSubject() {
     setSubjects([...subjects, { name: '', hasLecture: true, hasLab: false }]);
@@ -32,6 +73,23 @@ export default function CreateSemester() {
     setSubjects(
       subjects.map((s, i) => (i === index ? { ...s, ...updates } : s))
     );
+  }
+
+  function handleToggleType(index: number, type: 'lecture' | 'lab') {
+    setError('');
+    const subject = subjects[index];
+    const isCurrentlyOn = type === 'lecture' ? subject.hasLecture : subject.hasLab;
+    
+    // If trying to turn it OFF, check usage
+    if (isCurrentlyOn && subject.id) {
+      const stats = usage[subject.id];
+      if (stats && stats[type] > 0) {
+        setModalError(`Cannot disable ${type} for "${subject.name}" because it already has attendance records logged.`);
+        return;
+      }
+    }
+    
+    updateSubject(index, { [type === 'lecture' ? 'hasLecture' : 'hasLab']: !isCurrentlyOn });
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -59,31 +117,46 @@ export default function CreateSemester() {
 
     setSaving(true);
     try {
-      const created = await api.semesters.create({
-        name: name.trim(),
-        threshold,
-        subjects: validSubjects.map((s) => ({
+      if (!id) throw new Error('No semester ID found');
+
+      // Update name and threshold
+      await api.semesters.update(id, { name: name.trim(), threshold });
+      
+      // Sync subjects
+      await api.semesters.updateSubjects(
+        id,
+        validSubjects.map((s) => ({
+          id: s.id,
           name: s.name.trim(),
           hasLecture: s.hasLecture,
           hasLab: s.hasLab,
-        })),
-      });
-      // Activate the new semester
-      await api.semesters.activate(created.id);
-      navigate('/');
+        }))
+      );
+
+      navigate('/semesters');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create semester');
+      setError(err instanceof Error ? err.message : 'Failed to save semester');
     } finally {
       setSaving(false);
     }
   }
 
+  if (loading) {
+    return (
+      <div className="max-w-2xl mx-auto space-y-6">
+        <div className="h-8 w-48 rounded shimmer" />
+        <div className="h-32 rounded-xl shimmer" />
+        <div className="h-64 rounded-xl shimmer" />
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-2xl mx-auto">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold tracking-tight">Create Semester</h1>
+        <h1 className="text-2xl font-bold tracking-tight">Edit Semester</h1>
         <p className="text-muted-foreground">
-          Set up your subjects for the new semester
+          Modify your semester details and sync subjects safely
         </p>
       </div>
 
@@ -106,10 +179,11 @@ export default function CreateSemester() {
         {/* Threshold */}
         <div className="glass rounded-xl p-5">
           <div className="flex items-center gap-2 mb-4">
+            <SettingsIcon className="h-5 w-5 text-muted-foreground" />
             <h2 className="text-sm font-semibold">Attendance Threshold</h2>
           </div>
           <p className="text-xs text-muted-foreground mb-4">
-            Set the minimum attendance percentage required for this semester.
+            Set the minimum attendance percentage required for this semester specifically.
           </p>
 
           <div className="mb-4">
@@ -138,11 +212,16 @@ export default function CreateSemester() {
         {/* Subjects */}
         <div className="glass rounded-xl p-5">
           <div className="flex items-center justify-between mb-4">
-            <label className="text-sm font-medium">Subjects</label>
+            <div>
+              <label className="text-sm font-medium">Subjects</label>
+              <p className="text-xs text-muted-foreground mt-1">
+                Editing a subject's name here safely syncs it without losing its attendance logs.
+              </p>
+            </div>
             <button
               type="button"
               onClick={addSubject}
-              className="flex items-center gap-1.5 rounded-lg bg-primary/15 px-3 py-1.5 text-xs font-medium text-primary hover:bg-primary/25 transition-colors"
+              className="flex items-center gap-1.5 rounded-lg bg-primary/15 px-3 py-1.5 text-xs font-medium text-primary hover:bg-primary/25 transition-colors shrink-0"
             >
               <Plus className="h-3.5 w-3.5" />
               Add Subject
@@ -152,7 +231,7 @@ export default function CreateSemester() {
           <div className="space-y-3">
             {subjects.map((subject, index) => (
               <div
-                key={index}
+                key={subject.id || index}
                 className="flex items-start gap-3 rounded-lg border border-border bg-background/30 p-3"
               >
                 <div className="flex-1 space-y-3">
@@ -173,11 +252,7 @@ export default function CreateSemester() {
                             ? 'bg-primary/15 text-primary border border-primary/30'
                             : 'bg-secondary text-muted-foreground border border-transparent hover:bg-secondary/80'
                         }`}
-                        onClick={() =>
-                          updateSubject(index, {
-                            hasLecture: !subject.hasLecture,
-                          })
-                        }
+                        onClick={() => handleToggleType(index, 'lecture')}
                       >
                         <BookOpen className="h-3.5 w-3.5" />
                         Lecture
@@ -190,9 +265,7 @@ export default function CreateSemester() {
                             ? 'bg-success/15 text-success border border-success/30'
                             : 'bg-secondary text-muted-foreground border border-transparent hover:bg-secondary/80'
                         }`}
-                        onClick={() =>
-                          updateSubject(index, { hasLab: !subject.hasLab })
-                        }
+                        onClick={() => handleToggleType(index, 'lab')}
                       >
                         <FlaskConical className="h-3.5 w-3.5" />
                         Lab
@@ -204,7 +277,7 @@ export default function CreateSemester() {
                   type="button"
                   onClick={() => removeSubject(index)}
                   disabled={subjects.length <= 1}
-                  className="mt-1 flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-danger/15 hover:text-danger transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                  className="mt-1 flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-danger/15 hover:text-danger transition-colors disabled:opacity-30 disabled:cursor-not-allowed shrink-0"
                 >
                   <Trash2 className="h-4 w-4" />
                 </button>
@@ -234,10 +307,32 @@ export default function CreateSemester() {
             disabled={saving}
             className="rounded-lg bg-foreground px-6 py-2.5 text-sm font-semibold text-background transition-all hover:opacity-90 disabled:opacity-50"
           >
-            {saving ? 'Creating…' : 'Create Semester'}
+            {saving ? 'Saving…' : 'Save Changes'}
           </button>
         </div>
       </form>
+
+      {/* Mid-screen Error Modal */}
+      {modalError && createPortal(
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background/80 backdrop-blur-sm p-4">
+          <div className="glass w-full max-w-sm rounded-2xl p-6 text-center shadow-2xl border border-danger/20 mt-4">
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-danger/10">
+              <SettingsIcon className="h-6 w-6 text-danger" />
+            </div>
+            <h2 className="text-lg font-bold text-danger mb-2">Action Prevented</h2>
+            <p className="text-sm text-muted-foreground mb-6">
+              {modalError}
+            </p>
+            <button
+              onClick={() => setModalError('')}
+              className="w-full rounded-lg bg-secondary py-2.5 text-sm font-medium hover:bg-secondary/80 transition-colors"
+            >
+              Understood
+            </button>
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   );
 }

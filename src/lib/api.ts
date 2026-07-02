@@ -91,7 +91,9 @@ export const api = {
       request<Semester>(`/semesters/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
     activate: (id: string) =>
       request<Semester>(`/semesters/${id}/activate`, { method: 'PUT' }),
-    updateSubjects: (id: string, subjects: { name: string; hasLecture: boolean; hasLab: boolean }[]) =>
+    deactivate: (id: string) =>
+      request<Semester>(`/semesters/${id}/deactivate`, { method: 'PUT' }),
+    updateSubjects: (id: string, subjects: { id?: string; name: string; hasLecture: boolean; hasLab: boolean }[]) =>
       request<Subject[]>(`/semesters/${id}/subjects`, { method: 'PUT', body: JSON.stringify({ subjects }) }),
     delete: (id: string) =>
       request<Semester>(`/semesters/${id}`, { method: 'DELETE' }),

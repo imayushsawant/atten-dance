@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Link } from 'react-router';
-import { Plus, Trash2, Check, GraduationCap, BookOpen, FlaskConical } from 'lucide-react';
+import { Plus, Trash2, Check, GraduationCap, BookOpen, FlaskConical, Edit3, PowerOff } from 'lucide-react';
 import { api } from '@/lib/api';
 import type { Semester } from '@/lib/api';
 
 export default function SemesterList() {
   const [semesters, setSemesters] = useState<Semester[]>([]);
   const [loading, setLoading] = useState(true);
+  const [endConfirmId, setEndConfirmId] = useState<string | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   useEffect(() => {
     loadSemesters();
@@ -32,13 +35,25 @@ export default function SemesterList() {
     }
   }
 
+  async function handleDeactivate(id: string) {
+    try {
+      await api.semesters.deactivate(id);
+      await loadSemesters();
+    } catch {
+      // ignore
+    } finally {
+      setEndConfirmId(null);
+    }
+  }
+
   async function handleDelete(id: string) {
-    if (!confirm('Delete this semester? All attendance data will be lost.')) return;
     try {
       await api.semesters.delete(id);
       await loadSemesters();
     } catch {
       // ignore
+    } finally {
+      setDeleteConfirmId(null);
     }
   }
 
@@ -121,7 +136,23 @@ export default function SemesterList() {
                   </div>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  {!sem.isActive && (
+                  <Link
+                    to={`/semesters/${sem.id}/edit`}
+                    className="flex h-8 items-center gap-1.5 rounded-md bg-secondary px-3 text-xs font-medium text-foreground hover:bg-secondary/80 transition-colors"
+                  >
+                    <Edit3 className="h-3.5 w-3.5" />
+                    Edit
+                  </Link>
+
+                  {sem.isActive ? (
+                    <button
+                      onClick={() => setEndConfirmId(sem.id)}
+                      className="flex h-8 items-center gap-1.5 rounded-md bg-warning/15 px-3 text-xs font-medium text-warning hover:bg-warning/25 transition-colors"
+                    >
+                      <PowerOff className="h-3.5 w-3.5" />
+                      End
+                    </button>
+                  ) : (
                     <button
                       onClick={() => handleActivate(sem.id)}
                       className="flex h-8 items-center gap-1.5 rounded-md bg-secondary px-3 text-xs font-medium text-foreground hover:bg-primary/15 hover:text-primary transition-colors"
@@ -131,7 +162,7 @@ export default function SemesterList() {
                     </button>
                   )}
                   <button
-                    onClick={() => handleDelete(sem.id)}
+                    onClick={() => setDeleteConfirmId(sem.id)}
                     className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-danger/15 hover:text-danger transition-colors"
                   >
                     <Trash2 className="h-4 w-4" />
@@ -141,6 +172,60 @@ export default function SemesterList() {
             </div>
           ))}
         </div>
+      )}
+      
+      {endConfirmId && createPortal(
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background/80 backdrop-blur-sm p-4">
+          <div className="glass w-full max-w-sm rounded-2xl p-6 text-center shadow-2xl border border-border mt-4">
+            <PowerOff className="h-10 w-10 text-warning mx-auto mb-4" />
+            <h2 className="text-lg font-bold mb-2">End Semester?</h2>
+            <p className="text-sm text-muted-foreground mb-6">
+              This will deactivate the semester, freezing your logs. You can always reactivate it later.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setEndConfirmId(null)}
+                className="flex-1 rounded-lg border border-border py-2.5 text-sm font-medium hover:bg-secondary transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDeactivate(endConfirmId)}
+                className="flex-1 rounded-lg bg-warning text-warning-foreground py-2.5 text-sm font-bold hover:opacity-90 transition-opacity shadow-sm glow-warning"
+              >
+                End Semester
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {deleteConfirmId && createPortal(
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background/80 backdrop-blur-sm p-4">
+          <div className="glass w-full max-w-sm rounded-2xl p-6 text-center shadow-2xl border border-danger/20 mt-4">
+            <Trash2 className="h-10 w-10 text-danger mx-auto mb-4" />
+            <h2 className="text-lg font-bold text-danger mb-2">Delete Semester?</h2>
+            <p className="text-sm text-muted-foreground mb-6">
+              This is permanent! All your attendance data for this semester will be destroyed.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setDeleteConfirmId(null)}
+                className="flex-1 rounded-lg border border-border py-2.5 text-sm font-medium hover:bg-secondary transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDelete(deleteConfirmId)}
+                className="flex-1 rounded-lg bg-danger text-danger-foreground py-2.5 text-sm font-bold hover:opacity-90 transition-opacity shadow-sm glow-danger"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
       )}
     </div>
   );

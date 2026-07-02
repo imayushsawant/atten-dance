@@ -10,6 +10,7 @@ import SettingsPage from '@/pages/settings';
 import HistoryPage from '@/pages/history';
 import SemesterList from '@/pages/semesters/semester-list';
 import CreateSemester from '@/pages/semesters/create-semester';
+import EditSemester from '@/pages/semesters/edit-semester';
 
 export default function App() {
   return (
@@ -26,6 +27,7 @@ export default function App() {
           <Route path="settings" element={<SettingsPage />} />
           <Route path="semesters" element={<SemesterList />} />
           <Route path="semesters/new" element={<CreateSemester />} />
+          <Route path="semesters/:id/edit" element={<EditSemester />} />
         </Route>
       </Routes>
     </BrowserRouter>

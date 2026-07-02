@@ -77,6 +77,13 @@ router.put('/:id/activate', (req, res) => {
   res.json(result);
 });
 
+// PUT /api/semesters/:id/deactivate — set as inactive
+router.put('/:id/deactivate', (req, res) => {
+  const result = queries.deactivateSemester(req.params.id);
+  if (!result) return res.status(404).json({ error: 'Semester not found' });
+  res.json(result);
+});
+
 // PUT /api/semesters/:id/subjects — replace subjects for a semester
 router.put('/:id/subjects', (req, res) => {
   const { subjects: subjectList } = req.body;
@@ -84,20 +91,27 @@ router.put('/:id/subjects', (req, res) => {
     return res.status(400).json({ error: 'Subjects array required' });
   }
 
-  // Delete existing subjects (cascade deletes attendance records too)
-  queries.deleteSubjectsBySemester(req.params.id);
+  const existing = queries.getSubjectsBySemester(req.params.id);
+  const existingIds = existing.map(s => s.id);
+  
+  const newIds = subjectList.filter(s => s.id).map(s => s.id);
+  
+  // Delete subjects not in new list
+  const toDelete = existingIds.filter(id => !newIds.includes(id));
+  for (const id of toDelete) {
+    queries.deleteSubject(id);
+  }
+  
+  // Update or create
+  for (const s of subjectList) {
+    if (s.id) {
+       queries.updateSubject(s.id, { name: s.name, hasLecture: s.hasLecture, hasLab: s.hasLab });
+    } else {
+       queries.createSubject({ id: randomUUID(), semesterId: req.params.id, name: s.name, hasLecture: s.hasLecture, hasLab: s.hasLab });
+    }
+  }
 
-  const createdSubjects = queries.createSubjects(
-    subjectList.map((s: { name: string; hasLecture: boolean; hasLab: boolean }) => ({
-      id: randomUUID(),
-      semesterId: req.params.id,
-      name: s.name,
-      hasLecture: s.hasLecture ?? true,
-      hasLab: s.hasLab ?? false,
-    }))
-  );
-
-  res.json(createdSubjects);
+  res.json(queries.getSubjectsBySemester(req.params.id));
 });
 
 // DELETE /api/semesters/:id — delete semester

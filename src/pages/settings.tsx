@@ -28,23 +28,7 @@ export default function SettingsPage() {
     }
   }
 
-  async function handleSave() {
-    setSaving(true);
-    setSaved(false);
-    try {
-      const active = await api.semesters.getActive();
-      if (active) {
-        await api.semesters.update(active.id, { threshold });
-      }
-      await api.settings.update({ default_threshold: String(threshold) });
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
-    } catch {
-      // ignore
-    } finally {
-      setSaving(false);
-    }
-  }
+  // Settings no longer manages threshold, so handleSave is removed
 
   async function handleExport() {
     try {
@@ -135,58 +119,17 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {/* Threshold */}
-      <div className="glass rounded-xl p-5">
-        <div className="flex items-center gap-2 mb-4">
+      {/* Threshold Information */}
+      <div className="glass rounded-xl p-5 border border-border">
+        <div className="flex items-center gap-2 mb-2">
           <SettingsIcon className="h-5 w-5 text-muted-foreground" />
           <h2 className="text-sm font-semibold">Attendance Threshold</h2>
         </div>
-        <p className="text-xs text-muted-foreground mb-4">
-          Set the minimum attendance percentage required. This affects safe skip and
-          recovery calculations for the active semester.
+        <p className="text-xs text-muted-foreground">
+          The attendance threshold is now securely managed on a per-semester basis. 
+          To view or change the required threshold for your current classes, please 
+          navigate to the <strong>Manage Semesters</strong> section in the sidebar.
         </p>
-
-        <div className="mb-4">
-          <div className="flex items-center justify-between mb-2">
-            <label className="text-xs font-medium text-muted-foreground">
-              Threshold
-            </label>
-            <span className="text-sm font-bold">{threshold}%</span>
-          </div>
-          <input
-            type="range"
-            min="50"
-            max="100"
-            value={threshold}
-            onChange={(e) => setThreshold(Number(e.target.value))}
-            className="w-full h-1.5 rounded-full appearance-none bg-secondary cursor-pointer accent-foreground"
-          />
-          <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
-            <span>50%</span>
-            <span>75% (default)</span>
-            <span>100%</span>
-          </div>
-        </div>
-
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className="flex items-center gap-2 rounded-lg bg-foreground px-4 py-2.5 text-sm font-semibold text-background transition-all hover:opacity-90 disabled:opacity-50"
-        >
-          {saved ? (
-            <>
-              <Save className="h-4 w-4" />
-              Saved!
-            </>
-          ) : saving ? (
-            'Saving…'
-          ) : (
-            <>
-              <Save className="h-4 w-4" />
-              Save Changes
-            </>
-          )}
-        </button>
       </div>
 
       {/* Data Management */}

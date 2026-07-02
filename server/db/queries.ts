@@ -38,6 +38,10 @@ export function setActiveSemester(id: string) {
   return db.update(semesters).set({ isActive: true }).where(eq(semesters.id, id)).returning().get();
 }
 
+export function deactivateSemester(id: string) {
+  return db.update(semesters).set({ isActive: false }).where(eq(semesters.id, id)).returning().get();
+}
+
 // ════════════════════════════════════════════════════════════
 //  SUBJECTS
 // ════════════════════════════════════════════════════════════
