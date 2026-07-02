@@ -339,13 +339,21 @@ export default function InputPage() {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
+      {/* Full screen click-away overlay (rendered outside glass to avoid containing block trap) */}
+      {showCalendar && (
+        <div 
+          className="fixed inset-0 z-40"
+          onClick={() => setShowCalendar(false)}
+        />
+      )}
+
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Log Attendance</h1>
         <p className="text-muted-foreground">Mark all your subjects for the day</p>
       </div>
 
       {/* Date Picker */}
-      <div className="glass rounded-xl p-3 flex items-center justify-between">
+      <div className="glass rounded-xl p-3 flex items-center justify-between relative z-50">
         <button 
           onClick={() => setDate(format(subDays(new Date(date + 'T00:00:00'), 1), 'yyyy-MM-dd'))}
           className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary/50 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
@@ -370,12 +378,7 @@ export default function InputPage() {
           </button>
 
           {showCalendar && (
-            <>
-              <div 
-                className="fixed inset-0 z-40"
-                onClick={() => setShowCalendar(false)}
-              />
-              <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 z-50 glass rounded-xl p-4 w-[280px] shadow-2xl border border-border animate-in fade-in zoom-in-95 duration-200">
+            <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 z-50 bg-background rounded-xl p-4 w-[280px] shadow-2xl border border-border animate-in fade-in zoom-in-95 duration-200">
                 <div className="flex items-center justify-between mb-4">
                   <button 
                     onClick={() => setCalendarMonth(subMonths(calendarMonth, 1))}
@@ -432,7 +435,6 @@ export default function InputPage() {
                   })}
                 </div>
               </div>
-            </>
           )}
         </div>
 
