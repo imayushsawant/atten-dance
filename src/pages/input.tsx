@@ -1,6 +1,20 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useSearchParams } from 'react-router';
-import { format } from 'date-fns';
+import {
+  format,
+  addDays,
+  subDays,
+  startOfMonth,
+  endOfMonth,
+  startOfWeek,
+  endOfWeek,
+  addMonths,
+  subMonths,
+  isSameMonth,
+  isSameDay,
+  isToday,
+  isFuture,
+} from 'date-fns';
 import {
   CalendarDays,
   Check,
@@ -12,6 +26,8 @@ import {
   Minus,
   ChevronDown,
   ChevronUp,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import { api } from '@/lib/api';
 import type { Subject, AttendanceRecord } from '@/lib/api';
@@ -38,6 +54,23 @@ export default function InputPage() {
   const [noSemester, setNoSemester] = useState(false);
   const [justSaved, setJustSaved] = useState(false);
   const [showLogged, setShowLogged] = useState(false);
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [calendarMonth, setCalendarMonth] = useState(() => new Date(date + 'T00:00:00'));
+
+  const calendarDays = useMemo(() => {
+    const monthStart = startOfMonth(calendarMonth);
+    const monthEnd = endOfMonth(calendarMonth);
+    const calStart = startOfWeek(monthStart, { weekStartsOn: 1 });
+    const calEnd = endOfWeek(monthEnd, { weekStartsOn: 1 });
+
+    const days: Date[] = [];
+    let day = calStart;
+    while (day <= calEnd) {
+      days.push(day);
+      day = addDays(day, 1);
+    }
+    return days;
+  }, [calendarMonth]);
 
   useEffect(() => {
     loadActiveSemester();
@@ -312,22 +345,109 @@ export default function InputPage() {
       </div>
 
       {/* Date Picker */}
-      <div className="glass rounded-xl p-4">
-        <div className="flex items-center gap-3">
-          <CalendarDays className="h-4 w-4 text-muted-foreground shrink-0" />
-          <input
-            type="date"
-            value={date}
-            max={format(new Date(), 'yyyy-MM-dd')}
-            onChange={(e) => setDate(e.target.value)}
-            className="flex-1 rounded-lg border border-border bg-background/50 py-2 px-3 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors [color-scheme:dark]"
-          />
-          {date === format(new Date(), 'yyyy-MM-dd') && (
-            <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded-md">
-              Today
+      <div className="glass rounded-xl p-3 flex items-center justify-between">
+        <button 
+          onClick={() => setDate(format(subDays(new Date(date + 'T00:00:00'), 1), 'yyyy-MM-dd'))}
+          className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary/50 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
+        >
+          <ChevronLeft className="h-5 w-5" />
+        </button>
+        
+        <div className="relative flex-1 flex justify-center">
+          <button 
+            onClick={() => setShowCalendar(!showCalendar)}
+            className="flex flex-col items-center cursor-pointer group px-4 py-1 rounded-lg hover:bg-secondary/30 transition-colors"
+          >
+            <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-0.5 group-hover:text-foreground transition-colors">
+              {date === format(new Date(), 'yyyy-MM-dd') ? 'Today' : format(new Date(date + 'T00:00:00'), 'EEEE')}
             </span>
+            <div className="flex items-center gap-2">
+              <CalendarDays className="h-4 w-4 text-primary" />
+              <span className="text-sm font-bold group-hover:text-primary transition-colors">
+                {format(new Date(date + 'T00:00:00'), 'MMMM d, yyyy')}
+              </span>
+            </div>
+          </button>
+
+          {showCalendar && (
+            <>
+              <div 
+                className="fixed inset-0 z-40"
+                onClick={() => setShowCalendar(false)}
+              />
+              <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 z-50 glass rounded-xl p-4 w-[280px] shadow-2xl border border-border animate-in fade-in zoom-in-95 duration-200">
+                <div className="flex items-center justify-between mb-4">
+                  <button 
+                    onClick={() => setCalendarMonth(subMonths(calendarMonth, 1))}
+                    className="flex h-7 w-7 items-center justify-center rounded hover:bg-secondary transition-colors"
+                  >
+                    <ChevronLeft className="h-4 w-4 text-muted-foreground" />
+                  </button>
+                  <span className="font-semibold text-sm">
+                    {format(calendarMonth, 'MMMM yyyy')}
+                  </span>
+                  <button 
+                    onClick={() => setCalendarMonth(addMonths(calendarMonth, 1))}
+                    className="flex h-7 w-7 items-center justify-center rounded hover:bg-secondary transition-colors"
+                  >
+                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                  </button>
+                </div>
+                
+                <div className="grid grid-cols-7 mb-2">
+                  {['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'].map(d => (
+                    <div key={d} className="text-center text-[10px] font-medium text-muted-foreground">{d}</div>
+                  ))}
+                </div>
+                
+                <div className="grid grid-cols-7 gap-1">
+                  {calendarDays.map(day => {
+                    const dateStr = format(day, 'yyyy-MM-dd');
+                    const inMonth = isSameMonth(day, calendarMonth);
+                    const today = isToday(day);
+                    const future = isFuture(day) && !today;
+                    const isSelected = date === dateStr;
+
+                    return (
+                      <button
+                        key={dateStr}
+                        disabled={future}
+                        onClick={() => {
+                          setDate(dateStr);
+                          setShowCalendar(false);
+                          setCalendarMonth(day);
+                        }}
+                        className={cn(
+                          "flex h-8 w-8 items-center justify-center rounded-md text-xs transition-colors",
+                          !inMonth && "opacity-30",
+                          future && "opacity-20 cursor-not-allowed",
+                          isSelected && "bg-primary text-primary-foreground font-bold shadow-sm",
+                          !isSelected && !future && "hover:bg-secondary",
+                          today && !isSelected && "ring-1 ring-primary/30 text-primary font-bold"
+                        )}
+                      >
+                        {format(day, 'd')}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </>
           )}
         </div>
+
+        <button 
+          onClick={() => setDate(format(addDays(new Date(date + 'T00:00:00'), 1), 'yyyy-MM-dd'))}
+          disabled={date === format(new Date(), 'yyyy-MM-dd')}
+          className={cn(
+            "flex h-10 w-10 items-center justify-center rounded-lg transition-colors",
+            date === format(new Date(), 'yyyy-MM-dd') 
+              ? "opacity-30 cursor-not-allowed bg-transparent text-muted-foreground" 
+              : "bg-secondary/50 text-muted-foreground hover:bg-secondary hover:text-foreground"
+          )}
+        >
+          <ChevronRight className="h-5 w-5" />
+        </button>
       </div>
 
       {/* Information Banner */}
