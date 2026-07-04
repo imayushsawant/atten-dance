@@ -20,8 +20,15 @@ app.use(cors({
 app.use(express.json());
 
 // BetterAuth handler — must be before other /api routes
-app.all(/^\/api\/auth\/.*/, (req, res) => {
-  return toNodeHandler(auth)(req, res);
+app.all(/^\/api\/auth\/.*/, async (req, res) => {
+  try {
+    await toNodeHandler(auth)(req, res);
+  } catch (err: any) {
+    console.error("Auth Route Error:", err);
+    if (!res.headersSent) {
+      res.status(500).json({ error: "Auth Handler Error", message: err.message, stack: err.stack });
+    }
+  }
 });
 
 // Health check (no auth needed)
