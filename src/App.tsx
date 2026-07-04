@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route } from 'react-router';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router';
+import { useSession } from '@/lib/auth-client';
 import AppShell from '@/components/layout/app-shell';
 import Dashboard from '@/pages/dashboard';
 import InputPage from '@/pages/input';
@@ -11,12 +12,42 @@ import HistoryPage from '@/pages/history';
 import SemesterList from '@/pages/semesters/semester-list';
 import CreateSemester from '@/pages/semesters/create-semester';
 import EditSemester from '@/pages/semesters/edit-semester';
+import LoginPage from '@/pages/login';
+
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { data: session, isPending } = useSession();
+
+  if (isPending) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-4">
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          <p className="text-sm text-muted-foreground animate-pulse">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!session) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return <>{children}</>;
+}
 
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route element={<AppShell />}>
+        {/* Public route */}
+        <Route path="login" element={<LoginPage />} />
+
+        {/* Protected routes */}
+        <Route element={
+          <ProtectedRoute>
+            <AppShell />
+          </ProtectedRoute>
+        }>
           <Route index element={<Dashboard />} />
           <Route path="input" element={<InputPage />} />
           <Route path="calendar" element={<CalendarPage />} />

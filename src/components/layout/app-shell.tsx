@@ -14,10 +14,12 @@ import {
   Moon,
   Monitor,
   History as HistoryIcon,
+  LogOut,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/lib/theme-provider';
+import { useSession, signOut } from '@/lib/auth-client';
 import Logo from '@/assets/Logo.svg';
 
 const navItems = [
@@ -112,6 +114,7 @@ export default function AppShell() {
             <GraduationCap className="h-4.5 w-4.5" />
             Manage Semesters
           </NavLink>
+          <UserFooter />
         </div>
       </aside>
 
@@ -147,6 +150,50 @@ export default function AppShell() {
             <Outlet />
           </div>
         </main>
+      </div>
+    </div>
+  );
+}
+
+function UserFooter() {
+  const { data: session } = useSession();
+
+  if (!session?.user) return null;
+
+  const user = session.user;
+  const initials = (user.name || user.email || '?')
+    .split(' ')
+    .map((w: string) => w[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
+
+  return (
+    <div className="mt-2 border-t border-border/50 pt-3">
+      <div className="flex items-center gap-3 rounded-xl px-3 py-2">
+        {user.image ? (
+          <img
+            src={user.image}
+            alt={user.name || 'User'}
+            className="h-8 w-8 rounded-full border border-border object-cover"
+            referrerPolicy="no-referrer"
+          />
+        ) : (
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/20 text-xs font-semibold text-primary">
+            {initials}
+          </div>
+        )}
+        <div className="flex-1 min-w-0">
+          <p className="truncate text-sm font-medium text-foreground">{user.name}</p>
+          <p className="truncate text-[11px] text-muted-foreground">{user.email}</p>
+        </div>
+        <button
+          onClick={() => signOut({ fetchOptions: { onSuccess: () => { window.location.href = '/login'; } } })}
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+          title="Sign out"
+        >
+          <LogOut className="h-4 w-4" />
+        </button>
       </div>
     </div>
   );

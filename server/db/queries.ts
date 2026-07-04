@@ -7,123 +7,155 @@ import { eq, and, desc } from 'drizzle-orm';
 //  SEMESTERS
 // ════════════════════════════════════════════════════════════
 
-export function getAllSemesters() {
-  return db.select().from(semesters).orderBy(desc(semesters.createdAt)).all();
+export async function getAllSemesters(userId: string) {
+  return db.select().from(semesters).where(eq(semesters.userId, userId)).orderBy(desc(semesters.createdAt));
 }
 
-export function getSemesterById(id: string) {
-  return db.select().from(semesters).where(eq(semesters.id, id)).get();
+export async function getSemesterById(id: string) {
+  const rows = await db.select().from(semesters).where(eq(semesters.id, id));
+  return rows[0];
 }
 
-export function getActiveSemester() {
-  return db.select().from(semesters).where(eq(semesters.isActive, true)).get();
+export async function getActiveSemester(userId: string) {
+  const rows = await db.select().from(semesters).where(
+    and(eq(semesters.userId, userId), eq(semesters.isActive, true))
+  );
+  return rows[0];
 }
 
-export function createSemester(data: NewSemester) {
-  return db.insert(semesters).values(data).returning().get();
+export async function createSemester(data: NewSemester) {
+  const rows = await db.insert(semesters).values(data).returning();
+  return rows[0];
 }
 
-export function updateSemester(id: string, data: Partial<NewSemester>) {
-  return db.update(semesters).set(data).where(eq(semesters.id, id)).returning().get();
+export async function updateSemester(id: string, data: Partial<NewSemester>) {
+  const rows = await db.update(semesters).set(data).where(eq(semesters.id, id)).returning();
+  return rows[0];
 }
 
-export function deleteSemester(id: string) {
-  return db.delete(semesters).where(eq(semesters.id, id)).returning().get();
+export async function deleteSemester(id: string) {
+  const rows = await db.delete(semesters).where(eq(semesters.id, id)).returning();
+  return rows[0];
 }
 
-export function setActiveSemester(id: string) {
-  // Deactivate all first
-  db.update(semesters).set({ isActive: false }).run();
+export async function setActiveSemester(userId: string, id: string) {
+  // Deactivate all of THIS USER's semesters first
+  await db.update(semesters).set({ isActive: false }).where(eq(semesters.userId, userId));
   // Activate the chosen one
-  return db.update(semesters).set({ isActive: true }).where(eq(semesters.id, id)).returning().get();
+  const rows = await db.update(semesters).set({ isActive: true }).where(eq(semesters.id, id)).returning();
+  return rows[0];
 }
 
-export function deactivateSemester(id: string) {
-  return db.update(semesters).set({ isActive: false }).where(eq(semesters.id, id)).returning().get();
+export async function deactivateSemester(id: string) {
+  const rows = await db.update(semesters).set({ isActive: false }).where(eq(semesters.id, id)).returning();
+  return rows[0];
 }
 
 // ════════════════════════════════════════════════════════════
 //  SUBJECTS
 // ════════════════════════════════════════════════════════════
 
-export function getSubjectsBySemester(semesterId: string) {
-  return db.select().from(subjects).where(eq(subjects.semesterId, semesterId)).all();
+export async function getSubjectsBySemester(semesterId: string) {
+  return db.select().from(subjects).where(eq(subjects.semesterId, semesterId));
 }
 
-export function getSubjectById(id: string) {
-  return db.select().from(subjects).where(eq(subjects.id, id)).get();
+export async function getSubjectById(id: string) {
+  const rows = await db.select().from(subjects).where(eq(subjects.id, id));
+  return rows[0];
 }
 
-export function createSubject(data: NewSubject) {
-  return db.insert(subjects).values(data).returning().get();
+export async function createSubject(data: NewSubject) {
+  const rows = await db.insert(subjects).values(data).returning();
+  return rows[0];
 }
 
-export function createSubjects(data: NewSubject[]) {
+export async function createSubjects(data: NewSubject[]) {
   if (data.length === 0) return [];
-  return db.insert(subjects).values(data).returning().all();
+  return db.insert(subjects).values(data).returning();
 }
 
-export function updateSubject(id: string, data: Partial<NewSubject>) {
-  return db.update(subjects).set(data).where(eq(subjects.id, id)).returning().get();
+export async function updateSubject(id: string, data: Partial<NewSubject>) {
+  const rows = await db.update(subjects).set(data).where(eq(subjects.id, id)).returning();
+  return rows[0];
 }
 
-export function deleteSubject(id: string) {
-  return db.delete(subjects).where(eq(subjects.id, id)).returning().get();
+export async function deleteSubject(id: string) {
+  const rows = await db.delete(subjects).where(eq(subjects.id, id)).returning();
+  return rows[0];
 }
 
-export function deleteSubjectsBySemester(semesterId: string) {
-  return db.delete(subjects).where(eq(subjects.semesterId, semesterId)).returning().all();
+export async function deleteSubjectsBySemester(semesterId: string) {
+  return db.delete(subjects).where(eq(subjects.semesterId, semesterId)).returning();
 }
 
 // ════════════════════════════════════════════════════════════
 //  ATTENDANCE RECORDS
 // ════════════════════════════════════════════════════════════
 
-export function getAttendanceBySemester(semesterId: string) {
-  return db
-    .select()
+export async function getAttendanceBySemester(semesterId: string) {
+  const records = await db
+    .select({
+      id: attendanceRecords.id,
+      subjectId: attendanceRecords.subjectId,
+      semesterId: subjects.semesterId,
+      type: attendanceRecords.type,
+      status: attendanceRecords.status,
+      date: attendanceRecords.date,
+      createdAt: attendanceRecords.createdAt,
+    })
     .from(attendanceRecords)
-    .where(eq(attendanceRecords.semesterId, semesterId))
-    .orderBy(desc(attendanceRecords.date))
-    .all();
+    .innerJoin(subjects, eq(attendanceRecords.subjectId, subjects.id))
+    .where(eq(subjects.semesterId, semesterId))
+    .orderBy(desc(attendanceRecords.date));
+  return records;
 }
 
-export function getAttendanceByDate(semesterId: string, date: string) {
-  return db
-    .select()
+export async function getAttendanceByDate(semesterId: string, date: string) {
+  const records = await db
+    .select({
+      id: attendanceRecords.id,
+      subjectId: attendanceRecords.subjectId,
+      semesterId: subjects.semesterId,
+      type: attendanceRecords.type,
+      status: attendanceRecords.status,
+      date: attendanceRecords.date,
+      createdAt: attendanceRecords.createdAt,
+    })
     .from(attendanceRecords)
+    .innerJoin(subjects, eq(attendanceRecords.subjectId, subjects.id))
     .where(
       and(
-        eq(attendanceRecords.semesterId, semesterId),
+        eq(subjects.semesterId, semesterId),
         eq(attendanceRecords.date, date)
       )
-    )
-    .all();
+    );
+  return records;
 }
 
-export function getAttendanceBySubject(subjectId: string) {
+export async function getAttendanceBySubject(subjectId: string) {
   return db
     .select()
     .from(attendanceRecords)
     .where(eq(attendanceRecords.subjectId, subjectId))
-    .orderBy(desc(attendanceRecords.date))
-    .all();
+    .orderBy(desc(attendanceRecords.date));
 }
 
-export function createAttendanceRecord(data: NewAttendanceRecord) {
-  return db.insert(attendanceRecords).values(data).returning().get();
+export async function createAttendanceRecord(data: Omit<NewAttendanceRecord, 'semesterId'>) {
+  const rows = await db.insert(attendanceRecords).values(data).returning();
+  return rows[0];
 }
 
-export function createAttendanceRecords(data: NewAttendanceRecord[]) {
+export async function createAttendanceRecords(data: Omit<NewAttendanceRecord, 'semesterId'>[]) {
   if (data.length === 0) return [];
-  return db.insert(attendanceRecords).values(data).returning().all();
+  return db.insert(attendanceRecords).values(data).returning();
 }
 
-export function deleteAttendanceRecord(id: string) {
-  return db.delete(attendanceRecords).where(eq(attendanceRecords.id, id)).returning().get();
+export async function deleteAttendanceRecord(id: string) {
+  const rows = await db.delete(attendanceRecords).where(eq(attendanceRecords.id, id)).returning();
+  return rows[0];
 }
 
-export function deleteAttendanceBySubjectAndDate(
+export async function deleteAttendanceBySubjectAndDate(
   subjectId: string,
   date: string,
   type: 'lecture' | 'lab'
@@ -137,8 +169,7 @@ export function deleteAttendanceBySubjectAndDate(
         eq(attendanceRecords.type, type)
       )
     )
-    .returning()
-    .all();
+    .returning();
 }
 
 // ════════════════════════════════════════════════════════════
@@ -155,15 +186,15 @@ export type SubjectStats = {
   recovery: { lecture: number; lab: number };
 };
 
-export function getAnalytics(semesterId: string, threshold?: number) {
-  const semester = getSemesterById(semesterId);
+export async function getAnalytics(semesterId: string, threshold?: number) {
+  const semester = await getSemesterById(semesterId);
   if (!semester) return null;
 
   const t = threshold ?? semester.threshold;
   const thresholdRatio = t / 100;
 
-  const semSubjects = getSubjectsBySemester(semesterId);
-  const allRecords = getAttendanceBySemester(semesterId);
+  const semSubjects = await getSubjectsBySemester(semesterId);
+  const allRecords = await getAttendanceBySemester(semesterId);
 
   const stats: SubjectStats[] = semSubjects.map((subject) => {
     const subjectRecords = allRecords.filter((r) => r.subjectId === subject.id);
@@ -378,22 +409,24 @@ export function sessionsToReachTarget(
 //  SETTINGS
 // ════════════════════════════════════════════════════════════
 
-export function getSetting(key: string): string | undefined {
-  const row = db.select().from(settings).where(eq(settings.key, key)).get();
-  return row?.value;
+export async function getSetting(key: string): Promise<string | undefined> {
+  const rows = await db.select().from(settings).where(eq(settings.key, key));
+  return rows[0]?.value;
 }
 
-export function setSetting(key: string, value: string) {
+export async function setSetting(key: string, value: string) {
   // Upsert
-  const existing = getSetting(key);
+  const existing = await getSetting(key);
   if (existing !== undefined) {
-    return db.update(settings).set({ value }).where(eq(settings.key, key)).returning().get();
+    const rows = await db.update(settings).set({ value }).where(eq(settings.key, key)).returning();
+    return rows[0];
   }
-  return db.insert(settings).values({ key, value }).returning().get();
+  const rows = await db.insert(settings).values({ key, value }).returning();
+  return rows[0];
 }
 
-export function getAllSettings() {
-  return db.select().from(settings).all();
+export async function getAllSettings() {
+  return db.select().from(settings);
 }
 
 export function getRecoveryCombinations(lectureAttended: number, lectureTotal: number, labAttended: number, labTotal: number, targetPct: number, maxClasses: number = 30): { lecture: number; lab: number; resultingPercentage: number }[] {

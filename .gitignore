@@ -7,6 +7,11 @@ dist-ssr
 
 # Database
 *.db
+*.db-shm
+*.db-wal
+
+# Drizzle migrations
+drizzle/
 
 # Environment & local config
 *.local

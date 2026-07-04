@@ -4,17 +4,17 @@ import * as queries from '../db/queries';
 const router = Router();
 
 // GET /api/analytics/:semesterId — full analytics for a semester
-router.get('/:semesterId', (req, res) => {
+router.get('/:semesterId', async (req, res) => {
   const threshold = req.query.threshold ? Number(req.query.threshold) : undefined;
-  const analytics = queries.getAnalytics(req.params.semesterId, threshold);
+  const analytics = await queries.getAnalytics(req.params.semesterId, threshold);
   if (!analytics) return res.status(404).json({ error: 'Semester not found' });
   res.json(analytics);
 });
 
 // GET /api/analytics/:semesterId/target — compute sessions to reach target %
-router.get('/:semesterId/target', (req, res) => {
+router.get('/:semesterId/target', async (req, res) => {
   const targetPct = Number(req.query.target) || 75;
-  const analytics = queries.getAnalytics(req.params.semesterId);
+  const analytics = await queries.getAnalytics(req.params.semesterId);
   if (!analytics) return res.status(404).json({ error: 'Semester not found' });
 
   const results = analytics.stats.map((stat) => ({
