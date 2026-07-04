@@ -17,7 +17,13 @@ export const auth = betterAuth({
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     },
   },
-  trustedOrigins: process.env.VITE_APP_URL ? [process.env.VITE_APP_URL, 'http://localhost:5173'] : ['http://localhost:5173'],
+  trustedOrigins: [
+    'http://localhost:5173',
+    'https://atten-dance.ayushsawant.dev',
+    'https://atten-dance.ayushsawant.dev/',
+    process.env.VITE_APP_URL || '',
+    process.env.BETTER_AUTH_URL || ''
+  ].filter(Boolean),
   user: {
     modelName: "users",
     additionalFields: {
