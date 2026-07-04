@@ -35,6 +35,10 @@ app.use('/api/attendance', requireAuth, attendanceRoutes);
 app.use('/api/analytics', requireAuth, analyticsRoutes);
 app.use('/api/settings', requireAuth, settingsRoutes);
 
-app.listen(PORT, () => {
-  console.log(`🎓 Atten-Dance API running on http://localhost:${PORT}`);
-});
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`🎓 Atten-Dance API running on http://localhost:${PORT}`);
+  });
+}
+
+export default app;
