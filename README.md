@@ -4,11 +4,14 @@
 
 A sleek, dark-mode attendance tracker built for students who want to know exactly how many classes they can skip — and how many they need to attend to recover. Featuring a premium glassmorphism UI and deep analytics.
 
+🌍 **[Live Application](https://atten-dance.ayushsawant.dev/)**
+
 ![React](https://img.shields.io/badge/React-19-blue?logo=react)
 ![Vite](https://img.shields.io/badge/Vite-8-purple?logo=vite)
 ![TypeScript](https://img.shields.io/badge/TypeScript-6-blue?logo=typescript)
-![SQLite](https://img.shields.io/badge/SQLite-local-green?logo=sqlite)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Supabase-green?logo=postgresql)
 ![TailwindCSS](https://img.shields.io/badge/Tailwind-4-cyan?logo=tailwindcss)
+![Vercel](https://img.shields.io/badge/Vercel-Serverless-black?logo=vercel)
 
 ---
 
@@ -72,11 +75,12 @@ ceil((threshold × total - attended) / (1 - threshold))
 |-------------|-----------------------------------|
 | Frontend    | React 19, React Router, Recharts  |
 | Styling     | Tailwind CSS 4, Lucide Icons      |
-| Backend     | Express 5, TypeScript             |
-| Database    | SQLite via better-sqlite3         |
+| Backend     | Express 5 (Vercel Serverless)     |
+| Database    | PostgreSQL (Supabase)             |
 | ORM         | Drizzle ORM                       |
+| Auth        | BetterAuth (Email & Google)       |
 | Build       | Vite 8                            |
-| Runtime     | Node.js                           |
+| Deployment  | Vercel                            |
 
 ---
 
@@ -95,6 +99,13 @@ cd atten-dance
 
 # Install dependencies
 pnpm install
+
+# Setup Environment Variables (Copy .env.example to .env)
+# You will need a Supabase PostgreSQL URL and BetterAuth Secrets
+cp .env.example .env
+
+# Push the database schema to Supabase
+pnpm run db:push
 
 # Start dev server (frontend + backend concurrently)
 pnpm dev
@@ -115,17 +126,20 @@ pnpm preview
 
 ```
 atten-dance/
-├── server/                 # Express backend
+├── api/                  # Vercel Serverless Function entry point
+│   └── index.ts        
+├── server/               # Express backend
 │   ├── db/
-│   │   ├── schema.ts       # Drizzle schema (semesters, subjects, attendance)
-│   │   ├── queries.ts      # DB queries, analytics, recovery math
-│   │   └── index.ts        # Database connection
+│   │   ├── schema.ts     # Drizzle schema (auth, semesters, subjects, attendance)
+│   │   ├── queries.ts    # DB queries, analytics, recovery math
+│   │   └── index.ts      # Supabase PostgreSQL connection
 │   ├── routes/
-│   │   ├── semesters.ts    # CRUD for semesters, subjects, and archiving
-│   │   ├── attendance.ts   # Attendance record management
-│   │   ├── analytics.ts    # Analytics & target calculation endpoints
-│   │   └── settings.ts     # Global configuration API
-│   └── index.ts            # Express server entry point
+│   │   ├── semesters.ts  # CRUD for semesters, subjects, and archiving
+│   │   ├── attendance.ts # Attendance record management
+│   │   ├── analytics.ts  # Analytics & target calculation endpoints
+│   │   └── settings.ts   # Global configuration API
+│   ├── auth.ts           # BetterAuth configuration (Email/Google)
+│   └── index.ts          # Express server entry point
 ├── src/                    # React frontend
 │   ├── pages/
 │   │   ├── dashboard.tsx   # Main dashboard with overview
