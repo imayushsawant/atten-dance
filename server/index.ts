@@ -20,7 +20,7 @@ app.use(cors({
 app.use(express.json());
 
 // BetterAuth handler — must be before other /api routes
-app.all('/api/auth/{*splat}', (req, res) => {
+app.all(/^\/api\/auth\/.*/, (req, res) => {
   return toNodeHandler(auth)(req, res);
 });
 
