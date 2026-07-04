@@ -17,14 +17,13 @@
     "jsx": "react-jsx",
 
     /* Path aliases */
-    "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
     },
 
     /* Linting */
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true
   },

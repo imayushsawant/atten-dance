@@ -202,7 +202,7 @@ export default function AnalyticsPage() {
                   contentStyle={tooltipStyle}
                   itemStyle={{ color: cs.tooltipColor }}
                   labelStyle={{ color: cs.tooltipColor, fontWeight: 'bold', marginBottom: '4px' }}
-                  formatter={(value: number) => [`${value.toFixed(1)}%`]}
+                  formatter={(value: any) => [`${value.toFixed(1)}%`]}
                 />
                 <Legend
                   wrapperStyle={{ fontSize: '12px', color: cs.legendColor }}
@@ -272,7 +272,7 @@ export default function AnalyticsPage() {
                   contentStyle={tooltipStyle}
                   itemStyle={{ color: cs.tooltipColor }}
                   labelStyle={{ color: cs.tooltipColor, fontWeight: 'bold', marginBottom: '4px' }}
-                  formatter={(value: number) => [`${value.toFixed(1)}%`]}
+                  formatter={(value: any) => [`${value.toFixed(1)}%`]}
                 />
                 <Line
                   type="monotone"

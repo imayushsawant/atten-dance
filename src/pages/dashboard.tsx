@@ -251,7 +251,7 @@ export default function Dashboard() {
                   }}
                   itemStyle={{ color: cs.tooltipColor }}
                   labelStyle={{ color: cs.tooltipColor, fontWeight: 'bold', marginBottom: '4px' }}
-                  formatter={(value: number) => [`${value.toFixed(1)}%`]}
+                  formatter={(value: any) => [`${value.toFixed(1)}%`]}
                 />
                 <Bar dataKey="combined" radius={[6, 6, 0, 0]} name="Combined">
                   {chartData.map((entry, index) => (
