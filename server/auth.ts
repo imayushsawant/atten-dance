@@ -17,7 +17,7 @@ export const auth = betterAuth({
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     },
   },
-  trustedOrigins: ['http://localhost:5173'],
+  trustedOrigins: process.env.VITE_APP_URL ? [process.env.VITE_APP_URL, 'http://localhost:5173'] : ['http://localhost:5173'],
   user: {
     modelName: "users",
     additionalFields: {
