@@ -1,6 +1,6 @@
-import { db } from './index';
-import { semesters, subjects, attendanceRecords, settings } from './schema';
-import type { NewSemester, NewSubject, NewAttendanceRecord } from './schema';
+import { db } from './index.js';
+import { semesters, subjects, attendanceRecords, settings } from './schema.js';
+import type { NewSemester, NewSubject, NewAttendanceRecord } from './schema.js';
 import { eq, and, desc } from 'drizzle-orm';
 
 // ════════════════════════════════════════════════════════════

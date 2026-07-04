@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import { auth } from '../auth';
+import { auth } from '../auth.js';
 import { fromNodeHeaders } from 'better-auth/node';
 
 // Extend Express Request with user info

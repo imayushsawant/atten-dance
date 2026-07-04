@@ -2,12 +2,12 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import { toNodeHandler } from 'better-auth/node';
-import { auth } from './auth';
-import { requireAuth } from './middleware/auth';
-import semesterRoutes from './routes/semesters';
-import attendanceRoutes from './routes/attendance';
-import analyticsRoutes from './routes/analytics';
-import settingsRoutes from './routes/settings';
+import { auth } from './auth.js';
+import { requireAuth } from './middleware/auth.js';
+import semesterRoutes from './routes/semesters.js';
+import attendanceRoutes from './routes/attendance.js';
+import analyticsRoutes from './routes/analytics.js';
+import settingsRoutes from './routes/settings.js';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
