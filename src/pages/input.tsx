@@ -28,6 +28,7 @@ import {
   ChevronUp,
   ChevronLeft,
   ChevronRight,
+  Plus,
 } from 'lucide-react';
 import { api } from '@/lib/api';
 import type { Subject, AttendanceRecord } from '@/lib/api';
@@ -40,6 +41,7 @@ type EntryRow = {
   subjectName: string;
   type: 'lecture' | 'lab';
   status: EntryStatus;
+  count: number;
 };
 
 export default function InputPage() {
@@ -90,10 +92,10 @@ export default function InputPage() {
 
     for (const s of subjectList) {
       if (s.hasLecture && !loggedKeys.has(`${s.id}-lecture`)) {
-        rows.push({ subjectId: s.id, subjectName: s.name, type: 'lecture', status: null });
+        rows.push({ subjectId: s.id, subjectName: s.name, type: 'lecture', status: null, count: 1 });
       }
       if (s.hasLab && !loggedKeys.has(`${s.id}-lab`)) {
-        rows.push({ subjectId: s.id, subjectName: s.name, type: 'lab', status: null });
+        rows.push({ subjectId: s.id, subjectName: s.name, type: 'lab', status: null, count: 1 });
       }
     }
     return rows;
@@ -178,6 +180,26 @@ export default function InputPage() {
     setEntries((prev) => prev.map((e) => ({ ...e, status: null })));
   }
 
+  function incrementCount(subjectId: string, type: 'lecture' | 'lab') {
+    setEntries((prev) =>
+      prev.map((e) =>
+        e.subjectId === subjectId && e.type === type
+          ? { ...e, count: e.count + 1 }
+          : e
+      )
+    );
+  }
+
+  function decrementCount(subjectId: string, type: 'lecture' | 'lab') {
+    setEntries((prev) =>
+      prev.map((e) =>
+        e.subjectId === subjectId && e.type === type && e.count > 1
+          ? { ...e, count: e.count - 1 }
+          : e
+      )
+    );
+  }
+
   const lectureEntries = entries.filter((e) => e.type === 'lecture');
   const labEntries = entries.filter((e) => e.type === 'lab');
   const markedEntries = entries.filter((e) => e.status !== null);
@@ -187,15 +209,19 @@ export default function InputPage() {
     setSaving(true);
     setJustSaved(false);
     try {
-      await api.attendance.createBulk(
-        markedEntries.map((e) => ({
-          subjectId: e.subjectId,
-          semesterId: semesterId!,
-          type: e.type,
-          status: e.status!,
-          date,
-        }))
-      );
+      const payload = [];
+      for (const e of markedEntries) {
+        for (let i = 0; i < e.count; i++) {
+          payload.push({
+            subjectId: e.subjectId,
+            semesterId: semesterId!,
+            type: e.type,
+            status: e.status!,
+            date,
+          });
+        }
+      }
+      await api.attendance.createBulk(payload);
       // Re-load to hide submitted and move to 'logged' section
       await loadDayRecords();
       setJustSaved(true);
@@ -315,6 +341,26 @@ export default function InputPage() {
 
               {/* Action Buttons */}
               <div className="flex items-center gap-1.5 shrink-0">
+                {/* Count Controls */}
+                <div className="flex items-center rounded-lg bg-background border border-border h-9 mr-1 overflow-hidden">
+                  <button 
+                    onClick={() => decrementCount(entry.subjectId, entry.type)}
+                    disabled={entry.count <= 1}
+                    className="flex h-full w-8 items-center justify-center text-muted-foreground hover:bg-secondary transition-colors disabled:opacity-50"
+                  >
+                    <Minus className="h-3 w-3" />
+                  </button>
+                  <div className="flex h-full min-w-[20px] items-center justify-center text-xs font-semibold px-1">
+                    {entry.count}
+                  </div>
+                  <button 
+                    onClick={() => incrementCount(entry.subjectId, entry.type)}
+                    className="flex h-full w-8 items-center justify-center text-muted-foreground hover:bg-secondary transition-colors"
+                  >
+                    <Plus className="h-3 w-3" />
+                  </button>
+                </div>
+
                 <button
                   onClick={() => setEntryStatus(entry.subjectId, entry.type, 'attended')}
                   className={cn(
