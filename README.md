@@ -94,7 +94,7 @@ ceil((threshold × total - attended) / (1 - threshold))
 
 ```bash
 # Clone the repo
-git clone https://github.com/your-username/atten-dance.git
+git clone https://github.com/imayushsawant/atten-dance.git
 cd atten-dance
 
 # Install dependencies
