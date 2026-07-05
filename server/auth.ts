@@ -17,6 +17,10 @@ export const auth = betterAuth({
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     },
   },
+  accountLinking: {
+    enabled: true,
+    trustedProviders: ["google"],
+  },
   trustedOrigins: [
     'http://localhost:5173',
     'https://atten-dance.ayushsawant.dev',
