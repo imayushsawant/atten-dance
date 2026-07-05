@@ -37,6 +37,7 @@ export default function AppShell() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
   const { theme, setTheme, resolved } = useTheme();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   // Close sidebar on route change (mobile)
   useEffect(() => {
@@ -114,7 +115,7 @@ export default function AppShell() {
             <GraduationCap className="h-4.5 w-4.5" />
             Manage Semesters
           </NavLink>
-          <UserFooter />
+          <UserFooter onLoggingOut={() => setIsLoggingOut(true)} />
         </div>
       </aside>
 
@@ -127,7 +128,7 @@ export default function AppShell() {
       )}
 
       {/* Main content */}
-      <div className="flex flex-1 flex-col overflow-hidden">
+      <div className="flex flex-1 flex-col overflow-hidden relative">
         {/* Mobile header */}
         <header className="flex h-14 items-center justify-between border-b border-border px-4 lg:hidden">
           <div className="flex items-center gap-3">
@@ -150,12 +151,21 @@ export default function AppShell() {
             <Outlet />
           </div>
         </main>
+
+        {isLoggingOut && (
+          <div className="absolute inset-0 z-[100] flex items-center justify-center bg-background/80 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="flex flex-col items-center gap-4 rounded-2xl bg-card p-8 shadow-2xl border border-border">
+              <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+              <p className="text-lg font-semibold tracking-tight">Logging out...</p>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
-function UserFooter() {
+function UserFooter({ onLoggingOut }: { onLoggingOut: () => void }) {
   const { data: session } = useSession();
 
   if (!session?.user) return null;
@@ -188,7 +198,10 @@ function UserFooter() {
           <p className="truncate text-[11px] text-muted-foreground">{user.email}</p>
         </div>
         <button
-          onClick={() => signOut({ fetchOptions: { onSuccess: () => { window.location.href = '/login'; } } })}
+          onClick={async () => {
+            onLoggingOut();
+            await signOut({ fetchOptions: { onSuccess: () => { window.location.href = '/login'; } } });
+          }}
           className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
           title="Sign out"
         >
