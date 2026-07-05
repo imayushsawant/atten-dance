@@ -26,7 +26,7 @@ A sleek, dark-mode attendance tracker built for students who want to know exactl
 - **Deep Analytics**: Trend charts powered by Recharts detailing your attendance distribution, progress patterns, and habits over time.
 
 ### 📅 Log & Track Attendance
-- **Smart Input**: Mark lectures and labs as attended or skipped per day. Already-marked subjects collapse to avoid clutter.
+- **Smart Input**: Mark lectures and labs as attended or skipped per day. Easily log multiple occurrences of the same subject (e.g., 2 lectures in a day) with adjustable counts. Already-marked subjects collapse to avoid clutter.
 - **Calendar Integration**: Log attendance with visual cues — pre-marked dates show up right on the calendar to prevent double entries.
 - **History View**: Dedicated historical timeline of your attendance, letting you review exactly what happened on past days.
 
