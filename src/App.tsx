@@ -13,6 +13,7 @@ import SemesterList from '@/pages/semesters/semester-list';
 import CreateSemester from '@/pages/semesters/create-semester';
 import EditSemester from '@/pages/semesters/edit-semester';
 import LoginPage from '@/pages/login';
+import PredictorPage from '@/pages/predictor';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { data: session, isPending } = useSession();
@@ -55,6 +56,7 @@ export default function App() {
           <Route path="safe-skips" element={<SafeSkipsPage />} />
           <Route path="recovery" element={<RecoveryPage />} />
           <Route path="history" element={<HistoryPage />} />
+          <Route path="predictor" element={<PredictorPage />} />
           <Route path="settings" element={<SettingsPage />} />
           <Route path="semesters" element={<SemesterList />} />
           <Route path="semesters/new" element={<CreateSemester />} />

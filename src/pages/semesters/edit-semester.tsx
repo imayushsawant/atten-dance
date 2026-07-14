@@ -218,14 +218,6 @@ export default function EditSemester() {
                 Editing a subject's name here safely syncs it without losing its attendance logs.
               </p>
             </div>
-            <button
-              type="button"
-              onClick={addSubject}
-              className="flex items-center gap-1.5 rounded-lg bg-primary/15 px-3 py-1.5 text-xs font-medium text-primary hover:bg-primary/25 transition-colors shrink-0"
-            >
-              <Plus className="h-3.5 w-3.5" />
-              Add Subject
-            </button>
           </div>
 
           <div className="space-y-3">
@@ -284,6 +276,15 @@ export default function EditSemester() {
               </div>
             ))}
           </div>
+
+          <button
+            type="button"
+            onClick={addSubject}
+            className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg border-2 border-solid border-primary/30 bg-primary/5 px-4 py-3 text-sm font-medium text-primary hover:bg-primary/10 hover:border-primary/50 transition-colors"
+          >
+            <Plus className="h-4 w-4" />
+            Add Another Subject
+          </button>
         </div>
 
         {/* Error */}

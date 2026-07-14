@@ -15,6 +15,7 @@ import {
   Monitor,
   History as HistoryIcon,
   LogOut,
+  Wand2,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
@@ -30,6 +31,7 @@ const navItems = [
   { to: '/safe-skips', icon: ShieldCheck, label: 'Safe Skips' },
   { to: '/recovery', icon: HeartPulse, label: 'Recovery' },
   { to: '/history', icon: HistoryIcon, label: 'History' },
+  { to: '/predictor', icon: Wand2, label: 'Predictor' },
   { to: '/settings', icon: Settings, label: 'Settings' },
 ];
 
