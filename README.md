@@ -38,6 +38,10 @@ A sleek, dark-mode attendance tracker built for students who want to know exactl
   - **Dynamic Combinations**: Algorithm-generated recovery paths (e.g., "Attend 3 Lectures & 2 Labs → 76.54%").
   - **Custom Target Slider**: Simulate recovery strategies for any target percentage (50–100%).
 
+### 🔮 Attendance Predictor
+- **Global Simulators**: Test scenarios by globally adding skipped or attended lectures/labs to see the direct impact on your overall percentage.
+- **Subject-wise Prediction**: Interactive log-attendance style interface to precisely predict how bunking or attending specific upcoming classes will affect both that subject's attendance and your overall average.
+
 ### ⚙️ Semester & App Management
 - **Semester Lifecycle**: Fully manage semesters — create, edit details, and end them when the term is over.
 - **Flexible Subjects**: Setup classes with toggleable lecture/lab configurations.
@@ -148,6 +152,7 @@ atten-dance/
 │   │   ├── history.tsx     # Past attendance records tracker
 │   │   ├── safe-skips.tsx  # Safe skips calculator
 │   │   ├── recovery.tsx    # Recovery planner & combinations
+│   │   ├── predictor.tsx   # Interactive attendance predictor
 │   │   ├── analytics.tsx   # Charts & trends visualization
 │   │   ├── settings.tsx    # App settings & threshold configuration
 │   │   └── semesters/      # Semester management (create, edit, list)
