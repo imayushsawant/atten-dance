@@ -41,7 +41,7 @@ type EntryRow = {
   subjectName: string;
   type: 'lecture' | 'lab';
   status: EntryStatus;
-  count: number;
+  instanceId: string;
 };
 
 export default function InputPage() {
@@ -92,10 +92,10 @@ export default function InputPage() {
 
     for (const s of subjectList) {
       if (s.hasLecture && !loggedKeys.has(`${s.id}-lecture`)) {
-        rows.push({ subjectId: s.id, subjectName: s.name, type: 'lecture', status: null, count: 1 });
+        rows.push({ subjectId: s.id, subjectName: s.name, type: 'lecture', status: null, instanceId: crypto.randomUUID() });
       }
       if (s.hasLab && !loggedKeys.has(`${s.id}-lab`)) {
-        rows.push({ subjectId: s.id, subjectName: s.name, type: 'lab', status: null, count: 1 });
+        rows.push({ subjectId: s.id, subjectName: s.name, type: 'lab', status: null, instanceId: crypto.randomUUID() });
       }
     }
     return rows;
@@ -121,21 +121,41 @@ export default function InputPage() {
     }
   }
 
-  async function loadDayRecords() {
+  async function loadDayRecords(preserveUnmarked = false) {
     if (!semesterId) return;
     try {
       const records = await api.attendance.getByDate(semesterId, date);
       setDayRecords(records);
-      
-      // Update entries to only show subjects not yet logged today
+
       setEntries((prev) => {
-        // We preserve any 'status' the user has already tapped for items that remain unlogged
-        const newEntries = buildEntries(subjects, records);
-        return newEntries.map(ne => {
-          const existing = prev.find(p => p.subjectId === ne.subjectId && p.type === ne.type);
-          return existing ? { ...ne, status: existing.status } : ne;
-        });
+        if (preserveUnmarked) {
+          // After submit: keep unmarked entries, remove submitted ones
+          const loggedKeys = new Set(records.map(r => `${r.subjectId}-${r.type}`));
+          const remaining = prev.filter(p => p.status === null);
+          const existingKeys = new Set(remaining.map(e => `${e.subjectId}-${e.type}`));
+
+          // Add default rows for subject+types not logged and not already in entries
+          for (const s of subjects) {
+            if (s.hasLecture && !loggedKeys.has(`${s.id}-lecture`) && !existingKeys.has(`${s.id}-lecture`)) {
+              remaining.push({
+                subjectId: s.id, subjectName: s.name, type: 'lecture',
+                status: null, instanceId: crypto.randomUUID(),
+              });
+            }
+            if (s.hasLab && !loggedKeys.has(`${s.id}-lab`) && !existingKeys.has(`${s.id}-lab`)) {
+              remaining.push({
+                subjectId: s.id, subjectName: s.name, type: 'lab',
+                status: null, instanceId: crypto.randomUUID(),
+              });
+            }
+          }
+          return remaining;
+        }
+
+        // Fresh load (date change, initial): rebuild from scratch
+        return buildEntries(subjects, records);
       });
+
       // Also update logged dates if the current day has records or not
       setLoggedDates(prev => {
         const next = new Set(prev);
@@ -148,10 +168,10 @@ export default function InputPage() {
     }
   }
 
-  function setEntryStatus(subjectId: string, type: 'lecture' | 'lab', status: EntryStatus) {
+  function setEntryStatus(instanceId: string, status: EntryStatus) {
     setEntries((prev) =>
       prev.map((e) =>
-        e.subjectId === subjectId && e.type === type
+        e.instanceId === instanceId
           ? { ...e, status: e.status === status ? null : status }
           : e
       )
@@ -180,24 +200,58 @@ export default function InputPage() {
     setEntries((prev) => prev.map((e) => ({ ...e, status: null })));
   }
 
-  function incrementCount(subjectId: string, type: 'lecture' | 'lab') {
-    setEntries((prev) =>
-      prev.map((e) =>
-        e.subjectId === subjectId && e.type === type
-          ? { ...e, count: e.count + 1 }
-          : e
-      )
-    );
+  function addInstance(subjectId: string, subjectName: string, type: 'lecture' | 'lab') {
+    setEntries((prev) => {
+      // Insert the new instance right after the last instance of this subject+type
+      const lastIndex = prev.reduce((acc, e, i) =>
+        e.subjectId === subjectId && e.type === type ? i : acc, -1);
+      const newEntry: EntryRow = {
+        subjectId,
+        subjectName,
+        type,
+        status: null,
+        instanceId: crypto.randomUUID(),
+      };
+      if (lastIndex === -1) {
+        return [...prev, newEntry];
+      }
+      const result = [...prev];
+      result.splice(lastIndex + 1, 0, newEntry);
+      return result;
+    });
   }
 
-  function decrementCount(subjectId: string, type: 'lecture' | 'lab') {
-    setEntries((prev) =>
-      prev.map((e) =>
-        e.subjectId === subjectId && e.type === type && e.count > 1
-          ? { ...e, count: e.count - 1 }
-          : e
-      )
+  function removeInstance(instanceId: string) {
+    setEntries((prev) => prev.filter(e => e.instanceId !== instanceId));
+  }
+
+  function getEntryLabel(entry: EntryRow): string | null {
+    const loggedCount = dayRecords.filter(r =>
+      r.subjectId === entry.subjectId && r.type === entry.type
+    ).length;
+    const entryInstances = entries.filter(e =>
+      e.subjectId === entry.subjectId && e.type === entry.type
     );
+
+    if (loggedCount + entryInstances.length <= 1) return null;
+
+    const idx = entryInstances.findIndex(e => e.instanceId === entry.instanceId);
+    const ordinal = loggedCount + idx + 1;
+    return entry.type === 'lecture' ? `L${ordinal}` : `Lab ${ordinal}`;
+  }
+
+  function getRecordLabel(record: AttendanceRecord): string | null {
+    const sameRecords = dayRecords.filter(r =>
+      r.subjectId === record.subjectId && r.type === record.type
+    );
+    const entryCount = entries.filter(e =>
+      e.subjectId === record.subjectId && e.type === record.type
+    ).length;
+
+    if (sameRecords.length + entryCount <= 1) return null;
+
+    const index = sameRecords.findIndex(r => r.id === record.id);
+    return record.type === 'lecture' ? `L${index + 1}` : `Lab ${index + 1}`;
   }
 
   const lectureEntries = entries.filter((e) => e.type === 'lecture');
@@ -209,21 +263,16 @@ export default function InputPage() {
     setSaving(true);
     setJustSaved(false);
     try {
-      const payload = [];
-      for (const e of markedEntries) {
-        for (let i = 0; i < e.count; i++) {
-          payload.push({
-            subjectId: e.subjectId,
-            semesterId: semesterId!,
-            type: e.type,
-            status: e.status!,
-            date,
-          });
-        }
-      }
+      const payload = markedEntries.map(e => ({
+        subjectId: e.subjectId,
+        semesterId: semesterId!,
+        type: e.type,
+        status: e.status!,
+        date,
+      }));
       await api.attendance.createBulk(payload);
       // Re-load to hide submitted and move to 'logged' section
-      await loadDayRecords();
+      await loadDayRecords(true);
       setJustSaved(true);
       setTimeout(() => setJustSaved(false), 2500);
     } catch {
@@ -323,71 +372,83 @@ export default function InputPage() {
 
         {/* Entries */}
         <div className="glass rounded-xl overflow-hidden divide-y divide-border">
-          {sectionEntries.map((entry) => (
-            <div
-              key={`${entry.subjectId}-${entry.type}`}
-              className={cn(
-                'flex items-center gap-4 px-4 py-3.5 transition-colors',
-                entry.status === 'attended' && 'bg-success/[0.04]',
-                entry.status === 'skipped' && 'bg-danger/[0.04]'
-              )}
-            >
-              {/* Subject Name — prominent */}
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-foreground truncate">
-                  {entry.subjectName}
-                </p>
-              </div>
+          {sectionEntries.map((entry) => {
+            const label = getEntryLabel(entry);
+            const instancesOfKind = entries.filter(
+              e => e.subjectId === entry.subjectId && e.type === entry.type
+            );
+            const canRemove = instancesOfKind.length > 1;
 
-              {/* Action Buttons */}
-              <div className="flex items-center gap-1.5 shrink-0">
-                {/* Count Controls */}
-                <div className="flex items-center rounded-lg bg-background border border-border h-9 mr-1 overflow-hidden">
-                  <button 
-                    onClick={() => decrementCount(entry.subjectId, entry.type)}
-                    disabled={entry.count <= 1}
-                    className="flex h-full w-8 items-center justify-center text-muted-foreground hover:bg-secondary transition-colors disabled:opacity-50"
-                  >
-                    <Minus className="h-3 w-3" />
-                  </button>
-                  <div className="flex h-full min-w-[20px] items-center justify-center text-xs font-semibold px-1">
-                    {entry.count}
-                  </div>
-                  <button 
-                    onClick={() => incrementCount(entry.subjectId, entry.type)}
-                    className="flex h-full w-8 items-center justify-center text-muted-foreground hover:bg-secondary transition-colors"
-                  >
-                    <Plus className="h-3 w-3" />
-                  </button>
+            return (
+              <div
+                key={entry.instanceId}
+                className={cn(
+                  'flex items-center gap-4 px-4 py-3.5 transition-colors',
+                  entry.status === 'attended' && 'bg-success/[0.04]',
+                  entry.status === 'skipped' && 'bg-danger/[0.04]'
+                )}
+              >
+                {/* Subject Name + Badge */}
+                <div className="flex-1 min-w-0 flex items-center gap-2">
+                  <p className="text-sm font-semibold text-foreground truncate">
+                    {entry.subjectName}
+                  </p>
+                  {label && (
+                    <span className="shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-primary/10 text-primary">
+                      {label}
+                    </span>
+                  )}
                 </div>
 
-                <button
-                  onClick={() => setEntryStatus(entry.subjectId, entry.type, 'attended')}
-                  className={cn(
-                    'flex h-9 items-center gap-1.5 rounded-lg px-3.5 text-xs font-medium transition-all',
-                    entry.status === 'attended'
-                      ? 'bg-success text-success-foreground shadow-sm shadow-success/25'
-                      : 'bg-secondary text-muted-foreground hover:bg-success/15 hover:text-success'
+                {/* Action Buttons */}
+                <div className="flex items-center gap-1.5 shrink-0">
+                  {/* Remove instance (only when duplicates exist) */}
+                  {canRemove && (
+                    <button
+                      onClick={() => removeInstance(entry.instanceId)}
+                      className="flex h-9 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-danger/15 hover:text-danger transition-colors"
+                      title="Remove this instance"
+                    >
+                      <Minus className="h-3.5 w-3.5" />
+                    </button>
                   )}
-                >
-                  <Check className="h-3.5 w-3.5" />
-                  <span className="hidden sm:inline">Present</span>
-                </button>
-                <button
-                  onClick={() => setEntryStatus(entry.subjectId, entry.type, 'skipped')}
-                  className={cn(
-                    'flex h-9 items-center gap-1.5 rounded-lg px-3.5 text-xs font-medium transition-all',
-                    entry.status === 'skipped'
-                      ? 'bg-danger text-danger-foreground shadow-sm shadow-danger/25'
-                      : 'bg-secondary text-muted-foreground hover:bg-danger/15 hover:text-danger'
-                  )}
-                >
-                  <X className="h-3.5 w-3.5" />
-                  <span className="hidden sm:inline">Bunked</span>
-                </button>
+                  {/* Add another instance */}
+                  <button
+                    onClick={() => addInstance(entry.subjectId, entry.subjectName, entry.type)}
+                    className="flex h-9 w-8 items-center justify-center rounded-lg bg-secondary text-muted-foreground hover:bg-primary/15 hover:text-primary transition-colors"
+                    title={`Add another ${type}`}
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                  </button>
+
+                  <button
+                    onClick={() => setEntryStatus(entry.instanceId, 'attended')}
+                    className={cn(
+                      'flex h-9 items-center gap-1.5 rounded-lg px-3.5 text-xs font-medium transition-all',
+                      entry.status === 'attended'
+                        ? 'bg-success text-success-foreground shadow-sm shadow-success/25'
+                        : 'bg-secondary text-muted-foreground hover:bg-success/15 hover:text-success'
+                    )}
+                  >
+                    <Check className="h-3.5 w-3.5" />
+                    <span className="hidden sm:inline">Present</span>
+                  </button>
+                  <button
+                    onClick={() => setEntryStatus(entry.instanceId, 'skipped')}
+                    className={cn(
+                      'flex h-9 items-center gap-1.5 rounded-lg px-3.5 text-xs font-medium transition-all',
+                      entry.status === 'skipped'
+                        ? 'bg-danger text-danger-foreground shadow-sm shadow-danger/25'
+                        : 'bg-secondary text-muted-foreground hover:bg-danger/15 hover:text-danger'
+                    )}
+                  >
+                    <X className="h-3.5 w-3.5" />
+                    <span className="hidden sm:inline">Bunked</span>
+                  </button>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     );
@@ -597,45 +658,55 @@ export default function InputPage() {
 
           {showLogged && (
             <div className="divide-y divide-border border-t border-border">
-              {dayRecords.map((record) => (
-                <div
-                  key={record.id}
-                  className="flex items-center gap-3 px-5 py-3"
-                >
+              {dayRecords.map((record) => {
+                const label = getRecordLabel(record);
+                return (
                   <div
-                    className={cn(
-                      'flex h-7 w-7 items-center justify-center rounded-md',
-                      record.status === 'attended' ? 'bg-success/15' : 'bg-danger/15'
-                    )}
+                    key={record.id}
+                    className="flex items-center gap-3 px-5 py-3"
                   >
-                    {record.status === 'attended' ? (
-                      <Check className="h-3.5 w-3.5 text-success" />
-                    ) : (
-                      <X className="h-3.5 w-3.5 text-danger" />
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">
-                      {getSubjectName(record.subjectId)}
-                    </p>
-                    <p className="text-[10px] text-muted-foreground flex items-center gap-1.5 mt-0.5">
-                      {record.type === 'lecture' ? (
-                        <BookOpen className="h-2.5 w-2.5" />
-                      ) : (
-                        <FlaskConical className="h-2.5 w-2.5" />
+                    <div
+                      className={cn(
+                        'flex h-7 w-7 items-center justify-center rounded-md',
+                        record.status === 'attended' ? 'bg-success/15' : 'bg-danger/15'
                       )}
-                      {record.type === 'lecture' ? 'Lecture' : 'Lab'}
-                    </p>
+                    >
+                      {record.status === 'attended' ? (
+                        <Check className="h-3.5 w-3.5 text-success" />
+                      ) : (
+                        <X className="h-3.5 w-3.5 text-danger" />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-medium truncate">
+                          {getSubjectName(record.subjectId)}
+                        </p>
+                        {label && (
+                          <span className="shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-primary/10 text-primary">
+                            {label}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[10px] text-muted-foreground flex items-center gap-1.5 mt-0.5">
+                        {record.type === 'lecture' ? (
+                          <BookOpen className="h-2.5 w-2.5" />
+                        ) : (
+                          <FlaskConical className="h-2.5 w-2.5" />
+                        )}
+                        {record.type === 'lecture' ? 'Lecture' : 'Lab'}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => handleDeleteRecord(record.id)}
+                      className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-danger/15 hover:text-danger transition-colors"
+                      title="Delete to re-log"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
                   </div>
-                  <button
-                    onClick={() => handleDeleteRecord(record.id)}
-                    className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-danger/15 hover:text-danger transition-colors"
-                    title="Delete to re-log"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
