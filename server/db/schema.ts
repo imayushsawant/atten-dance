@@ -55,6 +55,7 @@ export const semesters = pgTable('semesters', {
   name: text('name').notNull(),
   isActive: boolean('is_active').notNull().default(false),
   threshold: integer('threshold').notNull().default(75),
+  shareCode: text('share_code').unique(),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 

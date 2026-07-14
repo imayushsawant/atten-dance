@@ -122,4 +122,49 @@ router.delete('/:id', async (req, res) => {
   res.json(deleted);
 });
 
+// PUT /api/semesters/:id/share — get or generate a share code
+router.put('/:id/share', async (req, res) => {
+  let semester = await queries.getSemesterById(req.params.id);
+  if (!semester) return res.status(404).json({ error: 'Semester not found' });
+  
+  if (!semester.shareCode) {
+    const shareCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+    semester = await queries.updateSemester(req.params.id, { shareCode });
+  }
+  
+  res.json({ shareCode: semester.shareCode });
+});
+
+// POST /api/semesters/import — import a semester using a share code
+router.post('/import', async (req, res) => {
+  const { shareCode } = req.body;
+  if (!shareCode) return res.status(400).json({ error: 'shareCode is required' });
+
+  const originalSemester = await queries.getSemesterByShareCode(shareCode);
+  if (!originalSemester) return res.status(404).json({ error: 'Invalid share code' });
+
+  const originalSubjects = await queries.getSubjectsBySemester(originalSemester.id);
+
+  const semesterId = randomUUID();
+  const newSemester = await queries.createSemester({
+    id: semesterId,
+    userId: req.user!.id,
+    name: originalSemester.name,
+    threshold: originalSemester.threshold,
+    isActive: false,
+  });
+
+  const createdSubjects = await queries.createSubjects(
+    originalSubjects.map(s => ({
+      id: randomUUID(),
+      semesterId,
+      name: s.name,
+      hasLecture: s.hasLecture,
+      hasLab: s.hasLab,
+    }))
+  );
+
+  res.status(201).json({ ...newSemester, subjects: createdSubjects });
+});
+
 export default router;

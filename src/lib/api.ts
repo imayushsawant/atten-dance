@@ -95,6 +95,10 @@ export const api = {
       request<Semester>(`/semesters/${id}/deactivate`, { method: 'PUT' }),
     updateSubjects: (id: string, subjects: { id?: string; name: string; hasLecture: boolean; hasLab: boolean }[]) =>
       request<Subject[]>(`/semesters/${id}/subjects`, { method: 'PUT', body: JSON.stringify({ subjects }) }),
+    share: (id: string) =>
+      request<{ shareCode: string }>(`/semesters/${id}/share`, { method: 'PUT' }),
+    import: (shareCode: string) =>
+      request<Semester & { subjects: Subject[] }>('/semesters/import', { method: 'POST', body: JSON.stringify({ shareCode }) }),
     delete: (id: string) =>
       request<Semester>(`/semesters/${id}`, { method: 'DELETE' }),
   },

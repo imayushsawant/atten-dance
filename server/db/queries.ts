@@ -16,6 +16,11 @@ export async function getSemesterById(id: string) {
   return rows[0];
 }
 
+export async function getSemesterByShareCode(shareCode: string) {
+  const rows = await db.select().from(semesters).where(eq(semesters.shareCode, shareCode));
+  return rows[0];
+}
+
 export async function getActiveSemester(userId: string) {
   const rows = await db.select().from(semesters).where(
     and(eq(semesters.userId, userId), eq(semesters.isActive, true))

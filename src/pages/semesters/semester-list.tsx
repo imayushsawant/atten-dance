@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link } from 'react-router';
-import { Plus, Trash2, Check, GraduationCap, BookOpen, FlaskConical, Edit3, PowerOff } from 'lucide-react';
+import { Plus, Trash2, Check, GraduationCap, BookOpen, Edit3, PowerOff, Share2, Download, Copy } from 'lucide-react';
 import { api } from '@/lib/api';
 import type { Semester } from '@/lib/api';
 
@@ -10,6 +10,11 @@ export default function SemesterList() {
   const [loading, setLoading] = useState(true);
   const [endConfirmId, setEndConfirmId] = useState<string | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [shareCode, setShareCode] = useState<string | null>(null);
+  const [importModalOpen, setImportModalOpen] = useState(false);
+  const [importCode, setImportCode] = useState('');
+  const [importError, setImportError] = useState('');
+  const [importing, setImporting] = useState(false);
 
   useEffect(() => {
     loadSemesters();
@@ -57,6 +62,32 @@ export default function SemesterList() {
     }
   }
 
+  async function handleShare(id: string) {
+    try {
+      const res = await api.semesters.share(id);
+      setShareCode(res.shareCode);
+    } catch {
+      // ignore
+    }
+  }
+
+  async function handleImport(e: React.FormEvent) {
+    e.preventDefault();
+    if (!importCode.trim()) return;
+    setImporting(true);
+    setImportError('');
+    try {
+      await api.semesters.import(importCode.trim());
+      setImportModalOpen(false);
+      setImportCode('');
+      await loadSemesters();
+    } catch (err: any) {
+      setImportError(err.message || 'Failed to import semester');
+    } finally {
+      setImporting(false);
+    }
+  }
+
   if (loading) {
     return (
       <div className="space-y-4">
@@ -75,13 +106,22 @@ export default function SemesterList() {
           <h1 className="text-2xl font-bold tracking-tight">Semesters</h1>
           <p className="text-muted-foreground">Manage your semesters</p>
         </div>
-        <Link
-          to="/semesters/new"
-          className="flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-all hover:opacity-90"
-        >
-          <Plus className="h-4 w-4" />
-          New Semester
-        </Link>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setImportModalOpen(true)}
+            className="flex items-center gap-1.5 rounded-lg border border-border bg-secondary px-4 py-2.5 text-sm font-semibold text-foreground transition-all hover:bg-secondary/80"
+          >
+            <Download className="h-4 w-4" />
+            Import
+          </button>
+          <Link
+            to="/semesters/new"
+            className="flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-all hover:opacity-90"
+          >
+            <Plus className="h-4 w-4" />
+            New Semester
+          </Link>
+        </div>
       </div>
 
       {semesters.length === 0 ? (
@@ -136,6 +176,13 @@ export default function SemesterList() {
                   </div>
                 </div>
                 <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={() => handleShare(sem.id)}
+                    className="flex h-8 items-center gap-1.5 rounded-md bg-secondary px-3 text-xs font-medium text-foreground hover:bg-secondary/80 transition-colors"
+                  >
+                    <Share2 className="h-3.5 w-3.5" />
+                    Share
+                  </button>
                   <Link
                     to={`/semesters/${sem.id}/edit`}
                     className="flex h-8 items-center gap-1.5 rounded-md bg-secondary px-3 text-xs font-medium text-foreground hover:bg-secondary/80 transition-colors"
@@ -223,6 +270,89 @@ export default function SemesterList() {
                 Delete
               </button>
             </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {shareCode && createPortal(
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background/80 backdrop-blur-sm p-4">
+          <div className="glass w-full max-w-sm rounded-2xl p-6 text-center shadow-2xl border border-border mt-4">
+            <Share2 className="h-10 w-10 text-primary mx-auto mb-4" />
+            <h2 className="text-lg font-bold mb-2">Share Semester</h2>
+            <p className="text-sm text-muted-foreground mb-6">
+              Give this code to your friends so they can import your semester structure.
+            </p>
+            <div className="flex items-center gap-2 mb-6">
+              <code className="flex-1 bg-secondary py-3 px-4 rounded-lg text-lg font-mono tracking-widest text-foreground font-bold">
+                {shareCode}
+              </code>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(shareCode);
+                  // Optional: add a tiny toast or visual feedback here
+                }}
+                className="flex h-12 w-12 items-center justify-center rounded-lg bg-secondary text-foreground hover:bg-primary/15 hover:text-primary transition-colors"
+                title="Copy to clipboard"
+              >
+                <Copy className="h-5 w-5" />
+              </button>
+            </div>
+            <button
+              onClick={() => setShareCode(null)}
+              className="w-full rounded-lg bg-primary text-primary-foreground py-2.5 text-sm font-bold hover:opacity-90 transition-opacity"
+            >
+              Done
+            </button>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {importModalOpen && createPortal(
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background/80 backdrop-blur-sm p-4">
+          <div className="glass w-full max-w-sm rounded-2xl p-6 shadow-2xl border border-border mt-4">
+            <div className="text-center mb-6">
+              <Download className="h-10 w-10 text-primary mx-auto mb-4" />
+              <h2 className="text-lg font-bold mb-2">Import Semester</h2>
+              <p className="text-sm text-muted-foreground">
+                Enter a share code from a friend to copy their semester structure.
+              </p>
+            </div>
+            <form onSubmit={handleImport}>
+              <input
+                type="text"
+                placeholder="Enter 6-character code"
+                value={importCode}
+                onChange={(e) => setImportCode(e.target.value.toUpperCase())}
+                className="w-full rounded-lg border border-border bg-background px-4 py-3 text-center text-lg font-mono tracking-widest uppercase outline-none focus:border-primary focus:ring-1 focus:ring-primary mb-2"
+                maxLength={6}
+                required
+              />
+              {importError && (
+                <p className="text-sm text-danger text-center mb-4">{importError}</p>
+              )}
+              <div className="flex gap-3 mt-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setImportModalOpen(false);
+                    setImportCode('');
+                    setImportError('');
+                  }}
+                  className="flex-1 rounded-lg border border-border py-2.5 text-sm font-medium hover:bg-secondary transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={importing || !importCode.trim()}
+                  className="flex-1 rounded-lg bg-primary text-primary-foreground py-2.5 text-sm font-bold hover:opacity-90 transition-opacity disabled:opacity-50"
+                >
+                  {importing ? 'Importing...' : 'Import'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>,
         document.body
