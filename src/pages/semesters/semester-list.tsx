@@ -128,14 +128,24 @@ export default function SemesterList() {
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <GraduationCap className="h-12 w-12 text-muted-foreground mb-4" />
           <p className="text-lg font-medium mb-1">No semesters yet</p>
-          <p className="text-sm text-muted-foreground mb-6">Create your first semester to start tracking</p>
+          <p className="text-sm text-muted-foreground mb-8">Create your first semester to start tracking</p>
           <Link
             to="/semesters/new"
-            className="flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground"
+            className="flex items-center gap-2 rounded-xl bg-primary px-8 py-3.5 text-base font-bold text-primary-foreground shadow-lg hover:opacity-90 transition-all"
           >
-            <Plus className="h-4 w-4" />
+            <Plus className="h-5 w-5" />
             Create Semester
           </Link>
+          <div className="mt-6 flex flex-col items-center gap-1">
+            <span className="text-xs text-muted-foreground">or</span>
+            <button
+              onClick={() => setImportModalOpen(true)}
+              className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <Download className="h-3.5 w-3.5" />
+              Import semester from a friend
+            </button>
+          </div>
         </div>
       ) : (
         <div className="space-y-3">

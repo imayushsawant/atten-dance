@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router';
+import { createPortal } from 'react-dom';
+import { Link, useNavigate } from 'react-router';
 import {
   BarChart3,
   PenLine,
@@ -9,6 +10,8 @@ import {
   BookOpen,
   FlaskConical,
   GraduationCap,
+  Download,
+  Copy,
 } from 'lucide-react';
 import { api } from '@/lib/api';
 import type { Analytics } from '@/lib/api';
@@ -37,9 +40,14 @@ function getChartStyles(resolved: 'dark' | 'light') {
 }
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   const [analytics, setAnalytics] = useState<Analytics | null>(null);
   const [loading, setLoading] = useState(true);
   const [noSemester, setNoSemester] = useState(false);
+  const [importModalOpen, setImportModalOpen] = useState(false);
+  const [importCode, setImportCode] = useState('');
+  const [importError, setImportError] = useState('');
+  const [importing, setImporting] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -62,6 +70,23 @@ export default function Dashboard() {
     }
   }
 
+  async function handleImport(e: React.FormEvent) {
+    e.preventDefault();
+    if (!importCode.trim()) return;
+    setImporting(true);
+    setImportError('');
+    try {
+      await api.semesters.import(importCode.trim());
+      setImportModalOpen(false);
+      setImportCode('');
+      navigate('/semesters');
+    } catch (err: any) {
+      setImportError(err.message || 'Failed to import semester');
+    } finally {
+      setImporting(false);
+    }
+  }
+
   if (loading) {
     return (
       <div className="space-y-6">
@@ -78,21 +103,82 @@ export default function Dashboard() {
 
   if (noSemester) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
-        <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-primary/10 mb-6">
-          <GraduationCap className="h-10 w-10 text-primary" />
+      <>
+        <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
+          <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-primary/10 mb-6">
+            <GraduationCap className="h-10 w-10 text-primary" />
+          </div>
+          <h1 className="text-3xl font-bold mb-2">Welcome to Atten-Dance</h1>
+          <p className="text-muted-foreground mb-1 text-lg">Because college makes you dance for attendance 💃</p>
+          <p className="text-muted-foreground mb-8">Create your first semester to get started.</p>
+          <Link
+            to="/semesters/new"
+            className="inline-flex items-center gap-2 rounded-xl bg-primary px-8 py-3.5 text-base font-bold text-primary-foreground shadow-lg transition-all hover:opacity-90 glow-primary"
+          >
+            <GraduationCap className="h-5 w-5" />
+            Create Semester
+          </Link>
+          <div className="mt-6 flex flex-col items-center gap-1">
+            <span className="text-xs text-muted-foreground">or</span>
+            <button
+              onClick={() => setImportModalOpen(true)}
+              className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <Download className="h-3.5 w-3.5" />
+              Import semester from a friend
+            </button>
+          </div>
         </div>
-        <h1 className="text-3xl font-bold mb-2">Welcome to Atten-Dance</h1>
-        <p className="text-muted-foreground mb-1 text-lg">Because college makes you dance for attendance 💃</p>
-        <p className="text-muted-foreground mb-8">Create your first semester to get started.</p>
-        <Link
-          to="/semesters/new"
-          className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition-all hover:opacity-90 glow-primary"
-        >
-          <GraduationCap className="h-4 w-4" />
-          Create Semester
-        </Link>
-      </div>
+
+        {importModalOpen && createPortal(
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background/80 backdrop-blur-sm p-4">
+            <div className="glass w-full max-w-sm rounded-2xl p-6 shadow-2xl border border-border mt-4">
+              <div className="text-center mb-6">
+                <Download className="h-10 w-10 text-primary mx-auto mb-4" />
+                <h2 className="text-lg font-bold mb-2">Import Semester</h2>
+                <p className="text-sm text-muted-foreground">
+                  Enter a share code from a friend to copy their semester structure.
+                </p>
+              </div>
+              <form onSubmit={handleImport}>
+                <input
+                  type="text"
+                  placeholder="Enter 6-character code"
+                  value={importCode}
+                  onChange={(e) => setImportCode(e.target.value.toUpperCase())}
+                  className="w-full rounded-lg border border-border bg-background px-4 py-3 text-center text-lg font-mono tracking-widest uppercase outline-none focus:border-primary focus:ring-1 focus:ring-primary mb-2"
+                  maxLength={6}
+                  required
+                />
+                {importError && (
+                  <p className="text-sm text-danger text-center mb-4">{importError}</p>
+                )}
+                <div className="flex gap-3 mt-4">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setImportModalOpen(false);
+                      setImportCode('');
+                      setImportError('');
+                    }}
+                    className="flex-1 rounded-lg border border-border py-2.5 text-sm font-medium hover:bg-secondary transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={importing || !importCode.trim()}
+                    className="flex-1 rounded-lg bg-primary text-primary-foreground py-2.5 text-sm font-bold hover:opacity-90 transition-opacity disabled:opacity-50"
+                  >
+                    {importing ? 'Importing...' : 'Import'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>,
+          document.body
+        )}
+      </>
     );
   }
 
