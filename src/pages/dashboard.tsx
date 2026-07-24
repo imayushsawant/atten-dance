@@ -225,8 +225,8 @@ export default function Dashboard() {
         {/* Massive Overall Hero */}
         <Link to="/analytics" className="relative flex flex-col items-center justify-center p-8 lg:w-1/3 group hover:scale-[1.02] transition-transform duration-300">
           <div className="absolute inset-0 rounded-[3rem] bg-card opacity-5 blur-3xl transition-all duration-700 group-hover:opacity-10"
-               style={{ backgroundColor: overall.percentage >= threshold ? 'var(--color-success)' : 'var(--color-danger)' }} />
-          
+            style={{ backgroundColor: overall.percentage >= threshold ? 'var(--color-success)' : 'var(--color-danger)' }} />
+
           <div className="relative z-10 text-center space-y-2">
             <span className="text-sm font-bold uppercase tracking-widest text-muted-foreground group-hover:text-foreground transition-colors">
               Overall
@@ -290,7 +290,7 @@ export default function Dashboard() {
           </Link>
 
           {/* Total Subjects */}
-          <Link to="/calendar" className="glass rounded-3xl p-6 block hover:scale-[1.02] transition-transform duration-300 group">
+          <Link to="/history" className="glass rounded-3xl p-6 block hover:scale-[1.02] transition-transform duration-300 group">
             <div className="flex items-center gap-3 mb-6">
               <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/10 group-hover:glow-primary transition-all">
                 <FlaskConical className="h-5 w-5 text-primary" />
@@ -421,10 +421,10 @@ export default function Dashboard() {
                 <h3 className="text-sm font-semibold truncate group-hover:text-primary transition-colors">{s.subjectName}</h3>
                 <span
                   className={`text-xs font-bold px-2 py-0.5 rounded-full ${s.combined.percentage >= threshold
-                      ? 'bg-success/15 text-success'
-                      : s.combined.percentage >= threshold - 10
-                        ? 'bg-warning/15 text-warning'
-                        : 'bg-danger/15 text-danger'
+                    ? 'bg-success/15 text-success'
+                    : s.combined.percentage >= threshold - 10
+                      ? 'bg-warning/15 text-warning'
+                      : 'bg-danger/15 text-danger'
                     }`}
                 >
                   {s.combined.percentage.toFixed(1)}%
