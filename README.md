@@ -18,12 +18,18 @@ A sleek, dark-mode attendance tracker built for students who want to know exactl
 ## ✨ Features
 
 ### 🎨 Stunning UI & Design
-- **Glassmorphism Theme**: Custom dark-mode interface featuring frosted glass panels and subtle dynamic glow effects.
+- **Glassmorphism Theme**: Custom dark/light-mode interface featuring frosted glass panels and subtle dynamic glow effects.
 - **Responsive Layout**: Integrated navigation shell with a custom logo that seamlessly adapts to mobile and desktop screens.
 
+### 🔐 Authentication
+- **Email & Password**: Sign up or sign in with a traditional email/password flow.
+- **Google OAuth**: One-click sign-in via Google for seamless onboarding.
+- **Session-based Auth**: Powered by BetterAuth with secure, server-side session management.
+
 ### 📊 Dashboard & Analytics
-- **Dashboard Overview**: Overall attendance percentage (averaged across lectures & labs) and subject-wise visual progress bars.
+- **Dashboard Overview**: Overall attendance percentage (averaged across lectures & labs) and subject-wise visual progress bars with color-coded status indicators.
 - **Deep Analytics**: Trend charts powered by Recharts detailing your attendance distribution, progress patterns, and habits over time.
+- **Quick Actions**: One-tap navigation to log attendance, view analytics, or check safe skips.
 
 ### 📅 Log & Track Attendance
 - **Smart Input**: Mark lectures and labs as attended or skipped per day. Easily log multiple occurrences of the same subject (e.g., 2 lectures in a day) with adjustable counts. Already-marked subjects collapse to avoid clutter.
@@ -39,13 +45,20 @@ A sleek, dark-mode attendance tracker built for students who want to know exactl
   - **Custom Target Slider**: Simulate recovery strategies for any target percentage (50–100%).
 
 ### 🔮 Attendance Predictor
-- **Global Simulators**: Test scenarios by globally adding skipped or attended lectures/labs to see the direct impact on your overall percentage.
-- **Subject-wise Prediction**: Interactive log-attendance style interface to precisely predict how bunking or attending specific upcoming classes will affect both that subject's attendance and your overall average.
+- **Overall Mode**: Global simulators to test scenarios by adding skipped or attended lectures/labs and see the direct impact on your overall percentage.
+- **Subject Mode**: Interactive log-attendance style interface to precisely predict how bunking or attending specific upcoming classes will affect both that subject's attendance and your overall average.
+- **Live Diff**: Side-by-side comparison of current vs. predicted percentages with color-coded deltas.
+
+### 🤝 Semester Sharing
+- **Share Codes**: Generate a unique 6-character code for any semester and share it with friends.
+- **One-click Import**: Friends can import your semester structure (name, subjects, threshold) using the share code — no manual setup required.
+- **Import from Dashboard**: New users can import a semester right from the welcome screen, or from the semesters management page.
 
 ### ⚙️ Semester & App Management
-- **Semester Lifecycle**: Fully manage semesters — create, edit details, and end them when the term is over.
+- **Semester Lifecycle**: Fully manage semesters — create, edit details, activate, deactivate, and delete them.
 - **Flexible Subjects**: Setup classes with toggleable lecture/lab configurations.
-- **Custom Thresholds**: Configure your required attendance threshold globally (e.g., 75%, 80%).
+- **Custom Thresholds**: Configure your required attendance threshold per semester (e.g., 75%, 80%).
+- **Dark/Light Mode**: System-aware theme with manual override.
 
 ---
 
@@ -82,8 +95,8 @@ ceil((threshold × total - attended) / (1 - threshold))
 | Backend     | Express 5 (Vercel Serverless)     |
 | Database    | PostgreSQL (Supabase)             |
 | ORM         | Drizzle ORM                       |
-| Auth        | BetterAuth (Email & Google)       |
-| Build       | Vite 8                            |
+| Auth        | BetterAuth (Email & Google OAuth) |
+| Build       | Vite 8, TypeScript 6              |
 | Deployment  | Vercel                            |
 
 ---
@@ -105,7 +118,10 @@ cd atten-dance
 pnpm install
 
 # Setup Environment Variables (Copy .env.example to .env)
-# You will need a Supabase PostgreSQL URL and BetterAuth Secrets
+# You will need:
+#   - A Supabase PostgreSQL DATABASE_URL
+#   - A BETTER_AUTH_SECRET (random string)
+#   - Google OAuth Client ID & Secret (for Google sign-in)
 cp .env.example .env
 
 # Push the database schema to Supabase
@@ -117,12 +133,18 @@ pnpm dev
 
 The app will be available at **http://localhost:5173**.
 
-### Build for Production
+### Available Scripts
 
-```bash
-pnpm build
-pnpm preview
-```
+| Command             | Description                                    |
+|---------------------|------------------------------------------------|
+| `pnpm dev`          | Start frontend (Vite) + backend (Express) concurrently |
+| `pnpm dev:client`   | Start only the Vite frontend                   |
+| `pnpm dev:server`   | Start only the Express backend                 |
+| `pnpm build`        | Build the frontend for production              |
+| `pnpm preview`      | Preview the production build locally           |
+| `pnpm db:generate`  | Generate Drizzle ORM migrations                |
+| `pnpm db:push`      | Push schema changes to the database            |
+| `pnpm db:studio`    | Open Drizzle Studio (database GUI)             |
 
 ---
 
@@ -130,23 +152,26 @@ pnpm preview
 
 ```
 atten-dance/
-├── api/                  # Vercel Serverless Function entry point
-│   └── index.ts        
-├── server/               # Express backend
+├── api/                    # Vercel Serverless Function entry point
+│   └── index.ts
+├── server/                 # Express backend
 │   ├── db/
-│   │   ├── schema.ts     # Drizzle schema (auth, semesters, subjects, attendance)
-│   │   ├── queries.ts    # DB queries, analytics, recovery math
-│   │   └── index.ts      # Supabase PostgreSQL connection
+│   │   ├── schema.ts       # Drizzle schema (auth, semesters, subjects, attendance)
+│   │   ├── queries.ts      # DB queries, analytics, recovery math
+│   │   └── index.ts        # Supabase PostgreSQL connection
+│   ├── middleware/
+│   │   └── auth.ts         # Session validation middleware
 │   ├── routes/
-│   │   ├── semesters.ts  # CRUD for semesters, subjects, and archiving
-│   │   ├── attendance.ts # Attendance record management
-│   │   ├── analytics.ts  # Analytics & target calculation endpoints
-│   │   └── settings.ts   # Global configuration API
-│   ├── auth.ts           # BetterAuth configuration (Email/Google)
-│   └── index.ts          # Express server entry point
+│   │   ├── semesters.ts    # CRUD for semesters, subjects, sharing & import
+│   │   ├── attendance.ts   # Attendance record management
+│   │   ├── analytics.ts    # Analytics & target calculation endpoints
+│   │   └── settings.ts     # Global configuration API
+│   ├── auth.ts             # BetterAuth configuration (Email/Google)
+│   └── index.ts            # Express server entry point
 ├── src/                    # React frontend
 │   ├── pages/
-│   │   ├── dashboard.tsx   # Main dashboard with overview
+│   │   ├── login.tsx       # Authentication (Email + Google OAuth)
+│   │   ├── dashboard.tsx   # Main dashboard with overview & charts
 │   │   ├── input.tsx       # Mark attendance with calendar
 │   │   ├── calendar.tsx    # Monthly calendar view
 │   │   ├── history.tsx     # Past attendance records tracker
@@ -155,12 +180,23 @@ atten-dance/
 │   │   ├── predictor.tsx   # Interactive attendance predictor
 │   │   ├── analytics.tsx   # Charts & trends visualization
 │   │   ├── settings.tsx    # App settings & threshold configuration
-│   │   └── semesters/      # Semester management (create, edit, list)
-│   ├── components/         # Reusable UI components & app shell
-│   ├── lib/                # API client & TypeScript types
-│   └── main.tsx            # App entry with routing
+│   │   └── semesters/      # Semester management (create, edit, list, share)
+│   ├── components/
+│   │   ├── layout/
+│   │   │   └── app-shell.tsx   # Navigation shell with sidebar & mobile nav
+│   │   └── logo.tsx            # Custom SVG logo component
+│   ├── lib/
+│   │   ├── api.ts              # API client & TypeScript types
+│   │   ├── auth-client.ts      # BetterAuth client instance
+│   │   ├── theme-provider.tsx  # Dark/light theme context provider
+│   │   └── utils.ts            # Utility functions (cn, etc.)
+│   ├── assets/                 # Static assets (SVG logo, etc.)
+│   └── main.tsx                # App entry with routing
+├── drizzle/                    # Generated migrations
 ├── package.json
 ├── vite.config.ts
+├── drizzle.config.ts
+├── vercel.json
 └── tsconfig.json
 ```
 
