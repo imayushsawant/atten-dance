@@ -16,8 +16,6 @@ A sleek, dark-mode attendance tracker built for students who want to know exactl
 ---
 
 ##  Features
-
-
 ###  Authentication
 - **Email & Password**: Sign up or sign in with a traditional email/password flow.
 - **Google OAuth**: One-click sign-in via Google for seamless onboarding.
