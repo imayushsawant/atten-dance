@@ -15,28 +15,25 @@ A sleek, dark-mode attendance tracker built for students who want to know exactl
 
 ---
 
-## ✨ Features
+##  Features
 
-### 🎨 Stunning UI & Design
-- **Glassmorphism Theme**: Custom dark/light-mode interface featuring frosted glass panels and subtle dynamic glow effects.
-- **Responsive Layout**: Integrated navigation shell with a custom logo that seamlessly adapts to mobile and desktop screens.
 
-### 🔐 Authentication
+###  Authentication
 - **Email & Password**: Sign up or sign in with a traditional email/password flow.
 - **Google OAuth**: One-click sign-in via Google for seamless onboarding.
 - **Session-based Auth**: Powered by BetterAuth with secure, server-side session management.
 
-### 📊 Dashboard & Analytics
+###  Dashboard & Analytics
 - **Dashboard Overview**: Overall attendance percentage (averaged across lectures & labs) and subject-wise visual progress bars with color-coded status indicators.
 - **Deep Analytics**: Trend charts powered by Recharts detailing your attendance distribution, progress patterns, and habits over time.
 - **Quick Actions**: One-tap navigation to log attendance, view analytics, or check safe skips.
 
-### 📅 Log & Track Attendance
+###  Log & Track Attendance
 - **Smart Input**: Mark lectures and labs as attended or skipped per day. Easily log multiple occurrences of the same subject (e.g., 2 lectures in a day) with adjustable counts. Already-marked subjects collapse to avoid clutter.
 - **Calendar Integration**: Log attendance with visual cues — pre-marked dates show up right on the calendar to prevent double entries.
 - **History View**: Dedicated historical timeline of your attendance, letting you review exactly what happened on past days.
 
-### 🛡️ Safe Skips & Target Planning
+###  Safe Skips & Target Planning
 - **Safe Skips Calculator**: Know exactly how many lectures/labs you can still skip per subject without dropping below your minimum threshold.
 - **Recovery Planner**:
   - **Status Banner**: Overall status with exact percentage deficit/surplus.
@@ -44,17 +41,17 @@ A sleek, dark-mode attendance tracker built for students who want to know exactl
   - **Dynamic Combinations**: Algorithm-generated recovery paths (e.g., "Attend 3 Lectures & 2 Labs → 76.54%").
   - **Custom Target Slider**: Simulate recovery strategies for any target percentage (50–100%).
 
-### 🔮 Attendance Predictor
+###  Attendance Predictor
 - **Overall Mode**: Global simulators to test scenarios by adding skipped or attended lectures/labs and see the direct impact on your overall percentage.
 - **Subject Mode**: Interactive log-attendance style interface to precisely predict how bunking or attending specific upcoming classes will affect both that subject's attendance and your overall average.
 - **Live Diff**: Side-by-side comparison of current vs. predicted percentages with color-coded deltas.
 
-### 🤝 Semester Sharing
+###  Semester Sharing
 - **Share Codes**: Generate a unique 6-character code for any semester and share it with friends.
 - **One-click Import**: Friends can import your semester structure (name, subjects, threshold) using the share code — no manual setup required.
 - **Import from Dashboard**: New users can import a semester right from the welcome screen, or from the semesters management page.
 
-### ⚙️ Semester & App Management
+###  Semester & App Management
 - **Semester Lifecycle**: Fully manage semesters — create, edit details, activate, deactivate, and delete them.
 - **Flexible Subjects**: Setup classes with toggleable lecture/lab configurations.
 - **Custom Thresholds**: Configure your required attendance threshold per semester (e.g., 75%, 80%).
@@ -62,7 +59,7 @@ A sleek, dark-mode attendance tracker built for students who want to know exactl
 
 ---
 
-## 🧮 How the Math Works
+##  How the Math Works
 
 **Overall Attendance** is calculated as the **average of total lecture % and total lab %** — not a flat session count. This matches how most Indian colleges weigh attendance:
 
@@ -86,7 +83,7 @@ ceil((threshold × total - attended) / (1 - threshold))
 
 ---
 
-## 🛠️ Tech Stack
+##  Tech Stack
 
 | Layer       | Technology                        |
 |-------------|-----------------------------------|
@@ -101,7 +98,7 @@ ceil((threshold × total - attended) / (1 - threshold))
 
 ---
 
-## 🚀 Getting Started
+##  Getting Started
 
 ### Prerequisites
 - [Node.js](https://nodejs.org/) (v20+)
@@ -148,7 +145,7 @@ The app will be available at **http://localhost:5173**.
 
 ---
 
-## 📁 Project Structure
+##  Project Structure
 
 ```
 atten-dance/
