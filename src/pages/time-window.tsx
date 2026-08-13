@@ -115,7 +115,7 @@ function CalendarPicker({
   const selectedDate = value ? new Date(value + 'T00:00:00') : null;
 
   return (
-    <div className="flex-1 space-y-1.5 relative" ref={containerRef}>
+    <div className={cn("flex-1 space-y-1.5 relative", open && "z-50")} ref={containerRef}>
       <label htmlFor={id} className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
         {label}
       </label>
