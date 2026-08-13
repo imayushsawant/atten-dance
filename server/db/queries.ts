@@ -1,6 +1,6 @@
 import { db } from './index.js';
-import { semesters, subjects, attendanceRecords, settings } from './schema.js';
-import type { NewSemester, NewSubject, NewAttendanceRecord } from './schema.js';
+import { semesters, subjects, attendanceRecords, settings, notes } from './schema.js';
+import type { NewSemester, NewSubject, NewAttendanceRecord, NewNote } from './schema.js';
 import { eq, and, desc } from 'drizzle-orm';
 
 // ════════════════════════════════════════════════════════════
@@ -636,4 +636,51 @@ export function getSafeSkipCombinations(lectureAttended: number, lectureTotal: n
     combinations[Math.floor(combinations.length / 2)],
     combinations[combinations.length - 1],
   ];
+}
+
+// ════════════════════════════════════════════════════════════
+//  NOTES
+// ════════════════════════════════════════════════════════════
+
+export async function getNoteByDate(userId: string, date: string) {
+  const rows = await db
+    .select()
+    .from(notes)
+    .where(and(eq(notes.userId, userId), eq(notes.date, date)));
+  return rows[0] ?? null;
+}
+
+export async function getNotesByDateRange(userId: string, startDate: string, endDate: string) {
+  const allNotes = await db
+    .select()
+    .from(notes)
+    .where(eq(notes.userId, userId))
+    .orderBy(notes.date);
+  // Filter in JS since drizzle-orm gte/lte on text columns can be fiddly
+  return allNotes.filter(n => n.date >= startDate && n.date <= endDate);
+}
+
+export async function upsertNote(id: string, userId: string, date: string, content: string) {
+  const existing = await getNoteByDate(userId, date);
+  if (existing) {
+    const rows = await db
+      .update(notes)
+      .set({ content, updatedAt: new Date() })
+      .where(eq(notes.id, existing.id))
+      .returning();
+    return rows[0];
+  }
+  const rows = await db
+    .insert(notes)
+    .values({ id, userId, date, content })
+    .returning();
+  return rows[0];
+}
+
+export async function deleteNoteByDate(userId: string, date: string) {
+  const rows = await db
+    .delete(notes)
+    .where(and(eq(notes.userId, userId), eq(notes.date, date)))
+    .returning();
+  return rows[0] ?? null;
 }

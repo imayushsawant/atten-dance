@@ -29,10 +29,12 @@ import {
   ChevronLeft,
   ChevronRight,
   Plus,
+  StickyNote,
 } from 'lucide-react';
 import { api } from '@/lib/api';
-import type { Subject, AttendanceRecord } from '@/lib/api';
+import type { Subject, AttendanceRecord, Note } from '@/lib/api';
 import { cn } from '@/lib/utils';
+import NoteModal from '@/components/NoteModal';
 
 type EntryStatus = 'attended' | 'skipped' | null;
 
@@ -59,6 +61,8 @@ export default function InputPage() {
   const [showLogged, setShowLogged] = useState(false);
   const [showCalendar, setShowCalendar] = useState(false);
   const [calendarMonth, setCalendarMonth] = useState(() => new Date(date + 'T00:00:00'));
+  const [note, setNote] = useState<Note | null>(null);
+  const [showNoteModal, setShowNoteModal] = useState(false);
 
   const calendarDays = useMemo(() => {
     const monthStart = startOfMonth(calendarMonth);
@@ -84,6 +88,37 @@ export default function InputPage() {
       loadDayRecords();
     }
   }, [semesterId, date]);
+
+  useEffect(() => {
+    loadNote();
+  }, [date]);
+
+  async function loadNote() {
+    try {
+      const n = await api.notes.getByDate(date);
+      setNote(n);
+    } catch {
+      setNote(null);
+    }
+  }
+
+  async function handleNoteSave(content: string) {
+    try {
+      const saved = await api.notes.upsert(date, content);
+      setNote(saved);
+    } catch {
+      // ignore
+    }
+  }
+
+  async function handleNoteDelete() {
+    try {
+      await api.notes.delete(date);
+      setNote(null);
+    } catch {
+      // ignore
+    }
+  }
 
   // We filter out subjects that already have an entry for the selected date
   function buildEntries(subjectList: Subject[], currentRecords: AttendanceRecord[]) {
@@ -494,6 +529,23 @@ export default function InputPage() {
             </div>
           </button>
 
+          {/* Note Icon */}
+          <button
+            onClick={(e) => { e.stopPropagation(); setShowNoteModal(true); }}
+            className={cn(
+              'absolute right-0 top-1/2 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-lg transition-all',
+              note
+                ? 'text-amber-500 bg-amber-500/10 hover:bg-amber-500/20'
+                : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
+            )}
+            title={note ? 'View/edit note' : 'Add a note'}
+          >
+            <StickyNote className="h-4 w-4" />
+            {note && (
+              <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-amber-500" />
+            )}
+          </button>
+
           {showCalendar && (
             <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 z-50 bg-background rounded-xl p-4 w-[280px] shadow-2xl border border-border animate-in fade-in zoom-in-95 duration-200">
                 <div className="flex items-center justify-between mb-4">
@@ -570,6 +622,23 @@ export default function InputPage() {
           <ChevronRight className="h-5 w-5" />
         </button>
       </div>
+
+      {/* Note Banner */}
+      {note && (
+        <button
+          onClick={() => setShowNoteModal(true)}
+          className="w-full rounded-xl border border-amber-500/20 bg-amber-500/5 px-4 py-3 text-left transition-colors hover:bg-amber-500/10 group"
+        >
+          <div className="flex items-start gap-2.5">
+            <StickyNote className="h-3.5 w-3.5 text-amber-500 mt-0.5 shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-medium text-amber-400/90 mb-0.5">Note</p>
+              <p className="text-xs text-foreground/80 leading-relaxed">{note.content}</p>
+            </div>
+            <span className="text-[10px] text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0 mt-0.5">Edit</span>
+          </div>
+        </button>
+      )}
 
       {/* Information Banner */}
       <div className="rounded-lg border border-border bg-secondary/30 px-4 py-3 text-xs text-muted-foreground">
@@ -711,6 +780,16 @@ export default function InputPage() {
           )}
         </div>
       )}
+      {/* Note Modal */}
+      <NoteModal
+        isOpen={showNoteModal}
+        onClose={() => setShowNoteModal(false)}
+        date={date}
+        formattedDate={format(new Date(date + 'T00:00:00'), 'MMMM d, yyyy')}
+        initialContent={note?.content || ''}
+        onSave={handleNoteSave}
+        onDelete={handleNoteDelete}
+      />
     </div>
   );
 }

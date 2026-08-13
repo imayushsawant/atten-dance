@@ -88,6 +88,16 @@ export const settings = pgTable('settings', {
   value: text('value').notNull(),
 });
 
+// ─── Notes ───────────────────────────────────────────────
+export const notes = pgTable('notes', {
+  id: text('note_id').primaryKey(),
+  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  date: text('date').notNull(), // YYYY-MM-DD
+  content: text('content').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
 // ─── Types ───────────────────────────────────────────────
 export type Semester = typeof semesters.$inferSelect;
 export type NewSemester = typeof semesters.$inferInsert;
@@ -96,3 +106,5 @@ export type NewSubject = typeof subjects.$inferInsert;
 export type AttendanceRecord = typeof attendanceRecords.$inferSelect;
 export type NewAttendanceRecord = typeof attendanceRecords.$inferInsert;
 export type Setting = typeof settings.$inferSelect;
+export type Note = typeof notes.$inferSelect;
+export type NewNote = typeof notes.$inferInsert;

@@ -8,6 +8,7 @@ import semesterRoutes from './routes/semesters.js';
 import attendanceRoutes from './routes/attendance.js';
 import analyticsRoutes from './routes/analytics.js';
 import settingsRoutes from './routes/settings.js';
+import notesRoutes from './routes/notes.js';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -41,6 +42,7 @@ app.use('/api/semesters', requireAuth, semesterRoutes);
 app.use('/api/attendance', requireAuth, attendanceRoutes);
 app.use('/api/analytics', requireAuth, analyticsRoutes);
 app.use('/api/settings', requireAuth, settingsRoutes);
+app.use('/api/notes', requireAuth, notesRoutes);
 
 if (process.env.NODE_ENV !== 'production') {
   app.listen(PORT, () => {

@@ -40,6 +40,14 @@ export type AttendanceRecord = {
   createdAt: string;
 };
 
+export type Note = {
+  id: string;
+  date: string;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type SubjectStats = {
   subjectId: string;
   subjectName: string;
@@ -135,5 +143,14 @@ export const api = {
     get: () => request<Record<string, string>>('/settings'),
     update: (data: Record<string, string>) =>
       request<Record<string, string>>('/settings', { method: 'PUT', body: JSON.stringify(data) }),
+  },
+
+  notes: {
+    getByDate: (date: string) => request<Note | null>(`/notes/${date}`),
+    getByRange: (start: string, end: string) => request<Note[]>(`/notes/range/${start}/${end}`),
+    upsert: (date: string, content: string) =>
+      request<Note>(`/notes/${date}`, { method: 'PUT', body: JSON.stringify({ content }) }),
+    delete: (date: string) =>
+      request<Note>(`/notes/${date}`, { method: 'DELETE' }),
   },
 };

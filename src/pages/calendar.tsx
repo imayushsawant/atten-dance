@@ -23,10 +23,12 @@ import {
   FlaskConical,
   Calendar as CalendarIcon,
   Minus,
+  StickyNote,
 } from 'lucide-react';
 import { api } from '@/lib/api';
-import type { Subject, AttendanceRecord } from '@/lib/api';
+import type { Subject, AttendanceRecord, Note } from '@/lib/api';
 import { cn } from '@/lib/utils';
+import NoteModal from '@/components/NoteModal';
 
 export default function CalendarPage() {
   const navigate = useNavigate();
@@ -39,14 +41,20 @@ export default function CalendarPage() {
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [semesterId, setSemesterId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  
+  const [notes, setNotes] = useState<Note[]>([]);
+  const [showNoteModal, setShowNoteModal] = useState(false);
 
   useEffect(() => {
     loadData();
   }, []);
 
   useEffect(() => {
-    if (semesterId) loadRecords();
-  }, [semesterId]);
+    if (semesterId) {
+      loadRecords();
+      loadNotes();
+    }
+  }, [semesterId, currentMonth]);
 
   async function loadData() {
     try {
@@ -74,6 +82,17 @@ export default function CalendarPage() {
     }
   }
 
+  async function loadNotes() {
+    try {
+      const start = format(startOfWeek(startOfMonth(currentMonth), { weekStartsOn: 1 }), 'yyyy-MM-dd');
+      const end = format(endOfWeek(endOfMonth(currentMonth), { weekStartsOn: 1 }), 'yyyy-MM-dd');
+      const data = await api.notes.getByRange(start, end);
+      setNotes(data);
+    } catch {
+      // ignore
+    }
+  }
+
   // Group records by date
   const recordsByDate = useMemo(() => {
     const map: Record<string, AttendanceRecord[]> = {};
@@ -83,6 +102,14 @@ export default function CalendarPage() {
     }
     return map;
   }, [records]);
+
+  const notesByDate = useMemo(() => {
+    const map: Record<string, Note> = {};
+    for (const n of notes) {
+      map[n.date] = n;
+    }
+    return map;
+  }, [notes]);
 
   // Build calendar grid
   const calendarDays = useMemo(() => {
@@ -114,6 +141,28 @@ export default function CalendarPage() {
     const dateStr = format(date, 'yyyy-MM-dd');
     setSelectedDate(dateStr);
     setSearchParams({ date: dateStr });
+  }
+
+  const selectedNote = selectedDate ? notesByDate[selectedDate] : null;
+
+  async function handleNoteSave(content: string) {
+    if (!selectedDate) return;
+    try {
+      await api.notes.upsert(selectedDate, content);
+      loadNotes(); // reload to get the updated list
+    } catch {
+      // ignore
+    }
+  }
+
+  async function handleNoteDelete() {
+    if (!selectedDate) return;
+    try {
+      await api.notes.delete(selectedDate);
+      loadNotes();
+    } catch {
+      // ignore
+    }
   }
 
   if (loading) {
@@ -178,6 +227,7 @@ export default function CalendarPage() {
               const attended = dayRecords.filter((r) => r.status === 'attended').length;
               const skipped = dayRecords.filter((r) => r.status === 'skipped').length;
               const hasRecords = dayRecords.length > 0;
+              const hasNote = !!notesByDate[dateStr];
 
               return (
                 <button
@@ -191,9 +241,13 @@ export default function CalendarPage() {
                     isSelected
                       ? 'bg-primary/15 ring-1 ring-primary/40'
                       : 'hover:bg-secondary',
-                    today && !isSelected && 'ring-1 ring-primary/20'
+                    today && !isSelected && 'ring-1 ring-primary/20',
+                    hasNote && !isSelected && 'bg-amber-500/5'
                   )}
                 >
+                  {hasNote && (
+                    <div className="absolute top-1 right-1 h-1.5 w-1.5 rounded-full bg-amber-500" />
+                  )}
                   <span
                     className={cn(
                       'font-medium mb-1',
@@ -249,11 +303,29 @@ export default function CalendarPage() {
           {selectedDate ? (
             <>
               <div className="glass rounded-xl p-4">
-                <div className="flex items-center gap-2 mb-1">
-                  <CalendarIcon className="h-4 w-4 text-primary" />
-                  <h3 className="text-sm font-semibold">
-                    {format(new Date(selectedDate + 'T00:00:00'), 'EEEE')}
-                  </h3>
+                <div className="flex items-center justify-between mb-1">
+                  <div className="flex items-center gap-2">
+                    <CalendarIcon className="h-4 w-4 text-primary" />
+                    <h3 className="text-sm font-semibold">
+                      {format(new Date(selectedDate + 'T00:00:00'), 'EEEE')}
+                    </h3>
+                  </div>
+                  {/* Note Icon Button */}
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setShowNoteModal(true); }}
+                    className={cn(
+                      'flex h-7 w-7 items-center justify-center rounded-md transition-all relative',
+                      selectedNote
+                        ? 'text-amber-500 bg-amber-500/10 hover:bg-amber-500/20'
+                        : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
+                    )}
+                    title={selectedNote ? 'View/edit note' : 'Add a note'}
+                  >
+                    <StickyNote className="h-3.5 w-3.5" />
+                    {selectedNote && (
+                      <span className="absolute -top-0.5 -right-0.5 h-1.5 w-1.5 rounded-full bg-amber-500" />
+                    )}
+                  </button>
                 </div>
                 <p className="text-xs text-muted-foreground">
                   {format(new Date(selectedDate + 'T00:00:00'), 'MMMM d, yyyy')}
@@ -293,6 +365,23 @@ export default function CalendarPage() {
                   </div>
                 )}
               </div>
+
+              {/* Note Banner */}
+              {selectedNote && (
+                <button
+                  onClick={() => setShowNoteModal(true)}
+                  className="w-full rounded-xl border border-amber-500/20 bg-amber-500/5 px-4 py-3 text-left transition-colors hover:bg-amber-500/10 group"
+                >
+                  <div className="flex items-start gap-2.5">
+                    <StickyNote className="h-3.5 w-3.5 text-amber-500 mt-0.5 shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium text-amber-400/90 mb-0.5">Note</p>
+                      <p className="text-xs text-foreground/80 leading-relaxed">{selectedNote.content}</p>
+                    </div>
+                    <span className="text-[10px] text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0 mt-0.5">Edit</span>
+                  </div>
+                </button>
+              )}
 
               {/* Attended list */}
               {selectedAttended.length > 0 && (
@@ -407,6 +496,19 @@ export default function CalendarPage() {
           )}
         </div>
       </div>
+
+      {/* Note Modal */}
+      {selectedDate && (
+        <NoteModal
+          isOpen={showNoteModal}
+          onClose={() => setShowNoteModal(false)}
+          date={selectedDate}
+          formattedDate={format(new Date(selectedDate + 'T00:00:00'), 'MMMM d, yyyy')}
+          initialContent={selectedNote?.content || ''}
+          onSave={handleNoteSave}
+          onDelete={handleNoteDelete}
+        />
+      )}
     </div>
   );
 }
