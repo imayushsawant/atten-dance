@@ -16,6 +16,7 @@ import {
   History as HistoryIcon,
   LogOut,
   Wand2,
+  Clock,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
@@ -32,6 +33,7 @@ const navItems = [
   { to: '/recovery', icon: HeartPulse, label: 'Recovery' },
   { to: '/history', icon: HistoryIcon, label: 'History' },
   { to: '/predictor', icon: Wand2, label: 'Predictor' },
+  { to: '/time-window', icon: Clock, label: 'Time Window' },
   { to: '/settings', icon: Settings, label: 'Settings' },
 ];
 

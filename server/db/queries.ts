@@ -411,6 +411,145 @@ export function sessionsToReachTarget(
 }
 
 // ════════════════════════════════════════════════════════════
+//  TIME-WINDOW ANALYTICS (Date-Range Filtered, Read-Only)
+// ════════════════════════════════════════════════════════════
+
+export async function getAnalyticsForDateRange(
+  semesterId: string,
+  startDate: string,
+  endDate: string,
+  threshold?: number
+) {
+  const semester = await getSemesterById(semesterId);
+  if (!semester) return null;
+
+  const t = threshold ?? semester.threshold;
+  const thresholdRatio = t / 100;
+
+  const semSubjects = await getSubjectsBySemester(semesterId);
+  const allRecords = await getAttendanceBySemester(semesterId);
+
+  // Filter records to the date range (YYYY-MM-DD string comparison works)
+  const rangeRecords = allRecords.filter(
+    (r) => r.date >= startDate && r.date <= endDate
+  );
+
+  const stats: SubjectStats[] = semSubjects.map((subject) => {
+    const subjectRecords = rangeRecords.filter((r) => r.subjectId === subject.id);
+
+    const lectureRecords = subjectRecords.filter((r) => r.type === 'lecture');
+    const labRecords = subjectRecords.filter((r) => r.type === 'lab');
+
+    const lectureAttended = lectureRecords.filter((r) => r.status === 'attended').length;
+    const lectureTotal = lectureRecords.length;
+    const labAttended = labRecords.filter((r) => r.status === 'attended').length;
+    const labTotal = labRecords.length;
+
+    const combinedAttended = lectureAttended + labAttended;
+    const combinedTotal = lectureTotal + labTotal;
+
+    const lecturePct = lectureTotal > 0 ? (lectureAttended / lectureTotal) * 100 : 100;
+    const labPct = labTotal > 0 ? (labAttended / labTotal) * 100 : 100;
+    let combinedPct = 100;
+    if (lectureTotal > 0 && labTotal > 0) {
+      combinedPct = (lecturePct + labPct) / 2;
+    } else if (lectureTotal > 0) {
+      combinedPct = lecturePct;
+    } else if (labTotal > 0) {
+      combinedPct = labPct;
+    }
+
+    const lectureSafeSkips = lectureTotal > 0
+      ? Math.max(0, Math.floor((lectureAttended - thresholdRatio * lectureTotal) / thresholdRatio))
+      : 0;
+    const labSafeSkips = labTotal > 0
+      ? Math.max(0, Math.floor((labAttended - thresholdRatio * labTotal) / thresholdRatio))
+      : 0;
+    const combinedSafeSkips = Math.min(
+      subject.hasLecture ? lectureSafeSkips : Infinity,
+      subject.hasLab ? labSafeSkips : Infinity
+    );
+
+    const lectureRecovery = lecturePct < t && lectureTotal > 0
+      ? Math.ceil((thresholdRatio * lectureTotal - lectureAttended) / (1 - thresholdRatio))
+      : 0;
+    const labRecovery = labPct < t && labTotal > 0
+      ? Math.ceil((thresholdRatio * labTotal - labAttended) / (1 - thresholdRatio))
+      : 0;
+
+    return {
+      subjectId: subject.id,
+      subjectName: subject.name,
+      lecture: {
+        attended: lectureAttended,
+        total: lectureTotal,
+        percentage: Math.round(lecturePct * 100) / 100,
+      },
+      lab: {
+        attended: labAttended,
+        total: labTotal,
+        percentage: Math.round(labPct * 100) / 100,
+      },
+      combined: {
+        attended: combinedAttended,
+        total: combinedTotal,
+        percentage: Math.round(combinedPct * 100) / 100,
+      },
+      safeSkips: {
+        lecture: lectureSafeSkips,
+        lab: labSafeSkips,
+        combined: combinedSafeSkips === Infinity ? 0 : combinedSafeSkips,
+      },
+      recovery: {
+        lecture: lectureRecovery,
+        lab: labRecovery,
+      },
+    };
+  });
+
+  // Overall stats
+  const totalAttended = stats.reduce((s, st) => s + st.combined.attended, 0);
+  const totalSessions = stats.reduce((s, st) => s + st.combined.total, 0);
+
+  const totalLectureAttended = stats.reduce((s, st) => s + st.lecture.attended, 0);
+  const totalLectureSessions = stats.reduce((s, st) => s + st.lecture.total, 0);
+  const overallLecturePct = totalLectureSessions > 0 ? (totalLectureAttended / totalLectureSessions) * 100 : 100;
+
+  const totalLabAttended = stats.reduce((s, st) => s + st.lab.attended, 0);
+  const totalLabSessions = stats.reduce((s, st) => s + st.lab.total, 0);
+  const overallLabPct = totalLabSessions > 0 ? (totalLabAttended / totalLabSessions) * 100 : 100;
+
+  let overallPct = 100;
+  if (totalLectureSessions > 0 && totalLabSessions > 0) {
+    overallPct = (overallLecturePct + overallLabPct) / 2;
+  } else if (totalLectureSessions > 0) {
+    overallPct = overallLecturePct;
+  } else if (totalLabSessions > 0) {
+    overallPct = overallLabPct;
+  }
+
+  // Unique dates in range for "days with records"
+  const uniqueDates = new Set(rangeRecords.map((r) => r.date));
+
+  return {
+    semester,
+    subjects: semSubjects,
+    stats,
+    overall: {
+      attended: totalAttended,
+      total: totalSessions,
+      percentage: Math.round(overallPct * 100) / 100,
+      recovery: { combined: 0, lecture: 0, lab: 0, combinations: [] },
+      safeSkips: { lecture: 0, lab: 0, combinations: [] },
+    },
+    threshold: t,
+    startDate,
+    endDate,
+    daysWithRecords: uniqueDates.size,
+  };
+}
+
+// ════════════════════════════════════════════════════════════
 //  SETTINGS
 // ════════════════════════════════════════════════════════════
 

@@ -11,6 +11,23 @@ router.get('/:semesterId', async (req, res) => {
   res.json(analytics);
 });
 
+// GET /api/analytics/:semesterId/time-window — analytics for a specific date range
+router.get('/:semesterId/time-window', async (req, res) => {
+  const { start, end } = req.query;
+  if (!start || !end) {
+    return res.status(400).json({ error: 'start and end query params required (YYYY-MM-DD)' });
+  }
+  const threshold = req.query.threshold ? Number(req.query.threshold) : undefined;
+  const analytics = await queries.getAnalyticsForDateRange(
+    req.params.semesterId,
+    start as string,
+    end as string,
+    threshold
+  );
+  if (!analytics) return res.status(404).json({ error: 'Semester not found' });
+  res.json(analytics);
+});
+
 // GET /api/analytics/:semesterId/target — compute sessions to reach target %
 router.get('/:semesterId/target', async (req, res) => {
   const targetPct = Number(req.query.target) || 75;

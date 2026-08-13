@@ -64,6 +64,12 @@ export type Analytics = {
   threshold: number;
 };
 
+export type TimeWindowAnalytics = Analytics & {
+  startDate: string;
+  endDate: string;
+  daysWithRecords: number;
+};
+
 export type TargetResult = {
   target: number;
   overall: {
@@ -121,6 +127,8 @@ export const api = {
       request<Analytics>(`/analytics/${semesterId}${threshold ? `?threshold=${threshold}` : ''}`),
     getTarget: (semesterId: string, target: number) =>
       request<TargetResult>(`/analytics/${semesterId}/target?target=${target}`),
+    getTimeWindow: (semesterId: string, start: string, end: string, threshold?: number) =>
+      request<TimeWindowAnalytics>(`/analytics/${semesterId}/time-window?start=${start}&end=${end}${threshold ? `&threshold=${threshold}` : ''}`),
   },
 
   settings: {
