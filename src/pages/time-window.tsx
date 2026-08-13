@@ -1,8 +1,22 @@
-import { useState } from 'react';
-import { BookOpen, FlaskConical, TrendingUp, TrendingDown, CalendarRange, Search, Clock } from 'lucide-react';
+import { useState, useRef, useEffect, useMemo } from 'react';
+import {
+  format,
+  startOfMonth,
+  endOfMonth,
+  startOfWeek,
+  endOfWeek,
+  addDays,
+  addMonths,
+  subMonths,
+  isSameMonth,
+  isSameDay,
+  isToday,
+} from 'date-fns';
+import { BookOpen, FlaskConical, TrendingUp, TrendingDown, CalendarRange, Search, Clock, ChevronLeft, ChevronRight } from 'lucide-react';
 import { api } from '@/lib/api';
 import type { TimeWindowAnalytics } from '@/lib/api';
 import { useTheme } from '@/lib/theme-provider';
+import { cn } from '@/lib/utils';
 import {
   BarChart,
   Bar,
@@ -44,6 +58,153 @@ function daysBetween(start: string, end: string) {
   const s = new Date(start + 'T00:00:00');
   const e = new Date(end + 'T00:00:00');
   return Math.round((e.getTime() - s.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+}
+
+/* ─── Inline Calendar Picker ────────────────────────────── */
+
+function CalendarPicker({
+  id,
+  label,
+  value,
+  onChange,
+}: {
+  id: string;
+  label: string;
+  value: string;
+  onChange: (date: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [viewMonth, setViewMonth] = useState(() =>
+    value ? new Date(value + 'T00:00:00') : new Date()
+  );
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Close on click outside
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    if (open) {
+      document.addEventListener('mousedown', handleClick);
+      return () => document.removeEventListener('mousedown', handleClick);
+    }
+  }, [open]);
+
+  // Sync viewMonth when value changes externally
+  useEffect(() => {
+    if (value) setViewMonth(new Date(value + 'T00:00:00'));
+  }, [value]);
+
+  const calendarDays = useMemo(() => {
+    const monthStart = startOfMonth(viewMonth);
+    const monthEnd = endOfMonth(viewMonth);
+    const calStart = startOfWeek(monthStart, { weekStartsOn: 1 });
+    const calEnd = endOfWeek(monthEnd, { weekStartsOn: 1 });
+
+    const days: Date[] = [];
+    let day = calStart;
+    while (day <= calEnd) {
+      days.push(day);
+      day = addDays(day, 1);
+    }
+    return days;
+  }, [viewMonth]);
+
+  const selectedDate = value ? new Date(value + 'T00:00:00') : null;
+
+  return (
+    <div className="flex-1 space-y-1.5 relative" ref={containerRef}>
+      <label htmlFor={id} className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+        {label}
+      </label>
+      <button
+        id={id}
+        type="button"
+        onClick={() => setOpen(!open)}
+        className={cn(
+          'w-full flex items-center gap-2 rounded-lg border bg-background px-3 py-2.5 text-sm text-left outline-none transition-all',
+          open
+            ? 'border-primary ring-2 ring-primary/40'
+            : 'border-border hover:border-primary/40',
+          !value && 'text-muted-foreground'
+        )}
+      >
+        <CalendarRange className="h-4 w-4 text-muted-foreground shrink-0" />
+        {value ? formatDate(value) : 'Pick a date'}
+      </button>
+
+      {/* Dropdown calendar */}
+      {open && (
+        <div className="absolute top-full left-0 z-50 mt-2 w-full min-w-[280px] glass rounded-xl p-4 shadow-2xl border border-border animate-fade-in">
+          {/* Month Navigation */}
+          <div className="flex items-center justify-between mb-3">
+            <button
+              type="button"
+              onClick={() => setViewMonth(subMonths(viewMonth, 1))}
+              className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            <span className="text-xs font-semibold">
+              {format(viewMonth, 'MMMM yyyy')}
+            </span>
+            <button
+              type="button"
+              onClick={() => setViewMonth(addMonths(viewMonth, 1))}
+              className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
+
+          {/* Day Headers */}
+          <div className="grid grid-cols-7 mb-1">
+            {['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'].map((d) => (
+              <div
+                key={d}
+                className="text-center text-[10px] font-medium text-muted-foreground uppercase tracking-wider py-1"
+              >
+                {d}
+              </div>
+            ))}
+          </div>
+
+          {/* Day Cells */}
+          <div className="grid grid-cols-7 gap-0.5">
+            {calendarDays.map((day) => {
+              const dateStr = format(day, 'yyyy-MM-dd');
+              const inMonth = isSameMonth(day, viewMonth);
+              const today = isToday(day);
+              const isSelected = selectedDate ? isSameDay(day, selectedDate) : false;
+
+              return (
+                <button
+                  key={dateStr}
+                  type="button"
+                  onClick={() => {
+                    onChange(dateStr);
+                    setOpen(false);
+                  }}
+                  className={cn(
+                    'flex items-center justify-center rounded-lg py-1.5 text-xs font-medium transition-all',
+                    !inMonth && 'opacity-25',
+                    isSelected
+                      ? 'bg-primary text-primary-foreground'
+                      : 'hover:bg-secondary',
+                    today && !isSelected && 'text-primary font-bold ring-1 ring-primary/30'
+                  )}
+                >
+                  {format(day, 'd')}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
 
 export default function TimeWindowPage() {
@@ -116,35 +277,23 @@ export default function TimeWindowPage() {
         </div>
 
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
-          <div className="flex-1 space-y-1.5">
-            <label htmlFor="tw-start-date" className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-              Start Date
-            </label>
-            <input
-              id="tw-start-date"
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all"
-            />
-          </div>
+          <CalendarPicker
+            id="tw-start-date"
+            label="Start Date"
+            value={startDate}
+            onChange={setStartDate}
+          />
 
           <div className="hidden sm:flex items-center pb-2.5">
             <div className="w-6 h-px bg-border" />
           </div>
 
-          <div className="flex-1 space-y-1.5">
-            <label htmlFor="tw-end-date" className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-              End Date
-            </label>
-            <input
-              id="tw-end-date"
-              type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all"
-            />
-          </div>
+          <CalendarPicker
+            id="tw-end-date"
+            label="End Date"
+            value={endDate}
+            onChange={setEndDate}
+          />
 
           <button
             onClick={handleAnalyze}
