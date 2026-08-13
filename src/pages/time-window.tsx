@@ -137,7 +137,7 @@ function CalendarPicker({
 
       {/* Dropdown calendar */}
       {open && (
-        <div className="absolute top-full left-0 z-50 mt-2 w-full min-w-[280px] glass rounded-xl p-4 shadow-2xl border border-border animate-fade-in">
+        <div className="absolute top-full left-0 z-[100] mt-2 w-full min-w-[280px] bg-card rounded-xl p-4 shadow-2xl border border-border animate-fade-in">
           {/* Month Navigation */}
           <div className="flex items-center justify-between mb-3">
             <button
@@ -270,7 +270,7 @@ export default function TimeWindowPage() {
       </div>
 
       {/* Date Range Picker Card */}
-      <div className="glass rounded-xl p-6">
+      <div className="glass rounded-xl p-6 relative z-20">
         <div className="flex items-center gap-2 mb-4">
           <CalendarRange className="h-4 w-4 text-primary" />
           <h2 className="text-sm font-semibold">Select Date Range</h2>
