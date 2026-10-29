@@ -55,6 +55,9 @@ export const semesters = pgTable('semesters', {
   name: text('name').notNull(),
   isActive: boolean('is_active').notNull().default(false),
   threshold: integer('threshold').notNull().default(75),
+  calculationMethod: text('calculation_method', { enum: ['total_sessions', 'split_average'] })
+    .notNull()
+    .default('split_average'),
   shareCode: text('share_code').unique(),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });

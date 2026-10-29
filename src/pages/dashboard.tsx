@@ -195,9 +195,9 @@ export default function Dashboard() {
         ? 'text-warning'
         : 'text-danger';
 
-  const totalSafeSkips = Math.min(
-    ...stats.map((s) => s.safeSkips.combined)
-  );
+  const totalSafeSkips = semester.calculationMethod === 'total_sessions'
+    ? analytics.overall.safeSkips.lecture
+    : Math.min(...stats.map((s) => s.safeSkips.combined));
 
   const subjectsBelow = stats.filter(
     (s) => s.combined.percentage < threshold
@@ -215,8 +215,11 @@ export default function Dashboard() {
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-muted-foreground">
-          {semester.name} — {overall.total} sessions logged
+        <p className="text-muted-foreground flex items-center gap-2 mt-0.5">
+          <span>{semester.name} — {overall.total} sessions logged</span>
+          <span className="text-[10px] px-2 py-0.5 rounded-full bg-secondary text-muted-foreground font-semibold uppercase tracking-wider">
+            {semester.calculationMethod === 'total_sessions' ? 'Total Sessions' : '50/50 Split'}
+          </span>
         </p>
       </div>
 
@@ -228,9 +231,14 @@ export default function Dashboard() {
             style={{ backgroundColor: overall.percentage >= threshold ? 'var(--color-success)' : 'var(--color-danger)' }} />
 
           <div className="relative z-10 text-center space-y-2">
-            <span className="text-sm font-bold uppercase tracking-widest text-muted-foreground group-hover:text-foreground transition-colors">
-              Overall
-            </span>
+            <div className="flex items-center justify-center gap-1.5">
+              <span className="text-sm font-bold uppercase tracking-widest text-muted-foreground group-hover:text-foreground transition-colors">
+                Overall
+              </span>
+              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-secondary/80 text-muted-foreground">
+                {semester.calculationMethod === 'total_sessions' ? 'Combined' : '50/50'}
+              </span>
+            </div>
             <div className="flex items-center justify-center">
               <p className={`text-7xl font-black tracking-tighter ${overallColor}`}>
                 {overall.percentage.toFixed(1)}%

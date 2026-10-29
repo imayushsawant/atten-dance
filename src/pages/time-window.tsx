@@ -356,6 +356,10 @@ export default function TimeWindowPage() {
               <span>{analytics.daysWithRecords} days with records</span>
               <span>•</span>
               <span>{analytics.overall.total} total sessions</span>
+              <span>•</span>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-secondary text-muted-foreground font-semibold uppercase tracking-wider">
+                {analytics.semester.calculationMethod === 'total_sessions' ? 'Total Sessions' : '50/50 Split'}
+              </span>
             </div>
           </div>
 
@@ -389,7 +393,9 @@ function OverallStats({ analytics }: { analytics: TimeWindowAnalytics }) {
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
       <div className="glass rounded-xl p-5 text-center">
-        <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Overall</p>
+        <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">
+          Overall {analytics.semester.calculationMethod === 'total_sessions' ? '(Combined)' : '(50/50)'}
+        </p>
         <p className={`text-4xl font-bold ${overall.percentage >= threshold ? 'text-success' : 'text-danger'}`}>
           {overall.percentage.toFixed(1)}%
         </p>

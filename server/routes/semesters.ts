@@ -30,7 +30,7 @@ router.get('/:id', async (req, res) => {
 
 // POST /api/semesters — create with subjects
 router.post('/', async (req, res) => {
-  const { name, subjects: subjectList, threshold } = req.body;
+  const { name, subjects: subjectList, threshold, calculationMethod } = req.body;
   if (!name || !subjectList || !Array.isArray(subjectList)) {
     return res.status(400).json({ error: 'Name and subjects array required' });
   }
@@ -41,6 +41,7 @@ router.post('/', async (req, res) => {
     userId: req.user!.id,
     name,
     threshold: threshold ?? 75,
+    calculationMethod: calculationMethod ?? 'total_sessions',
     isActive: false,
   });
 
@@ -65,8 +66,8 @@ router.post('/', async (req, res) => {
 
 // PUT /api/semesters/:id — update semester name/threshold
 router.put('/:id', async (req, res) => {
-  const { name, threshold } = req.body;
-  const updated = await queries.updateSemester(req.params.id, { name, threshold });
+  const { name, threshold, calculationMethod } = req.body;
+  const updated = await queries.updateSemester(req.params.id, { name, threshold, calculationMethod });
   if (!updated) return res.status(404).json({ error: 'Semester not found' });
   res.json(updated);
 });
@@ -151,6 +152,7 @@ router.post('/import', async (req, res) => {
     userId: req.user!.id,
     name: originalSemester.name,
     threshold: originalSemester.threshold,
+    calculationMethod: originalSemester.calculationMethod,
     isActive: false,
   });
 

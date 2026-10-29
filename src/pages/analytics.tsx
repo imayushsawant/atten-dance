@@ -121,15 +121,20 @@ export default function AnalyticsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Analytics</h1>
-        <p className="text-muted-foreground">
-          Detailed attendance breakdown — {analytics.semester.name}
+        <p className="text-muted-foreground flex items-center gap-2 mt-0.5">
+          <span>Detailed attendance breakdown — {analytics.semester.name}</span>
+          <span className="text-[10px] px-2 py-0.5 rounded-full bg-secondary text-muted-foreground font-semibold uppercase tracking-wider">
+            {analytics.semester.calculationMethod === 'total_sessions' ? 'Total Sessions' : '50/50 Split'}
+          </span>
         </p>
       </div>
 
       {/* Overall Stats Row */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div className="glass rounded-xl p-5 text-center">
-          <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Overall</p>
+          <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">
+            Overall {analytics.semester.calculationMethod === 'total_sessions' ? '(Combined)' : '(50/50)'}
+          </p>
           <p className={`text-4xl font-bold ${overall.percentage >= threshold ? 'text-success' : 'text-danger'}`}>
             {overall.percentage.toFixed(1)}%
           </p>

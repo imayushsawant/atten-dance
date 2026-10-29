@@ -104,8 +104,11 @@ export default function RecoveryPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Recovery Planner</h1>
-          <p className="text-muted-foreground">
-            Sessions needed to reach your target
+          <p className="text-muted-foreground flex items-center gap-2 mt-0.5">
+            <span>Sessions needed to reach your target</span>
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-secondary text-muted-foreground font-semibold uppercase tracking-wider">
+              {analytics.semester.calculationMethod === 'total_sessions' ? 'Total Sessions' : '50/50 Split'}
+            </span>
           </p>
         </div>
         <button
@@ -187,7 +190,7 @@ export default function RecoveryPage() {
               </div>
             </div>
 
-            {(analytics.overall.recovery.lecture > 50 || analytics.overall.recovery.lab > 50) && (
+            {analytics.semester.calculationMethod !== 'total_sessions' && (analytics.overall.recovery.lecture > 50 || analytics.overall.recovery.lab > 50) && (
               <p className="text-[10px] text-muted-foreground">
                 * Note: Attending only one type requires many more sessions due to combined percentage math. We recommend using a combination.
               </p>
@@ -425,7 +428,7 @@ export default function RecoveryPage() {
                 <div className="flex flex-wrap gap-4 justify-between items-center">
                   <div>
                     <h3 className="text-sm font-semibold flex items-center gap-2">
-                      <TrendingUp className="h-4 w-4 text-primary" /> Overall Average Target
+                      <TrendingUp className="h-4 w-4 text-primary" /> Overall {analytics.semester.calculationMethod === 'total_sessions' ? 'Attendance Target' : 'Average Target'}
                     </h3>
                     <p className="text-xs text-muted-foreground mt-1">
                       Currently at {targetResult.overall.current.toFixed(2)}%

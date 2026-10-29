@@ -126,12 +126,18 @@ export default function PredictorPage() {
     const labPct = labTotal > 0 ? (labAttended / labTotal) * 100 : 100;
     
     let combinedPct = 100;
-    if (lecTotal > 0 && labTotal > 0) {
-      combinedPct = (lecPct + labPct) / 2;
-    } else if (lecTotal > 0) {
-      combinedPct = lecPct;
-    } else if (labTotal > 0) {
-      combinedPct = labPct;
+    if (analytics.semester.calculationMethod === 'total_sessions') {
+      const combinedTotal = lecTotal + labTotal;
+      const combinedAttended = lecAttended + labAttended;
+      combinedPct = combinedTotal > 0 ? (combinedAttended / combinedTotal) * 100 : 100;
+    } else {
+      if (lecTotal > 0 && labTotal > 0) {
+        combinedPct = (lecPct + labPct) / 2;
+      } else if (lecTotal > 0) {
+        combinedPct = lecPct;
+      } else if (labTotal > 0) {
+        combinedPct = labPct;
+      }
     }
     
     return {
@@ -162,17 +168,23 @@ export default function PredictorPage() {
     newOverallLabTotal += overallMod.lab.attend + overallMod.lab.skip;
   }
 
-  // Calculate predicted overall percentage as average of overall lec and lab percentages
+  // Calculate predicted overall percentage according to semester's calculationMethod
   const overallLecPct = newOverallLecTotal > 0 ? (newOverallLecAttended / newOverallLecTotal) * 100 : 100;
   const overallLabPct = newOverallLabTotal > 0 ? (newOverallLabAttended / newOverallLabTotal) * 100 : 100;
   
   let predictedOverallPercentage = 100;
-  if (newOverallLecTotal > 0 && newOverallLabTotal > 0) {
-    predictedOverallPercentage = (overallLecPct + overallLabPct) / 2;
-  } else if (newOverallLecTotal > 0) {
-    predictedOverallPercentage = overallLecPct;
-  } else if (newOverallLabTotal > 0) {
-    predictedOverallPercentage = overallLabPct;
+  if (analytics.semester.calculationMethod === 'total_sessions') {
+    const totalAttended = newOverallLecAttended + newOverallLabAttended;
+    const totalSessions = newOverallLecTotal + newOverallLabTotal;
+    predictedOverallPercentage = totalSessions > 0 ? (totalAttended / totalSessions) * 100 : 100;
+  } else {
+    if (newOverallLecTotal > 0 && newOverallLabTotal > 0) {
+      predictedOverallPercentage = (overallLecPct + overallLabPct) / 2;
+    } else if (newOverallLecTotal > 0) {
+      predictedOverallPercentage = overallLecPct;
+    } else if (newOverallLabTotal > 0) {
+      predictedOverallPercentage = overallLabPct;
+    }
   }
 
   const newOverallAttendedSum = newOverallLecAttended + newOverallLabAttended;
@@ -361,8 +373,13 @@ export default function PredictorPage() {
             <Wand2 className="h-6 w-6 text-primary" />
             Predictor
           </h1>
-          <p className="text-muted-foreground">
-            Test scenarios to see how they affect your percentages.
+          <p className="text-muted-foreground flex items-center gap-2">
+            <span>Test scenarios to see how they affect your percentages.</span>
+            {analytics && (
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-secondary text-muted-foreground font-semibold uppercase tracking-wider">
+                {analytics.semester.calculationMethod === 'total_sessions' ? 'Total Sessions' : '50/50 Split'}
+              </span>
+            )}
           </p>
         </div>
         

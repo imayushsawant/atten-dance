@@ -13,11 +13,14 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
 }
 
 // ─── Types ───────────────────────────────────────────────
+export type CalculationMethod = 'total_sessions' | 'split_average';
+
 export type Semester = {
   id: string;
   name: string;
   isActive: boolean;
   threshold: number;
+  calculationMethod: CalculationMethod;
   createdAt: string;
   subjects?: Subject[];
 };
@@ -99,9 +102,9 @@ export const api = {
     list: () => request<Semester[]>('/semesters'),
     getActive: () => request<(Semester & { subjects: Subject[] }) | null>('/semesters/active'),
     get: (id: string) => request<Semester & { subjects: Subject[] }>(`/semesters/${id}`),
-    create: (data: { name: string; subjects: { name: string; hasLecture: boolean; hasLab: boolean }[]; threshold?: number }) =>
+    create: (data: { name: string; subjects: { name: string; hasLecture: boolean; hasLab: boolean }[]; threshold?: number; calculationMethod?: CalculationMethod }) =>
       request<Semester & { subjects: Subject[] }>('/semesters', { method: 'POST', body: JSON.stringify(data) }),
-    update: (id: string, data: { name?: string; threshold?: number }) =>
+    update: (id: string, data: { name?: string; threshold?: number; calculationMethod?: CalculationMethod }) =>
       request<Semester>(`/semesters/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
     activate: (id: string) =>
       request<Semester>(`/semesters/${id}/activate`, { method: 'PUT' }),

@@ -195,6 +195,9 @@ export async function getAnalytics(semesterId: string, threshold?: number) {
   const semester = await getSemesterById(semesterId);
   if (!semester) return null;
 
+  const method = semester.calculationMethod ?? 'split_average';
+  const isTotalSessions = method === 'total_sessions';
+
   const t = threshold ?? semester.threshold;
   const thresholdRatio = t / 100;
 
@@ -217,37 +220,55 @@ export async function getAnalytics(semesterId: string, threshold?: number) {
 
     const lecturePct = lectureTotal > 0 ? (lectureAttended / lectureTotal) * 100 : 100;
     const labPct = labTotal > 0 ? (labAttended / labTotal) * 100 : 100;
-    let combinedPct = 100;
-    if (lectureTotal > 0 && labTotal > 0) {
-      combinedPct = (lecturePct + labPct) / 2;
-    } else if (lectureTotal > 0) {
-      combinedPct = lecturePct;
-    } else if (labTotal > 0) {
-      combinedPct = labPct;
+    
+    let combinedPct: number;
+    let lectureSafeSkips: number;
+    let labSafeSkips: number;
+    let combinedSafeSkips: number;
+    let lectureRecovery: number;
+    let labRecovery: number;
+
+    if (isTotalSessions) {
+      combinedPct = combinedTotal > 0 ? (combinedAttended / combinedTotal) * 100 : 100;
+
+      combinedSafeSkips = combinedTotal > 0
+        ? Math.max(0, Math.floor((combinedAttended - thresholdRatio * combinedTotal) / thresholdRatio))
+        : 0;
+      lectureSafeSkips = subject.hasLecture ? combinedSafeSkips : 0;
+      labSafeSkips = subject.hasLab ? combinedSafeSkips : 0;
+
+      const combinedNeeded = combinedPct < t && combinedTotal > 0
+        ? Math.ceil((thresholdRatio * combinedTotal - combinedAttended) / (1 - thresholdRatio))
+        : 0;
+      lectureRecovery = subject.hasLecture ? combinedNeeded : 0;
+      labRecovery = subject.hasLab ? combinedNeeded : 0;
+    } else {
+      if (lectureTotal > 0 && labTotal > 0) {
+        combinedPct = (lecturePct + labPct) / 2;
+      } else if (lectureTotal > 0) {
+        combinedPct = lecturePct;
+      } else if (labTotal > 0) {
+        combinedPct = labPct;
+      }
+
+      lectureSafeSkips = lectureTotal > 0
+        ? Math.max(0, Math.floor((lectureAttended - thresholdRatio * lectureTotal) / thresholdRatio))
+        : 0;
+      labSafeSkips = labTotal > 0
+        ? Math.max(0, Math.floor((labAttended - thresholdRatio * labTotal) / thresholdRatio))
+        : 0;
+      combinedSafeSkips = Math.min(
+        subject.hasLecture ? lectureSafeSkips : Infinity,
+        subject.hasLab ? labSafeSkips : Infinity
+      );
+
+      lectureRecovery = lecturePct < t && lectureTotal > 0
+        ? Math.ceil((thresholdRatio * lectureTotal - lectureAttended) / (1 - thresholdRatio))
+        : 0;
+      labRecovery = labPct < t && labTotal > 0
+        ? Math.ceil((thresholdRatio * labTotal - labAttended) / (1 - thresholdRatio))
+        : 0;
     }
-
-    // Safe skips: how many can you skip before dropping below threshold
-    // Formula: floor((attended - threshold * total) / threshold)
-    // Only if currently above threshold
-    const lectureSafeSkips = lectureTotal > 0
-      ? Math.max(0, Math.floor((lectureAttended - thresholdRatio * lectureTotal) / thresholdRatio))
-      : 0;
-    const labSafeSkips = labTotal > 0
-      ? Math.max(0, Math.floor((labAttended - thresholdRatio * labTotal) / thresholdRatio))
-      : 0;
-    const combinedSafeSkips = Math.min(
-      subject.hasLecture ? lectureSafeSkips : Infinity,
-      subject.hasLab ? labSafeSkips : Infinity
-    );
-
-    // Recovery: how many consecutive sessions to attend to reach threshold
-    // Formula: ceil((threshold * total - attended) / (1 - threshold))
-    const lectureRecovery = lecturePct < t && lectureTotal > 0
-      ? Math.ceil((thresholdRatio * lectureTotal - lectureAttended) / (1 - thresholdRatio))
-      : 0;
-    const labRecovery = labPct < t && labTotal > 0
-      ? Math.ceil((thresholdRatio * labTotal - labAttended) / (1 - thresholdRatio))
-      : 0;
 
     return {
       subjectId: subject.id,
@@ -292,73 +313,110 @@ export async function getAnalytics(semesterId: string, threshold?: number) {
   const labPct = totalLabSessions > 0 ? (totalLabAttended / totalLabSessions) * 100 : 100;
 
   let overallPct = 100;
-  if (totalLectureSessions > 0 && totalLabSessions > 0) {
-    overallPct = (lecturePct + labPct) / 2;
-  } else if (totalLectureSessions > 0) {
-    overallPct = lecturePct;
-  } else if (totalLabSessions > 0) {
-    overallPct = labPct;
-  }
-
-  // Calculate recovery based on the new average overall percentage
   let overallLectureSafeSkips = 0;
   let overallLabSafeSkips = 0;
-  if (overallPct >= thresholdRatio * 100) {
-    if (totalLectureSessions > 0 && totalLabSessions > 0) {
-      const lecturePct = (totalLectureAttended / totalLectureSessions) * 100;
-      const labPct = (totalLabAttended / totalLabSessions) * 100;
-      
-      const reqLecPct = 2 * thresholdRatio - (labPct / 100);
-      if (reqLecPct <= 0) {
-        overallLectureSafeSkips = 999; // effectively infinite
-      } else {
-        overallLectureSafeSkips = Math.max(0, Math.floor((totalLectureAttended / reqLecPct) - totalLectureSessions));
-      }
-
-      const reqLabPct = 2 * thresholdRatio - (lecturePct / 100);
-      if (reqLabPct <= 0) {
-        overallLabSafeSkips = 999;
-      } else {
-        overallLabSafeSkips = Math.max(0, Math.floor((totalLabAttended / reqLabPct) - totalLabSessions));
-      }
-    } else if (totalLectureSessions > 0) {
-      overallLectureSafeSkips = Math.max(0, Math.floor((totalLectureAttended - thresholdRatio * totalLectureSessions) / thresholdRatio));
-    } else if (totalLabSessions > 0) {
-      overallLabSafeSkips = Math.max(0, Math.floor((totalLabAttended - thresholdRatio * totalLabSessions) / thresholdRatio));
-    }
-  }
-
+  let overallRecovery = 0;
   let overallLectureRecovery = 0;
   let overallLabRecovery = 0;
+  let recoveryCombos: { lecture: number; lab: number; resultingPercentage: number }[];
+  let safeSkipCombos: { lecture: number; lab: number; resultingPercentage: number }[];
 
-  if (overallPct < t) {
-    if (totalLabSessions > 0 && totalLectureSessions > 0) {
-      // To recover overall average using ONLY lectures:
-      // (newLecturePct + labPct)/2 = threshold
-      // newLecturePct = 2*threshold - labPct
-      const reqLecPct = 2 * thresholdRatio - (labPct / 100);
-      if (reqLecPct > 0.9999) {
-        overallLectureRecovery = -1; // impossible
-      } else if (reqLecPct > (lecturePct / 100)) {
-        overallLectureRecovery = Math.max(0, Math.ceil((reqLecPct * totalLectureSessions - totalLectureAttended) / (1 - reqLecPct)));
-      }
+  if (isTotalSessions) {
+    overallPct = totalSessions > 0 ? (totalAttended / totalSessions) * 100 : 100;
 
-      const reqLabPct = 2 * thresholdRatio - (lecturePct / 100);
-      if (reqLabPct > 0.9999) {
-        overallLabRecovery = -1; // impossible
-      } else if (reqLabPct > (labPct / 100)) {
-        overallLabRecovery = Math.max(0, Math.ceil((reqLabPct * totalLabSessions - totalLabAttended) / (1 - reqLabPct)));
-      }
-    } else if (totalLectureSessions > 0) {
-      overallLectureRecovery = Math.ceil((thresholdRatio * totalLectureSessions - totalLectureAttended) / (1 - thresholdRatio));
-    } else if (totalLabSessions > 0) {
-      overallLabRecovery = Math.ceil((thresholdRatio * totalLabSessions - totalLabAttended) / (1 - thresholdRatio));
+    const overallSafe = totalSessions > 0
+      ? Math.max(0, Math.floor((totalAttended - thresholdRatio * totalSessions) / thresholdRatio))
+      : 0;
+    overallLectureSafeSkips = overallSafe;
+    overallLabSafeSkips = overallSafe;
+    safeSkipCombos = getTotalSessionsSafeSkipCombinations(
+      overallSafe,
+      totalAttended,
+      totalSessions,
+      totalLectureSessions > 0,
+      totalLabSessions > 0
+    );
+
+    if (overallPct < t && totalSessions > 0) {
+      overallRecovery = Math.ceil((thresholdRatio * totalSessions - totalAttended) / (1 - thresholdRatio));
+      overallLectureRecovery = overallRecovery;
+      overallLabRecovery = overallRecovery;
+      recoveryCombos = getTotalSessionsRecoveryCombinations(
+        overallRecovery,
+        totalAttended,
+        totalSessions,
+        totalLectureSessions > 0,
+        totalLabSessions > 0
+      );
     }
-  }
+  } else {
+    if (totalLectureSessions > 0 && totalLabSessions > 0) {
+      overallPct = (lecturePct + labPct) / 2;
+    } else if (totalLectureSessions > 0) {
+      overallPct = lecturePct;
+    } else if (totalLabSessions > 0) {
+      overallPct = labPct;
+    }
 
-  // Combined recovery isn't a flat number anymore since weights differ, 
-  // but we can supply 0 to deprecate it in the UI
-  const overallRecovery = 0; 
+    if (overallPct >= thresholdRatio * 100) {
+      if (totalLectureSessions > 0 && totalLabSessions > 0) {
+        const reqLecPct = 2 * thresholdRatio - (labPct / 100);
+        if (reqLecPct <= 0) {
+          overallLectureSafeSkips = 999;
+        } else {
+          overallLectureSafeSkips = Math.max(0, Math.floor((totalLectureAttended / reqLecPct) - totalLectureSessions));
+        }
+
+        const reqLabPct = 2 * thresholdRatio - (lecturePct / 100);
+        if (reqLabPct <= 0) {
+          overallLabSafeSkips = 999;
+        } else {
+          overallLabSafeSkips = Math.max(0, Math.floor((totalLabAttended / reqLabPct) - totalLabSessions));
+        }
+      } else if (totalLectureSessions > 0) {
+        overallLectureSafeSkips = Math.max(0, Math.floor((totalLectureAttended - thresholdRatio * totalLectureSessions) / thresholdRatio));
+      } else if (totalLabSessions > 0) {
+        overallLabSafeSkips = Math.max(0, Math.floor((totalLabAttended - thresholdRatio * totalLabSessions) / thresholdRatio));
+      }
+    }
+
+    if (overallPct < t) {
+      if (totalLabSessions > 0 && totalLectureSessions > 0) {
+        const reqLecPct = 2 * thresholdRatio - (labPct / 100);
+        if (reqLecPct > 0.9999) {
+          overallLectureRecovery = -1;
+        } else if (reqLecPct > (lecturePct / 100)) {
+          overallLectureRecovery = Math.max(0, Math.ceil((reqLecPct * totalLectureSessions - totalLectureAttended) / (1 - reqLecPct)));
+        }
+
+        const reqLabPct = 2 * thresholdRatio - (lecturePct / 100);
+        if (reqLabPct > 0.9999) {
+          overallLabRecovery = -1;
+        } else if (reqLabPct > (labPct / 100)) {
+          overallLabRecovery = Math.max(0, Math.ceil((reqLabPct * totalLabSessions - totalLabAttended) / (1 - reqLabPct)));
+        }
+      } else if (totalLectureSessions > 0) {
+        overallLectureRecovery = Math.ceil((thresholdRatio * totalLectureSessions - totalLectureAttended) / (1 - thresholdRatio));
+      } else if (totalLabSessions > 0) {
+        overallLabRecovery = Math.ceil((thresholdRatio * totalLabSessions - totalLabAttended) / (1 - thresholdRatio));
+      }
+    }
+
+    recoveryCombos = getRecoveryCombinations(
+      totalLectureAttended,
+      totalLectureSessions,
+      totalLabAttended,
+      totalLabSessions,
+      thresholdRatio * 100
+    );
+    safeSkipCombos = getSafeSkipCombinations(
+      totalLectureAttended,
+      totalLectureSessions,
+      totalLabAttended,
+      totalLabSessions,
+      thresholdRatio * 100
+    );
+  }
 
   return {
     semester,
@@ -372,24 +430,12 @@ export async function getAnalytics(semesterId: string, threshold?: number) {
         combined: overallRecovery,
         lecture: overallLectureRecovery,
         lab: overallLabRecovery,
-        combinations: getRecoveryCombinations(
-          totalLectureAttended,
-          totalLectureSessions,
-          totalLabAttended,
-          totalLabSessions,
-          thresholdRatio * 100
-        ),
+        combinations: recoveryCombos,
       },
       safeSkips: {
         lecture: overallLectureSafeSkips,
         lab: overallLabSafeSkips,
-        combinations: getSafeSkipCombinations(
-          totalLectureAttended,
-          totalLectureSessions,
-          totalLabAttended,
-          totalLabSessions,
-          thresholdRatio * 100
-        ),
+        combinations: safeSkipCombos,
       },
     },
     threshold: t,
@@ -423,6 +469,9 @@ export async function getAnalyticsForDateRange(
   const semester = await getSemesterById(semesterId);
   if (!semester) return null;
 
+  const method = semester.calculationMethod ?? 'split_average';
+  const isTotalSessions = method === 'total_sessions';
+
   const t = threshold ?? semester.threshold;
   const thresholdRatio = t / 100;
 
@@ -450,32 +499,55 @@ export async function getAnalyticsForDateRange(
 
     const lecturePct = lectureTotal > 0 ? (lectureAttended / lectureTotal) * 100 : 100;
     const labPct = labTotal > 0 ? (labAttended / labTotal) * 100 : 100;
-    let combinedPct = 100;
-    if (lectureTotal > 0 && labTotal > 0) {
-      combinedPct = (lecturePct + labPct) / 2;
-    } else if (lectureTotal > 0) {
-      combinedPct = lecturePct;
-    } else if (labTotal > 0) {
-      combinedPct = labPct;
+    
+    let combinedPct: number;
+    let lectureSafeSkips: number;
+    let labSafeSkips: number;
+    let combinedSafeSkips: number;
+    let lectureRecovery: number;
+    let labRecovery: number;
+
+    if (isTotalSessions) {
+      combinedPct = combinedTotal > 0 ? (combinedAttended / combinedTotal) * 100 : 100;
+
+      combinedSafeSkips = combinedTotal > 0
+        ? Math.max(0, Math.floor((combinedAttended - thresholdRatio * combinedTotal) / thresholdRatio))
+        : 0;
+      lectureSafeSkips = subject.hasLecture ? combinedSafeSkips : 0;
+      labSafeSkips = subject.hasLab ? combinedSafeSkips : 0;
+
+      const combinedNeeded = combinedPct < t && combinedTotal > 0
+        ? Math.ceil((thresholdRatio * combinedTotal - combinedAttended) / (1 - thresholdRatio))
+        : 0;
+      lectureRecovery = subject.hasLecture ? combinedNeeded : 0;
+      labRecovery = subject.hasLab ? combinedNeeded : 0;
+    } else {
+      if (lectureTotal > 0 && labTotal > 0) {
+        combinedPct = (lecturePct + labPct) / 2;
+      } else if (lectureTotal > 0) {
+        combinedPct = lecturePct;
+      } else if (labTotal > 0) {
+        combinedPct = labPct;
+      }
+
+      lectureSafeSkips = lectureTotal > 0
+        ? Math.max(0, Math.floor((lectureAttended - thresholdRatio * lectureTotal) / thresholdRatio))
+        : 0;
+      labSafeSkips = labTotal > 0
+        ? Math.max(0, Math.floor((labAttended - thresholdRatio * labTotal) / thresholdRatio))
+        : 0;
+      combinedSafeSkips = Math.min(
+        subject.hasLecture ? lectureSafeSkips : Infinity,
+        subject.hasLab ? labSafeSkips : Infinity
+      );
+
+      lectureRecovery = lecturePct < t && lectureTotal > 0
+        ? Math.ceil((thresholdRatio * lectureTotal - lectureAttended) / (1 - thresholdRatio))
+        : 0;
+      labRecovery = labPct < t && labTotal > 0
+        ? Math.ceil((thresholdRatio * labTotal - labAttended) / (1 - thresholdRatio))
+        : 0;
     }
-
-    const lectureSafeSkips = lectureTotal > 0
-      ? Math.max(0, Math.floor((lectureAttended - thresholdRatio * lectureTotal) / thresholdRatio))
-      : 0;
-    const labSafeSkips = labTotal > 0
-      ? Math.max(0, Math.floor((labAttended - thresholdRatio * labTotal) / thresholdRatio))
-      : 0;
-    const combinedSafeSkips = Math.min(
-      subject.hasLecture ? lectureSafeSkips : Infinity,
-      subject.hasLab ? labSafeSkips : Infinity
-    );
-
-    const lectureRecovery = lecturePct < t && lectureTotal > 0
-      ? Math.ceil((thresholdRatio * lectureTotal - lectureAttended) / (1 - thresholdRatio))
-      : 0;
-    const labRecovery = labPct < t && labTotal > 0
-      ? Math.ceil((thresholdRatio * labTotal - labAttended) / (1 - thresholdRatio))
-      : 0;
 
     return {
       subjectId: subject.id,
@@ -520,12 +592,16 @@ export async function getAnalyticsForDateRange(
   const overallLabPct = totalLabSessions > 0 ? (totalLabAttended / totalLabSessions) * 100 : 100;
 
   let overallPct = 100;
-  if (totalLectureSessions > 0 && totalLabSessions > 0) {
-    overallPct = (overallLecturePct + overallLabPct) / 2;
-  } else if (totalLectureSessions > 0) {
-    overallPct = overallLecturePct;
-  } else if (totalLabSessions > 0) {
-    overallPct = overallLabPct;
+  if (isTotalSessions) {
+    overallPct = totalSessions > 0 ? (totalAttended / totalSessions) * 100 : 100;
+  } else {
+    if (totalLectureSessions > 0 && totalLabSessions > 0) {
+      overallPct = (overallLecturePct + overallLabPct) / 2;
+    } else if (totalLectureSessions > 0) {
+      overallPct = overallLecturePct;
+    } else if (totalLabSessions > 0) {
+      overallPct = overallLabPct;
+    }
   }
 
   // Unique dates in range for "days with records"
@@ -639,6 +715,63 @@ export function getSafeSkipCombinations(lectureAttended: number, lectureTotal: n
 }
 
 // ════════════════════════════════════════════════════════════
+
+export function getTotalSessionsRecoveryCombinations(
+  needed: number,
+  totalAttended: number,
+  totalSessions: number,
+  hasLectures: boolean = true,
+  hasLabs: boolean = true
+): { lecture: number; lab: number; resultingPercentage: number }[] {
+  if (needed <= 0) return [];
+  const resultingPct = Math.round(((totalAttended + needed) / (totalSessions + needed)) * 10000) / 100;
+  
+  if (!hasLectures && hasLabs) {
+    return [{ lecture: 0, lab: needed, resultingPercentage: resultingPct }];
+  }
+  if (hasLectures && !hasLabs) {
+    return [{ lecture: needed, lab: 0, resultingPercentage: resultingPct }];
+  }
+  
+  const half = Math.floor(needed / 2);
+  const combos: { lecture: number; lab: number; resultingPercentage: number }[] = [
+    { lecture: needed, lab: 0, resultingPercentage: resultingPct },
+  ];
+  if (half > 0 && half < needed) {
+    combos.push({ lecture: half, lab: needed - half, resultingPercentage: resultingPct });
+  }
+  combos.push({ lecture: 0, lab: needed, resultingPercentage: resultingPct });
+  return combos;
+}
+
+export function getTotalSessionsSafeSkipCombinations(
+  safeSkips: number,
+  totalAttended: number,
+  totalSessions: number,
+  hasLectures: boolean = true,
+  hasLabs: boolean = true
+): { lecture: number; lab: number; resultingPercentage: number }[] {
+  if (safeSkips <= 0) return [];
+  const resultingPct = Math.round((totalAttended / (totalSessions + safeSkips)) * 10000) / 100;
+  
+  if (!hasLectures && hasLabs) {
+    return [{ lecture: 0, lab: safeSkips, resultingPercentage: resultingPct }];
+  }
+  if (hasLectures && !hasLabs) {
+    return [{ lecture: safeSkips, lab: 0, resultingPercentage: resultingPct }];
+  }
+  
+  const half = Math.floor(safeSkips / 2);
+  const combos: { lecture: number; lab: number; resultingPercentage: number }[] = [
+    { lecture: safeSkips, lab: 0, resultingPercentage: resultingPct },
+  ];
+  if (half > 0 && half < safeSkips) {
+    combos.push({ lecture: half, lab: safeSkips - half, resultingPercentage: resultingPct });
+  }
+  combos.push({ lecture: 0, lab: safeSkips, resultingPercentage: resultingPct });
+  return combos;
+}
+
 //  NOTES
 // ════════════════════════════════════════════════════════════
 

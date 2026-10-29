@@ -177,6 +177,15 @@ export default function SemesterList() {
                           Active
                         </span>
                       )}
+                      {sem.calculationMethod === 'total_sessions' ? (
+                        <span className="text-[10px] font-medium uppercase tracking-wider bg-blue-500/15 text-blue-500 px-2 py-0.5 rounded-full">
+                          Total Sessions
+                        </span>
+                      ) : (
+                        <span className="text-[10px] font-medium uppercase tracking-wider bg-purple-500/15 text-purple-500 px-2 py-0.5 rounded-full">
+                          50/50 Split
+                        </span>
+                      )}
                     </h3>
                     <p className="text-xs text-muted-foreground flex items-center gap-2 mt-0.5">
                       <span className="flex items-center gap-1">

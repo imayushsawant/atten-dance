@@ -57,8 +57,11 @@ export default function SafeSkipsPage() {
     <div className="space-y-6 max-w-3xl mx-auto">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Safe Skips</h1>
-        <p className="text-muted-foreground">
-          Skips remaining before hitting {threshold}%
+        <p className="text-muted-foreground flex items-center gap-2 mt-0.5">
+          <span>Skips remaining before hitting {threshold}%</span>
+          <span className="text-[10px] px-2 py-0.5 rounded-full bg-secondary text-muted-foreground font-semibold uppercase tracking-wider">
+            {analytics.semester.calculationMethod === 'total_sessions' ? 'Total Sessions' : '50/50 Split'}
+          </span>
         </p>
       </div>
 
@@ -73,13 +76,15 @@ export default function SafeSkipsPage() {
           <div className="space-y-3">
             <div className="rounded-lg border border-border bg-background/30 p-4">
               <p className="text-sm text-muted-foreground">
-                Overall average is currently at{' '}
+                Overall {analytics.semester.calculationMethod === 'total_sessions' ? 'attendance' : 'average'} is currently at{' '}
                 <span className="font-bold text-success">
                   {analytics.overall.percentage.toFixed(2)}%
                 </span>
               </p>
               <p className="text-xs text-muted-foreground mt-1">
-                Sessions you can skip before hitting {threshold}%.
+                {analytics.semester.calculationMethod === 'total_sessions'
+                  ? `Every lecture and lab carries equal weight. You have a shared total of ${analytics.overall.safeSkips.lecture} sessions you can safely skip before dropping below ${threshold}%.`
+                  : `Sessions you can skip before hitting ${threshold}%.`}
               </p>
             </div>
 
@@ -236,7 +241,9 @@ export default function SafeSkipsPage() {
                     {s.safeSkips.combined}
                   </p>
                   <p className="text-[10px] text-muted-foreground mt-1">
-                    safe to skip both types
+                    {analytics.semester.calculationMethod === 'total_sessions'
+                      ? 'total skips available'
+                      : 'safe to skip both types'}
                   </p>
                 </div>
               </div>
