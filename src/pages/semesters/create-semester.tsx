@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
-import { Plus, Trash2, BookOpen, FlaskConical, GraduationCap, Layers, Percent, Check } from 'lucide-react';
+import { Plus, Trash2, BookOpen, FlaskConical, GraduationCap, Check, ChevronDown, ChevronUp } from 'lucide-react';
 import type { CalculationMethod } from '@/lib/api';
 import { api } from '@/lib/api';
 
@@ -14,7 +14,13 @@ export default function CreateSemester() {
   const navigate = useNavigate();
   const [name, setName] = useState('');
   const [threshold, setThreshold] = useState(75);
-  const [calculationMethod, setCalculationMethod] = useState<CalculationMethod>('total_sessions');
+  const [calculationMethod, setCalculationMethod] = useState<CalculationMethod | null>(null);
+  const [expandedMethod, setExpandedMethod] = useState<CalculationMethod | null>(null);
+
+  function toggleExpand(method: CalculationMethod, e: React.MouseEvent) {
+    e.stopPropagation();
+    setExpandedMethod(expandedMethod === method ? null : method);
+  }
   const [subjects, setSubjects] = useState<SubjectInput[]>([
     { name: '', hasLecture: true, hasLab: false },
   ]);
@@ -42,6 +48,11 @@ export default function CreateSemester() {
 
     if (!name.trim()) {
       setError('Please enter a semester name');
+      return;
+    }
+
+    if (!calculationMethod) {
+      setError('Please choose an attendance calculation method');
       return;
     }
 
@@ -140,82 +151,117 @@ export default function CreateSemester() {
 
         {/* Calculation Method */}
         <div className="glass rounded-xl p-5">
-          <div className="flex items-center gap-2 mb-2">
-            <h2 className="text-sm font-semibold">Attendance Calculation Method</h2>
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-sm font-semibold">
+              Attendance Calculation Method <span className="text-danger">*</span>
+            </h2>
+            <span className="text-xs text-muted-foreground">Select one</span>
           </div>
           <p className="text-xs text-muted-foreground mb-4">
-            Choose how your college computes attendance between lectures and labs.
+            Choose how your college computes attendance across lectures and labs.
           </p>
 
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            {/* Total Sessions */}
+          <div className="space-y-2.5">
+            {/* Total Sessions Option */}
             <div
               onClick={() => setCalculationMethod('total_sessions')}
-              className={`relative cursor-pointer rounded-xl border p-4 transition-all ${
+              className={`rounded-xl border transition-all cursor-pointer ${
                 calculationMethod === 'total_sessions'
-                  ? 'border-primary bg-primary/10 shadow-sm ring-1 ring-primary'
+                  ? 'border-primary bg-primary/10 ring-1 ring-primary'
                   : 'border-border bg-background/30 hover:border-border/80 hover:bg-background/50'
               }`}
             >
-              <div className="flex items-start justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/15 text-primary">
-                    <Layers className="h-4 w-4" />
+              <div className="flex items-center justify-between p-3.5">
+                <div className="flex items-center gap-3">
+                  <div
+                    className={`flex h-5 w-5 items-center justify-center rounded-full border transition-all ${
+                      calculationMethod === 'total_sessions'
+                        ? 'border-primary bg-primary text-primary-foreground'
+                        : 'border-muted-foreground/40 bg-background/50'
+                    }`}
+                  >
+                    {calculationMethod === 'total_sessions' && <Check className="h-3 w-3" />}
                   </div>
-                  <div>
-                    <h3 className="text-sm font-semibold text-foreground">Total Sessions</h3>
-                    <span className="text-[10px] font-bold text-primary uppercase tracking-wider">
-                      Combined
-                    </span>
+                  <span className="text-sm font-semibold text-foreground">
+                    Total Sessions (Combined)
+                  </span>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={(e) => toggleExpand('total_sessions', e)}
+                  className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground py-1 px-2.5 rounded-md hover:bg-secondary transition-colors"
+                >
+                  <span>{expandedMethod === 'total_sessions' ? 'Hide details' : 'View details'}</span>
+                  {expandedMethod === 'total_sessions' ? (
+                    <ChevronUp className="h-3.5 w-3.5" />
+                  ) : (
+                    <ChevronDown className="h-3.5 w-3.5" />
+                  )}
+                </button>
+              </div>
+
+              {expandedMethod === 'total_sessions' && (
+                <div className="border-t border-border/50 px-4 py-3 bg-background/30 text-xs text-muted-foreground space-y-2">
+                  <p className="leading-relaxed">
+                    Every lecture and lab session carries identical weight. Missing 1 lab affects your attendance the exact same as missing 1 lecture.
+                  </p>
+                  <div className="rounded-md bg-secondary/70 p-2 font-mono text-[11px] text-foreground">
+                    Formula: (Total Attended Sessions / Total Conducted Sessions) × 100
                   </div>
                 </div>
-                {calculationMethod === 'total_sessions' && (
-                  <div className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                    <Check className="h-3 w-3" />
-                  </div>
-                )}
-              </div>
-              <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
-                Every lecture and lab counts as 1 session with identical weight. Attendance = <code className="text-foreground font-mono">Attended / Conducted</code>.
-              </p>
-              <div className="mt-3 rounded-md bg-secondary/50 px-2.5 py-1.5 text-[11px] text-muted-foreground font-mono">
-                Formula: (Lec + Lab Attended) / (Total Conducted)
-              </div>
+              )}
             </div>
 
-            {/* Split Average */}
+            {/* Split Average Option */}
             <div
               onClick={() => setCalculationMethod('split_average')}
-              className={`relative cursor-pointer rounded-xl border p-4 transition-all ${
+              className={`rounded-xl border transition-all cursor-pointer ${
                 calculationMethod === 'split_average'
-                  ? 'border-primary bg-primary/10 shadow-sm ring-1 ring-primary'
+                  ? 'border-primary bg-primary/10 ring-1 ring-primary'
                   : 'border-border bg-background/30 hover:border-border/80 hover:bg-background/50'
               }`}
             >
-              <div className="flex items-start justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-chart-4/15 text-chart-4">
-                    <Percent className="h-4 w-4" />
+              <div className="flex items-center justify-between p-3.5">
+                <div className="flex items-center gap-3">
+                  <div
+                    className={`flex h-5 w-5 items-center justify-center rounded-full border transition-all ${
+                      calculationMethod === 'split_average'
+                        ? 'border-primary bg-primary text-primary-foreground'
+                        : 'border-muted-foreground/40 bg-background/50'
+                    }`}
+                  >
+                    {calculationMethod === 'split_average' && <Check className="h-3 w-3" />}
                   </div>
-                  <div>
-                    <h3 className="text-sm font-semibold text-foreground">Component Average</h3>
-                    <span className="text-[10px] font-bold text-chart-4 uppercase tracking-wider">
-                      50 / 50 Split
-                    </span>
+                  <span className="text-sm font-semibold text-foreground">
+                    Component Average (50/50 Split)
+                  </span>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={(e) => toggleExpand('split_average', e)}
+                  className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground py-1 px-2.5 rounded-md hover:bg-secondary transition-colors"
+                >
+                  <span>{expandedMethod === 'split_average' ? 'Hide details' : 'View details'}</span>
+                  {expandedMethod === 'split_average' ? (
+                    <ChevronUp className="h-3.5 w-3.5" />
+                  ) : (
+                    <ChevronDown className="h-3.5 w-3.5" />
+                  )}
+                </button>
+              </div>
+
+              {expandedMethod === 'split_average' && (
+                <div className="border-t border-border/50 px-4 py-3 bg-background/30 text-xs text-muted-foreground space-y-2">
+                  <p className="leading-relaxed">
+                    Lecture % and lab % are calculated independently and averaged equally. Because labs are held less often, missing 1 lab hurts your percentage significantly more than 1 lecture.
+                  </p>
+                  <div className="rounded-md bg-secondary/70 p-2 font-mono text-[11px] text-foreground">
+                    Formula: (Lecture % + Lab %) / 2
                   </div>
                 </div>
-                {calculationMethod === 'split_average' && (
-                  <div className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                    <Check className="h-3 w-3" />
-                  </div>
-                )}
-              </div>
-              <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
-                Lecture % and Lab % are computed separately and averaged. Labs carry higher individual impact since they are less frequent.
-              </p>
-              <div className="mt-3 rounded-md bg-secondary/50 px-2.5 py-1.5 text-[11px] text-muted-foreground font-mono">
-                Formula: (Lecture % + Lab %) / 2
-              </div>
+              )}
             </div>
           </div>
         </div>
