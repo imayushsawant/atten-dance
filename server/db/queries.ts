@@ -1,7 +1,7 @@
 import { db } from './index.js';
 import { semesters, subjects, attendanceRecords, settings, notes } from './schema.js';
 import type { NewSemester, NewSubject, NewAttendanceRecord, NewNote } from './schema.js';
-import { eq, and, desc } from 'drizzle-orm';
+import { eq, and, desc, asc } from 'drizzle-orm';
 
 // ════════════════════════════════════════════════════════════
 //  SEMESTERS
@@ -106,12 +106,13 @@ export async function getAttendanceBySemester(semesterId: string) {
       type: attendanceRecords.type,
       status: attendanceRecords.status,
       date: attendanceRecords.date,
+      orderIndex: attendanceRecords.orderIndex,
       createdAt: attendanceRecords.createdAt,
     })
     .from(attendanceRecords)
     .innerJoin(subjects, eq(attendanceRecords.subjectId, subjects.id))
     .where(eq(subjects.semesterId, semesterId))
-    .orderBy(desc(attendanceRecords.date));
+    .orderBy(desc(attendanceRecords.date), asc(attendanceRecords.orderIndex), asc(attendanceRecords.createdAt));
   return records;
 }
 
@@ -124,6 +125,7 @@ export async function getAttendanceByDate(semesterId: string, date: string) {
       type: attendanceRecords.type,
       status: attendanceRecords.status,
       date: attendanceRecords.date,
+      orderIndex: attendanceRecords.orderIndex,
       createdAt: attendanceRecords.createdAt,
     })
     .from(attendanceRecords)
@@ -133,7 +135,8 @@ export async function getAttendanceByDate(semesterId: string, date: string) {
         eq(subjects.semesterId, semesterId),
         eq(attendanceRecords.date, date)
       )
-    );
+    )
+    .orderBy(asc(attendanceRecords.orderIndex), asc(attendanceRecords.createdAt));
   return records;
 }
 
@@ -142,7 +145,7 @@ export async function getAttendanceBySubject(subjectId: string) {
     .select()
     .from(attendanceRecords)
     .where(eq(attendanceRecords.subjectId, subjectId))
-    .orderBy(desc(attendanceRecords.date));
+    .orderBy(desc(attendanceRecords.date), asc(attendanceRecords.orderIndex), asc(attendanceRecords.createdAt));
 }
 
 export async function createAttendanceRecord(data: Omit<NewAttendanceRecord, 'semesterId'>) {
@@ -153,6 +156,22 @@ export async function createAttendanceRecord(data: Omit<NewAttendanceRecord, 'se
 export async function createAttendanceRecords(data: Omit<NewAttendanceRecord, 'semesterId'>[]) {
   if (data.length === 0) return [];
   return db.insert(attendanceRecords).values(data).returning();
+}
+
+export async function reorderAttendanceRecords(recordIds: string[]) {
+  if (recordIds.length === 0) return [];
+  return db.transaction(async (tx) => {
+    const results = [];
+    for (let i = 0; i < recordIds.length; i++) {
+      const rows = await tx
+        .update(attendanceRecords)
+        .set({ orderIndex: i })
+        .where(eq(attendanceRecords.id, recordIds[i]))
+        .returning();
+      if (rows[0]) results.push(rows[0]);
+    }
+    return results;
+  });
 }
 
 export async function deleteAttendanceRecord(id: string) {

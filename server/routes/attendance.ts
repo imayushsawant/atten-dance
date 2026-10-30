@@ -16,9 +16,20 @@ router.get('/:semesterId/date/:date', async (req, res) => {
   res.json(records);
 });
 
+// PUT /api/attendance/reorder — update order of records for a date
+router.put('/reorder', async (req, res) => {
+  const { recordIds } = req.body;
+  if (!recordIds || !Array.isArray(recordIds)) {
+    return res.status(400).json({ error: 'recordIds array is required' });
+  }
+
+  const updated = await queries.reorderAttendanceRecords(recordIds);
+  res.json(updated);
+});
+
 // POST /api/attendance — create a record
 router.post('/', async (req, res) => {
-  const { subjectId, type, status, date } = req.body;
+  const { subjectId, type, status, date, orderIndex } = req.body;
   if (!subjectId || !type || !status || !date) {
     return res.status(400).json({ error: 'All fields required: subjectId, type, status, date' });
   }
@@ -29,6 +40,7 @@ router.post('/', async (req, res) => {
     type,
     status,
     date,
+    orderIndex: typeof orderIndex === 'number' ? orderIndex : 0,
   });
 
   res.status(201).json(record);
@@ -42,12 +54,13 @@ router.post('/bulk', async (req, res) => {
   }
 
   const created = await queries.createAttendanceRecords(
-    records.map((r: { subjectId: string; type: string; status: string; date: string }) => ({
+    records.map((r: { subjectId: string; type: string; status: string; date: string; orderIndex?: number }, idx: number) => ({
       id: randomUUID(),
       subjectId: r.subjectId,
       type: r.type as 'lecture' | 'lab',
       status: r.status as 'attended' | 'skipped',
       date: r.date,
+      orderIndex: typeof r.orderIndex === 'number' ? r.orderIndex : idx,
     }))
   );
 

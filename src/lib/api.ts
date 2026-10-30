@@ -40,6 +40,7 @@ export type AttendanceRecord = {
   type: 'lecture' | 'lab';
   status: 'attended' | 'skipped';
   date: string;
+  orderIndex: number;
   createdAt: string;
 };
 
@@ -125,10 +126,12 @@ export const api = {
       request<AttendanceRecord[]>(`/attendance/${semesterId}`),
     getByDate: (semesterId: string, date: string) =>
       request<AttendanceRecord[]>(`/attendance/${semesterId}/date/${date}`),
-    create: (data: { subjectId: string; semesterId: string; type: string; status: string; date: string }) =>
+    create: (data: { subjectId: string; semesterId: string; type: string; status: string; date: string; orderIndex?: number }) =>
       request<AttendanceRecord>('/attendance', { method: 'POST', body: JSON.stringify(data) }),
-    createBulk: (records: { subjectId: string; semesterId: string; type: string; status: string; date: string }[]) =>
+    createBulk: (records: { subjectId: string; semesterId: string; type: string; status: string; date: string; orderIndex?: number }[]) =>
       request<AttendanceRecord[]>('/attendance/bulk', { method: 'POST', body: JSON.stringify({ records }) }),
+    reorder: (recordIds: string[]) =>
+      request<AttendanceRecord[]>('/attendance/reorder', { method: 'PUT', body: JSON.stringify({ recordIds }) }),
     delete: (id: string) =>
       request<AttendanceRecord>(`/attendance/record/${id}`, { method: 'DELETE' }),
   },

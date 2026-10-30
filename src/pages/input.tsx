@@ -11,7 +11,6 @@ import {
   addMonths,
   subMonths,
   isSameMonth,
-  isSameDay,
   isToday,
   isFuture,
 } from 'date-fns';
@@ -30,6 +29,7 @@ import {
   ChevronRight,
   Plus,
   StickyNote,
+  GripVertical,
 } from 'lucide-react';
 import { api } from '@/lib/api';
 import type { Subject, AttendanceRecord, Note } from '@/lib/api';
@@ -53,6 +53,7 @@ export default function InputPage() {
   const [date, setDate] = useState(searchParams.get('date') || format(new Date(), 'yyyy-MM-dd'));
   const [entries, setEntries] = useState<EntryRow[]>([]);
   const [dayRecords, setDayRecords] = useState<AttendanceRecord[]>([]);
+  const [markedOrder, setMarkedOrder] = useState<string[]>([]);
   const [loggedDates, setLoggedDates] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -63,6 +64,12 @@ export default function InputPage() {
   const [calendarMonth, setCalendarMonth] = useState(() => new Date(date + 'T00:00:00'));
   const [note, setNote] = useState<Note | null>(null);
   const [showNoteModal, setShowNoteModal] = useState(false);
+
+  // Drag and drop state for already logged records
+  const [draggedRecordIndex, setDraggedRecordIndex] = useState<number | null>(null);
+  const [dragOverRecordIndex, setDragOverRecordIndex] = useState<number | null>(null);
+  const [isReordering, setIsReordering] = useState(false);
+  const [dragAllowedId, setDragAllowedId] = useState<string | null>(null);
 
   const calendarDays = useMemo(() => {
     const monthStart = startOfMonth(calendarMonth);
@@ -191,6 +198,12 @@ export default function InputPage() {
         return buildEntries(subjects, records);
       });
 
+      if (!preserveUnmarked) {
+        setMarkedOrder([]);
+      } else {
+        setMarkedOrder((prev) => prev.filter(id => entries.some(e => e.instanceId === id && e.status !== null)));
+      }
+
       // Also update logged dates if the current day has records or not
       setLoggedDates(prev => {
         const next = new Set(prev);
@@ -204,35 +217,66 @@ export default function InputPage() {
   }
 
   function setEntryStatus(instanceId: string, status: EntryStatus) {
+    const currentEntry = entries.find(e => e.instanceId === instanceId);
+    const isTogglingOff = currentEntry?.status === status;
+
     setEntries((prev) =>
       prev.map((e) =>
         e.instanceId === instanceId
-          ? { ...e, status: e.status === status ? null : status }
+          ? { ...e, status: isTogglingOff ? null : status }
           : e
       )
     );
+
+    setMarkedOrder((prev) => {
+      if (isTogglingOff) {
+        return prev.filter(id => id !== instanceId);
+      } else {
+        if (prev.includes(instanceId)) {
+          return prev;
+        }
+        return [...prev, instanceId];
+      }
+    });
   }
 
   function markSectionAttended(type: 'lecture' | 'lab') {
     setEntries((prev) =>
       prev.map((e) => (e.type === type ? { ...e, status: 'attended' } : e))
     );
+    setMarkedOrder((prev) => {
+      const sectionIds = entries.filter((e) => e.type === type).map((e) => e.instanceId);
+      const existing = new Set(prev);
+      const newIds = sectionIds.filter((id) => !existing.has(id));
+      return [...prev, ...newIds];
+    });
   }
 
   function markSectionSkipped(type: 'lecture' | 'lab') {
     setEntries((prev) =>
       prev.map((e) => (e.type === type ? { ...e, status: 'skipped' } : e))
     );
+    setMarkedOrder((prev) => {
+      const sectionIds = entries.filter((e) => e.type === type).map((e) => e.instanceId);
+      const existing = new Set(prev);
+      const newIds = sectionIds.filter((id) => !existing.has(id));
+      return [...prev, ...newIds];
+    });
   }
 
   function resetSection(type: 'lecture' | 'lab') {
     setEntries((prev) =>
       prev.map((e) => (e.type === type ? { ...e, status: null } : e))
     );
+    setMarkedOrder((prev) => {
+      const sectionIds = new Set(entries.filter((e) => e.type === type).map((e) => e.instanceId));
+      return prev.filter((id) => !sectionIds.has(id));
+    });
   }
 
   function resetAll() {
     setEntries((prev) => prev.map((e) => ({ ...e, status: null })));
+    setMarkedOrder([]);
   }
 
   function addInstance(subjectId: string, subjectName: string, type: 'lecture' | 'lab') {
@@ -258,6 +302,7 @@ export default function InputPage() {
 
   function removeInstance(instanceId: string) {
     setEntries((prev) => prev.filter(e => e.instanceId !== instanceId));
+    setMarkedOrder((prev) => prev.filter(id => id !== instanceId));
   }
 
   function getEntryLabel(entry: EntryRow): string | null {
@@ -291,19 +336,39 @@ export default function InputPage() {
 
   const lectureEntries = entries.filter((e) => e.type === 'lecture');
   const labEntries = entries.filter((e) => e.type === 'lab');
-  const markedEntries = entries.filter((e) => e.status !== null);
+
+  // Preserve the sequence in which user clicked Present or Absent
+  const orderedMarkedEntries = useMemo(() => {
+    const map = new Map(entries.map(e => [e.instanceId, e]));
+    const result: EntryRow[] = [];
+    for (const id of markedOrder) {
+      const entry = map.get(id);
+      if (entry && entry.status !== null) {
+        result.push(entry);
+      }
+    }
+    // Fallback: any marked entry not yet in markedOrder
+    for (const entry of entries) {
+      if (entry.status !== null && !result.some(r => r.instanceId === entry.instanceId)) {
+        result.push(entry);
+      }
+    }
+    return result;
+  }, [entries, markedOrder]);
 
   async function handleSubmit() {
-    if (!semesterId || markedEntries.length === 0) return;
+    if (!semesterId || orderedMarkedEntries.length === 0) return;
     setSaving(true);
     setJustSaved(false);
     try {
-      const payload = markedEntries.map(e => ({
+      // Calculate orderIndex starting after existing day records to preserve sequence
+      const payload = orderedMarkedEntries.map((e, index) => ({
         subjectId: e.subjectId,
         semesterId: semesterId!,
         type: e.type,
         status: e.status!,
         date,
+        orderIndex: dayRecords.length + index,
       }));
       await api.attendance.createBulk(payload);
       // Re-load to hide submitted and move to 'logged' section
@@ -324,6 +389,65 @@ export default function InputPage() {
     } catch {
       // ignore
     }
+  }
+
+  // ─── Drag & Drop Reordering for Already Logged Records ───────────
+  async function persistReorder(records: AttendanceRecord[]) {
+    setIsReordering(true);
+    try {
+      await api.attendance.reorder(records.map((r) => r.id));
+    } catch (err) {
+      console.error('Failed to save record order', err);
+      await loadDayRecords();
+    } finally {
+      setIsReordering(false);
+    }
+  }
+
+  async function handleMoveRecord(index: number, direction: 'up' | 'down') {
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= dayRecords.length) return;
+    const reordered = [...dayRecords];
+    const [moved] = reordered.splice(index, 1);
+    reordered.splice(targetIndex, 0, moved);
+    setDayRecords(reordered);
+    await persistReorder(reordered);
+  }
+
+  function handleRecordDragStart(e: React.DragEvent, index: number) {
+    setDraggedRecordIndex(index);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', index.toString());
+  }
+
+  function handleRecordDragOver(e: React.DragEvent, index: number) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    if (dragOverRecordIndex !== index) {
+      setDragOverRecordIndex(index);
+    }
+  }
+
+  async function handleRecordDrop(e: React.DragEvent, targetIndex: number) {
+    e.preventDefault();
+    if (draggedRecordIndex === null || draggedRecordIndex === targetIndex) {
+      setDraggedRecordIndex(null);
+      setDragOverRecordIndex(null);
+      return;
+    }
+    const reordered = [...dayRecords];
+    const [moved] = reordered.splice(draggedRecordIndex, 1);
+    reordered.splice(targetIndex, 0, moved);
+    setDayRecords(reordered);
+    setDraggedRecordIndex(null);
+    setDragOverRecordIndex(null);
+    await persistReorder(reordered);
+  }
+
+  function handleRecordDragEnd() {
+    setDraggedRecordIndex(null);
+    setDragOverRecordIndex(null);
+    setDragAllowedId(null);
   }
 
   function getSubjectName(subjectId: string) {
@@ -357,7 +481,6 @@ export default function InputPage() {
     type: 'lecture' | 'lab',
     sectionEntries: EntryRow[],
     icon: React.ReactNode,
-    accentClass: string,
     bgClass: string
   ) {
     if (sectionEntries.length === 0) return null;
@@ -413,6 +536,8 @@ export default function InputPage() {
               e => e.subjectId === entry.subjectId && e.type === entry.type
             );
             const canRemove = instancesOfKind.length > 1;
+            const markedIndex = markedOrder.indexOf(entry.instanceId);
+            const sequenceNumber = entry.status !== null && markedIndex !== -1 ? markedIndex + 1 : null;
 
             return (
               <div
@@ -423,7 +548,7 @@ export default function InputPage() {
                   entry.status === 'skipped' && 'bg-danger/[0.04]'
                 )}
               >
-                {/* Subject Name + Badge */}
+                {/* Subject Name + Badge + Sequence Number */}
                 <div className="flex-1 min-w-0 flex items-center gap-2">
                   <p className="text-sm font-semibold text-foreground truncate">
                     {entry.subjectName}
@@ -431,6 +556,14 @@ export default function InputPage() {
                   {label && (
                     <span className="shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-primary/10 text-primary">
                       {label}
+                    </span>
+                  )}
+                  {sequenceNumber !== null && (
+                    <span
+                      className="shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-primary/10 text-primary border border-primary/20"
+                      title={`Marked #${sequenceNumber} in sequence`}
+                    >
+                      #{sequenceNumber}
                     </span>
                   )}
                 </div>
@@ -461,7 +594,7 @@ export default function InputPage() {
                     className={cn(
                       'flex h-9 items-center gap-1.5 rounded-lg px-3.5 text-xs font-medium transition-all',
                       entry.status === 'attended'
-                        ? 'bg-success text-success-foreground shadow-sm shadow-success/25'
+                        ? 'bg-success text-success-foreground shadow-sm shadow-success/25 font-semibold'
                         : 'bg-secondary text-muted-foreground hover:bg-success/15 hover:text-success'
                     )}
                   >
@@ -473,7 +606,7 @@ export default function InputPage() {
                     className={cn(
                       'flex h-9 items-center gap-1.5 rounded-lg px-3.5 text-xs font-medium transition-all',
                       entry.status === 'skipped'
-                        ? 'bg-danger text-danger-foreground shadow-sm shadow-danger/25'
+                        ? 'bg-danger text-danger-foreground shadow-sm shadow-danger/25 font-semibold'
                         : 'bg-secondary text-muted-foreground hover:bg-danger/15 hover:text-danger'
                     )}
                   >
@@ -493,7 +626,7 @@ export default function InputPage() {
     <div className="max-w-2xl mx-auto space-y-6">
       {/* Full screen click-away overlay (rendered outside glass to avoid containing block trap) */}
       {showCalendar && (
-        <div 
+        <div
           className="fixed inset-0 z-40"
           onClick={() => setShowCalendar(false)}
         />
@@ -501,20 +634,20 @@ export default function InputPage() {
 
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Log Attendance</h1>
-        <p className="text-muted-foreground">Mark all your subjects for the day</p>
+        <p className="text-muted-foreground">Mark all your subjects for the day in the sequence they occurred</p>
       </div>
 
       {/* Date Picker */}
       <div className="glass rounded-xl p-3 flex items-center justify-between relative z-50">
-        <button 
+        <button
           onClick={() => setDate(format(subDays(new Date(date + 'T00:00:00'), 1), 'yyyy-MM-dd'))}
           className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary/50 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
         >
           <ChevronLeft className="h-5 w-5" />
         </button>
-        
+
         <div className="relative flex-1 flex justify-center">
-          <button 
+          <button
             onClick={() => setShowCalendar(!showCalendar)}
             className="flex flex-col items-center cursor-pointer group px-4 py-1 rounded-lg hover:bg-secondary/30 transition-colors"
           >
@@ -548,74 +681,74 @@ export default function InputPage() {
 
           {showCalendar && (
             <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 z-50 bg-background rounded-xl p-4 w-[280px] shadow-2xl border border-border animate-in fade-in zoom-in-95 duration-200">
-                <div className="flex items-center justify-between mb-4">
-                  <button 
-                    onClick={() => setCalendarMonth(subMonths(calendarMonth, 1))}
-                    className="flex h-7 w-7 items-center justify-center rounded hover:bg-secondary transition-colors"
-                  >
-                    <ChevronLeft className="h-4 w-4 text-muted-foreground" />
-                  </button>
-                  <span className="font-semibold text-sm">
-                    {format(calendarMonth, 'MMMM yyyy')}
-                  </span>
-                  <button 
-                    onClick={() => setCalendarMonth(addMonths(calendarMonth, 1))}
-                    className="flex h-7 w-7 items-center justify-center rounded hover:bg-secondary transition-colors"
-                  >
-                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                  </button>
-                </div>
-                
-                <div className="grid grid-cols-7 mb-2">
-                  {['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'].map(d => (
-                    <div key={d} className="text-center text-[10px] font-medium text-muted-foreground">{d}</div>
-                  ))}
-                </div>
-                
-                <div className="grid grid-cols-7 gap-1">
-                  {calendarDays.map(day => {
-                    const dateStr = format(day, 'yyyy-MM-dd');
-                    const inMonth = isSameMonth(day, calendarMonth);
-                    const today = isToday(day);
-                    const future = isFuture(day) && !today;
-                    const isSelected = date === dateStr;
-                    const hasLog = loggedDates.has(dateStr);
-
-                    return (
-                      <button
-                        key={dateStr}
-                        disabled={future}
-                        onClick={() => {
-                          setDate(dateStr);
-                          setShowCalendar(false);
-                          setCalendarMonth(day);
-                        }}
-                        className={cn(
-                          "flex h-8 w-8 items-center justify-center rounded-md text-xs transition-colors",
-                          !inMonth && "opacity-30",
-                          future && "opacity-20 cursor-not-allowed",
-                          isSelected && "bg-primary text-primary-foreground font-bold shadow-sm",
-                          !isSelected && !future && "hover:bg-secondary",
-                          today && !isSelected && !hasLog && "ring-1 ring-primary/30 text-primary font-bold",
-                          hasLog && !isSelected && "ring-1 ring-inset ring-primary/40 text-primary bg-primary/5"
-                        )}
-                      >
-                        {format(day, 'd')}
-                      </button>
-                    );
-                  })}
-                </div>
+              <div className="flex items-center justify-between mb-4">
+                <button
+                  onClick={() => setCalendarMonth(subMonths(calendarMonth, 1))}
+                  className="flex h-7 w-7 items-center justify-center rounded hover:bg-secondary transition-colors"
+                >
+                  <ChevronLeft className="h-4 w-4 text-muted-foreground" />
+                </button>
+                <span className="font-semibold text-sm">
+                  {format(calendarMonth, 'MMMM yyyy')}
+                </span>
+                <button
+                  onClick={() => setCalendarMonth(addMonths(calendarMonth, 1))}
+                  className="flex h-7 w-7 items-center justify-center rounded hover:bg-secondary transition-colors"
+                >
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                </button>
               </div>
+
+              <div className="grid grid-cols-7 mb-2">
+                {['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'].map(d => (
+                  <div key={d} className="text-center text-[10px] font-medium text-muted-foreground">{d}</div>
+                ))}
+              </div>
+
+              <div className="grid grid-cols-7 gap-1">
+                {calendarDays.map(day => {
+                  const dateStr = format(day, 'yyyy-MM-dd');
+                  const inMonth = isSameMonth(day, calendarMonth);
+                  const today = isToday(day);
+                  const future = isFuture(day) && !today;
+                  const isSelected = date === dateStr;
+                  const hasLog = loggedDates.has(dateStr);
+
+                  return (
+                    <button
+                      key={dateStr}
+                      disabled={future}
+                      onClick={() => {
+                        setDate(dateStr);
+                        setShowCalendar(false);
+                        setCalendarMonth(day);
+                      }}
+                      className={cn(
+                        "flex h-8 w-8 items-center justify-center rounded-md text-xs transition-colors",
+                        !inMonth && "opacity-30",
+                        future && "opacity-20 cursor-not-allowed",
+                        isSelected && "bg-primary text-primary-foreground font-bold shadow-sm",
+                        !isSelected && !future && "hover:bg-secondary",
+                        today && !isSelected && !hasLog && "ring-1 ring-primary/30 text-primary font-bold",
+                        hasLog && !isSelected && "ring-1 ring-inset ring-primary/40 text-primary bg-primary/5"
+                      )}
+                    >
+                      {format(day, 'd')}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           )}
         </div>
 
-        <button 
+        <button
           onClick={() => setDate(format(addDays(new Date(date + 'T00:00:00'), 1), 'yyyy-MM-dd'))}
           disabled={date === format(new Date(), 'yyyy-MM-dd')}
           className={cn(
             "flex h-10 w-10 items-center justify-center rounded-lg transition-colors",
-            date === format(new Date(), 'yyyy-MM-dd') 
-              ? "opacity-30 cursor-not-allowed bg-transparent text-muted-foreground" 
+            date === format(new Date(), 'yyyy-MM-dd')
+              ? "opacity-30 cursor-not-allowed bg-transparent text-muted-foreground"
               : "bg-secondary/50 text-muted-foreground hover:bg-secondary hover:text-foreground"
           )}
         >
@@ -641,8 +774,16 @@ export default function InputPage() {
       )}
 
       {/* Information Banner */}
-      <div className="rounded-lg border border-border bg-secondary/30 px-4 py-3 text-xs text-muted-foreground">
-        Only mark subjects that had classes. Unmarked items are treated as "No Class" when you submit.
+      <div className="rounded-lg border border-border bg-secondary/30 px-4 py-3 text-xs text-muted-foreground flex items-center justify-between">
+        <span>Only mark subjects that had classes. Unmarked items are treated as "No Class" when you submit.</span>
+        {orderedMarkedEntries.length > 0 && (
+          <button
+            onClick={resetAll}
+            className="text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors shrink-0 ml-3 underline"
+          >
+            Reset All
+          </button>
+        )}
       </div>
 
       {/* Lectures Section */}
@@ -650,7 +791,6 @@ export default function InputPage() {
         'lecture',
         lectureEntries,
         <BookOpen className="h-4 w-4 text-primary" />,
-        'text-primary',
         'bg-primary/10'
       )}
 
@@ -659,7 +799,6 @@ export default function InputPage() {
         'lab',
         labEntries,
         <FlaskConical className="h-4 w-4 text-chart-4" />,
-        'text-chart-4',
         'bg-chart-4/10'
       )}
 
@@ -667,7 +806,7 @@ export default function InputPage() {
       {entries.length > 0 && (
         <button
           onClick={handleSubmit}
-          disabled={saving || markedEntries.length === 0}
+          disabled={saving || orderedMarkedEntries.length === 0}
           className={cn(
             'w-full rounded-xl py-3.5 text-sm font-semibold transition-all flex items-center justify-center gap-2',
             justSaved
@@ -686,7 +825,7 @@ export default function InputPage() {
           ) : (
             <>
               <Send className="h-4 w-4" />
-              Log {markedEntries.length} {markedEntries.length === 1 ? 'Entry' : 'Entries'}
+              Log {orderedMarkedEntries.length} {orderedMarkedEntries.length === 1 ? 'Entry' : 'Entries'}
             </>
           )}
         </button>
@@ -700,7 +839,7 @@ export default function InputPage() {
         </div>
       )}
 
-      {/* Already logged for this date */}
+      {/* Already logged for this date (supports drag & drop reordering) */}
       {dayRecords.length > 0 && (
         <div className="glass rounded-xl overflow-hidden mt-8">
           <button
@@ -712,9 +851,16 @@ export default function InputPage() {
                 <Check className="h-4 w-4 text-foreground" />
               </div>
               <div className="text-left">
-                <h2 className="text-sm font-semibold">Already Logged</h2>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-sm font-semibold">Already Logged</h2>
+                  {isReordering && (
+                    <span className="text-[10px] text-primary animate-pulse font-medium">
+                      Saving order…
+                    </span>
+                  )}
+                </div>
                 <p className="text-xs text-muted-foreground">
-                  {dayRecords.length} entries for {format(new Date(date + 'T00:00:00'), 'MMM d')}
+                  {dayRecords.length} entries for {format(new Date(date + 'T00:00:00'), 'MMM d')} • Drag or use arrows to change sequence
                 </p>
               </div>
             </div>
@@ -727,16 +873,47 @@ export default function InputPage() {
 
           {showLogged && (
             <div className="divide-y divide-border border-t border-border">
-              {dayRecords.map((record) => {
+              {dayRecords.map((record, index) => {
                 const label = getRecordLabel(record);
+                const isBeingDragged = draggedRecordIndex === index;
+                const isOver = dragOverRecordIndex === index && draggedRecordIndex !== index;
+
                 return (
                   <div
                     key={record.id}
-                    className="flex items-center gap-3 px-5 py-3"
+                    draggable={dragAllowedId === record.id}
+                    onDragStart={(e) => handleRecordDragStart(e, index)}
+                    onDragOver={(e) => handleRecordDragOver(e, index)}
+                    onDrop={(e) => handleRecordDrop(e, index)}
+                    onDragEnd={handleRecordDragEnd}
+                    className={cn(
+                      'flex items-center gap-2.5 sm:gap-3 px-3 sm:px-5 py-3 transition-all select-none',
+                      isBeingDragged && 'opacity-40 bg-muted/40 scale-[0.99]',
+                      isOver && 'border-t-2 border-primary bg-primary/[0.04]',
+                      record.status === 'attended' ? 'hover:bg-success/[0.02]' : 'hover:bg-danger/[0.02]'
+                    )}
                   >
+                    {/* Drag handle */}
+                    <div
+                      onMouseDown={() => setDragAllowedId(record.id)}
+                      onMouseUp={() => setDragAllowedId(null)}
+                      onTouchStart={() => setDragAllowedId(record.id)}
+                      onTouchEnd={() => setDragAllowedId(null)}
+                      className="cursor-grab active:cursor-grabbing text-muted-foreground/50 hover:text-foreground p-1 -ml-1 rounded transition-colors touch-none"
+                      title="Drag to reorder sequence"
+                    >
+                      <GripVertical className="h-4 w-4" />
+                    </div>
+
+                    {/* Sequence badge */}
+                    <span className="shrink-0 text-[11px] font-bold text-muted-foreground w-5 text-center">
+                      #{index + 1}
+                    </span>
+
+                    {/* Status icon */}
                     <div
                       className={cn(
-                        'flex h-7 w-7 items-center justify-center rounded-md',
+                        'flex h-7 w-7 items-center justify-center rounded-md shrink-0',
                         record.status === 'attended' ? 'bg-success/15' : 'bg-danger/15'
                       )}
                     >
@@ -746,6 +923,8 @@ export default function InputPage() {
                         <X className="h-3.5 w-3.5 text-danger" />
                       )}
                     </div>
+
+                    {/* Subject info */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <p className="text-sm font-medium truncate">
@@ -766,9 +945,31 @@ export default function InputPage() {
                         {record.type === 'lecture' ? 'Lecture' : 'Lab'}
                       </p>
                     </div>
+
+                    {/* Up / Down reorder buttons */}
+                    <div className="flex items-center gap-0.5 shrink-0">
+                      <button
+                        disabled={index === 0 || isReordering}
+                        onClick={() => handleMoveRecord(index, 'up')}
+                        className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-secondary hover:text-foreground disabled:opacity-20 disabled:hover:bg-transparent disabled:hover:text-muted-foreground transition-colors"
+                        title="Move earlier"
+                      >
+                        <ChevronUp className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        disabled={index === dayRecords.length - 1 || isReordering}
+                        onClick={() => handleMoveRecord(index, 'down')}
+                        className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-secondary hover:text-foreground disabled:opacity-20 disabled:hover:bg-transparent disabled:hover:text-muted-foreground transition-colors"
+                        title="Move later"
+                      >
+                        <ChevronDown className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+
+                    {/* Delete button */}
                     <button
                       onClick={() => handleDeleteRecord(record.id)}
-                      className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-danger/15 hover:text-danger transition-colors"
+                      className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-danger/15 hover:text-danger transition-colors shrink-0"
                       title="Delete to re-log"
                     >
                       <Trash2 className="h-4 w-4" />
@@ -780,6 +981,7 @@ export default function InputPage() {
           )}
         </div>
       )}
+
       {/* Note Modal */}
       <NoteModal
         isOpen={showNoteModal}

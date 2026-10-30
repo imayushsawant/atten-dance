@@ -82,6 +82,7 @@ export const attendanceRecords = pgTable('attendance_record', {
   type: text('type', { enum: ['lecture', 'lab'] }).notNull(),
   status: text('status', { enum: ['attended', 'skipped'] }).notNull(),
   date: text('date').notNull(), // YYYY-MM-DD
+  orderIndex: integer('order_index').notNull().default(0),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
