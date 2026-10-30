@@ -127,10 +127,30 @@ export default function CalendarPage() {
     return days;
   }, [currentMonth]);
 
-  // Selected date records
-  const selectedRecords = selectedDate ? recordsByDate[selectedDate] || [] : [];
+  // Selected date records sorted by sequence order matching /input
+  const selectedRecords = useMemo(() => {
+    if (!selectedDate) return [];
+    const list = recordsByDate[selectedDate] || [];
+    return [...list].sort(
+      (a, b) =>
+        (a.orderIndex ?? 0) - (b.orderIndex ?? 0) ||
+        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+    );
+  }, [recordsByDate, selectedDate]);
+
   const selectedAttended = selectedRecords.filter((r) => r.status === 'attended');
   const selectedSkipped = selectedRecords.filter((r) => r.status === 'skipped');
+
+  function getRecordLabel(record: AttendanceRecord): string | null {
+    const sameRecords = selectedRecords.filter(r =>
+      r.subjectId === record.subjectId && r.type === record.type
+    );
+
+    if (sameRecords.length <= 1) return null;
+
+    const index = sameRecords.findIndex(r => r.id === record.id);
+    return record.type === 'lecture' ? `L${index + 1}` : `Lab ${index + 1}`;
+  }
 
   function getSubjectName(subjectId: string) {
     return subjects.find((s) => s.id === subjectId)?.name || 'Unknown';
@@ -383,110 +403,80 @@ export default function CalendarPage() {
                 </button>
               )}
 
-              {/* Attended list */}
-              {selectedAttended.length > 0 && (
+              {/* Logged lectures & labs in exact sequence as /input */}
+              {selectedRecords.length > 0 && (
                 <div className="glass rounded-xl overflow-hidden">
-                  <div className="px-4 py-2.5 border-b border-border">
-                    <p className="text-[10px] font-semibold uppercase tracking-wider text-success flex items-center gap-1.5">
-                      <Check className="h-3 w-3" />
-                      Attended ({selectedAttended.length})
+                  <div className="px-4 py-2.5 border-b border-border flex items-center justify-between">
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      Sequence of Lectures ({selectedRecords.length})
                     </p>
                   </div>
                   <div className="divide-y divide-border">
-                    {selectedAttended.map((r) => (
-                      <div key={r.id} className="flex items-center gap-3 px-4 py-2.5">
-                        {r.type === 'lecture' ? (
-                          <BookOpen className="h-3.5 w-3.5 text-primary shrink-0" />
-                        ) : (
-                          <FlaskConical className="h-3.5 w-3.5 text-chart-4 shrink-0" />
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs font-medium truncate">
-                            {getSubjectName(r.subjectId)}
-                          </p>
-                          <p className="text-[10px] text-muted-foreground">
-                            {r.type === 'lecture' ? 'Lecture' : 'Lab'}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+                    {selectedRecords.map((record, index) => {
+                      const label = getRecordLabel(record);
+                      return (
+                        <div
+                          key={record.id}
+                          className="flex items-center gap-3 px-4 py-3"
+                        >
+                          {/* Sequence badge */}
+                          <span className="shrink-0 text-[11px] font-bold text-muted-foreground w-5 text-center">
+                            #{index + 1}
+                          </span>
 
-              {/* Skipped list */}
-              {selectedSkipped.length > 0 && (
-                <div className="glass rounded-xl overflow-hidden">
-                  <div className="px-4 py-2.5 border-b border-border">
-                    <p className="text-[10px] font-semibold uppercase tracking-wider text-danger flex items-center gap-1.5">
-                      <X className="h-3 w-3" />
-                      Skipped ({selectedSkipped.length})
-                    </p>
-                  </div>
-                  <div className="divide-y divide-border">
-                    {selectedSkipped.map((r) => (
-                      <div key={r.id} className="flex items-center gap-3 px-4 py-2.5">
-                        {r.type === 'lecture' ? (
-                          <BookOpen className="h-3.5 w-3.5 text-primary shrink-0" />
-                        ) : (
-                          <FlaskConical className="h-3.5 w-3.5 text-chart-4 shrink-0" />
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs font-medium truncate">
-                            {getSubjectName(r.subjectId)}
-                          </p>
-                          <p className="text-[10px] text-muted-foreground">
-                            {r.type === 'lecture' ? 'Lecture' : 'Lab'}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Subjects with no entry (no class that day) */}
-              {(() => {
-                const loggedKeys = new Set(
-                  selectedRecords.map((r) => `${r.subjectId}-${r.type}`)
-                );
-                const noEntry: { name: string; type: string }[] = [];
-                for (const s of subjects) {
-                  if (s.hasLecture && !loggedKeys.has(`${s.id}-lecture`))
-                    noEntry.push({ name: s.name, type: 'Lecture' });
-                  if (s.hasLab && !loggedKeys.has(`${s.id}-lab`))
-                    noEntry.push({ name: s.name, type: 'Lab' });
-                }
-                if (noEntry.length === 0 || selectedRecords.length === 0) return null;
-
-                return (
-                  <div className="glass rounded-xl overflow-hidden">
-                    <div className="px-4 py-2.5 border-b border-border">
-                      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                        <Minus className="h-3 w-3" />
-                        No Class ({noEntry.length})
-                      </p>
-                    </div>
-                    <div className="divide-y divide-border">
-                      {noEntry.map((item, i) => (
-                        <div key={i} className="flex items-center gap-3 px-4 py-2 opacity-50">
-                          {item.type === 'Lecture' ? (
-                            <BookOpen className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                          ) : (
-                            <FlaskConical className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                          )}
-                          <div className="flex-1 min-w-0">
-                            <p className="text-xs font-medium truncate text-muted-foreground">
-                              {item.name}
-                            </p>
-                            <p className="text-[10px] text-muted-foreground">{item.type}</p>
+                          {/* Status icon */}
+                          <div
+                            className={cn(
+                              'flex h-7 w-7 items-center justify-center rounded-md shrink-0',
+                              record.status === 'attended' ? 'bg-success/15' : 'bg-danger/15'
+                            )}
+                          >
+                            {record.status === 'attended' ? (
+                              <Check className="h-3.5 w-3.5 text-success" />
+                            ) : (
+                              <X className="h-3.5 w-3.5 text-danger" />
+                            )}
                           </div>
+
+                          {/* Subject and Details */}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <p className="text-sm font-medium truncate">
+                                {getSubjectName(record.subjectId)}
+                              </p>
+                              {label && (
+                                <span className="shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-primary/10 text-primary">
+                                  {label}
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-[10px] text-muted-foreground flex items-center gap-1.5 mt-0.5">
+                              {record.type === 'lecture' ? (
+                                <BookOpen className="h-2.5 w-2.5" />
+                              ) : (
+                                <FlaskConical className="h-2.5 w-2.5" />
+                              )}
+                              {record.type === 'lecture' ? 'Lecture' : 'Lab'}
+                            </p>
+                          </div>
+
+                          {/* Status Badge */}
+                          <span
+                            className={cn(
+                              'shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-md',
+                              record.status === 'attended'
+                                ? 'bg-success/10 text-success'
+                                : 'bg-danger/10 text-danger'
+                            )}
+                          >
+                            {record.status === 'attended' ? 'Attended' : 'Skipped'}
+                          </span>
                         </div>
-                      ))}
-                    </div>
+                      );
+                    })}
                   </div>
-                );
-              })()}
+                </div>
+              )}
             </>
           ) : (
             <div className="glass rounded-xl p-8 text-center">
