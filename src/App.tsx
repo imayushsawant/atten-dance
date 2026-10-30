@@ -15,6 +15,7 @@ import EditSemester from '@/pages/semesters/edit-semester';
 import LoginPage from '@/pages/login';
 import PredictorPage from '@/pages/predictor';
 import TimeWindowPage from '@/pages/time-window';
+import { GitHubLink } from '@/components/github-link';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { data: session, isPending } = useSession();
@@ -40,6 +41,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 export default function App() {
   return (
     <BrowserRouter>
+      <GitHubLink />
       <Routes>
         {/* Public route */}
         <Route path="login" element={<LoginPage />} />
