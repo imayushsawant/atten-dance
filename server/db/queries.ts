@@ -795,11 +795,18 @@ export function getTotalSessionsSafeSkipCombinations(
 // ════════════════════════════════════════════════════════════
 
 export async function getNoteByDate(userId: string, date: string) {
-  const rows = await db
+  const allNotes = await db
     .select()
     .from(notes)
-    .where(and(eq(notes.userId, userId), eq(notes.date, date)));
-  return rows[0] ?? null;
+    .where(eq(notes.userId, userId))
+    .orderBy(desc(notes.createdAt));
+  // Matches if date falls between start date and end date
+  const match = allNotes.find((n) => {
+    const start = n.date;
+    const end = n.endDate || n.date;
+    return date >= start && date <= end;
+  });
+  return match ?? null;
 }
 
 export async function getNotesByDateRange(userId: string, startDate: string, endDate: string) {
@@ -808,31 +815,72 @@ export async function getNotesByDateRange(userId: string, startDate: string, end
     .from(notes)
     .where(eq(notes.userId, userId))
     .orderBy(notes.date);
-  // Filter in JS since drizzle-orm gte/lte on text columns can be fiddly
-  return allNotes.filter(n => n.date >= startDate && n.date <= endDate);
+  // Matches if date range of note intersects [startDate, endDate]
+  return allNotes.filter((n) => {
+    const nStart = n.date;
+    const nEnd = n.endDate || n.date;
+    return nStart <= endDate && nEnd >= startDate;
+  });
 }
 
-export async function upsertNote(id: string, userId: string, date: string, content: string) {
-  const existing = await getNoteByDate(userId, date);
+export async function upsertNote(
+  id: string,
+  userId: string,
+  date: string,
+  content: string,
+  endDate?: string,
+  existingNoteId?: string
+) {
+  const finalEndDate = endDate && endDate >= date ? endDate : date;
+  let existing = null;
+
+  if (existingNoteId) {
+    const rows = await db
+      .select()
+      .from(notes)
+      .where(and(eq(notes.userId, userId), eq(notes.id, existingNoteId)));
+    existing = rows[0] ?? null;
+  }
+  if (!existing) {
+    existing = await getNoteByDate(userId, date);
+  }
+
   if (existing) {
     const rows = await db
       .update(notes)
-      .set({ content, updatedAt: new Date() })
+      .set({
+        date,
+        endDate: finalEndDate,
+        content,
+        updatedAt: new Date(),
+      })
       .where(eq(notes.id, existing.id))
       .returning();
     return rows[0];
   }
   const rows = await db
     .insert(notes)
-    .values({ id, userId, date, content })
+    .values({
+      id,
+      userId,
+      date,
+      endDate: finalEndDate,
+      content,
+    })
     .returning();
   return rows[0];
 }
 
-export async function deleteNoteByDate(userId: string, date: string) {
+export async function deleteNote(userId: string, noteId: string) {
   const rows = await db
     .delete(notes)
-    .where(and(eq(notes.userId, userId), eq(notes.date, date)))
+    .where(and(eq(notes.userId, userId), eq(notes.id, noteId)))
     .returning();
   return rows[0] ?? null;
+}
+
+export async function deleteNoteByDate(userId: string, date: string) {
+  const note = await getNoteByDate(userId, date);
+  if (!note) return null;
+  return deleteNote(userId, note.id);
 }

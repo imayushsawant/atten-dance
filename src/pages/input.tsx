@@ -109,9 +109,15 @@ export default function InputPage() {
     }
   }
 
-  async function handleNoteSave(content: string) {
+  async function handleNoteSave(content: string, startDate?: string, endDate?: string) {
     try {
-      const saved = await api.notes.upsert(date, content);
+      const sDate = startDate || date;
+      const eDate = endDate || sDate;
+      const saved = await api.notes.upsert(sDate, content, {
+        startDate: sDate,
+        endDate: eDate,
+        noteId: note?.id,
+      });
       setNote(saved);
     } catch {
       // ignore
@@ -119,8 +125,13 @@ export default function InputPage() {
   }
 
   async function handleNoteDelete() {
+    if (!note) return;
     try {
-      await api.notes.delete(date);
+      if (note.id) {
+        await api.notes.deleteById(note.id);
+      } else {
+        await api.notes.delete(date);
+      }
       setNote(null);
     } catch {
       // ignore
@@ -765,8 +776,17 @@ export default function InputPage() {
           <div className="flex items-start gap-2.5">
             <StickyNote className="h-3.5 w-3.5 text-amber-500 mt-0.5 shrink-0" />
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-medium text-amber-400/90 mb-0.5">Note</p>
-              <p className="text-xs text-foreground/80 leading-relaxed">{note.content}</p>
+              <div className="flex items-center gap-2 mb-0.5">
+                <p className="text-xs font-semibold text-amber-400/90">
+                  {note.endDate && note.endDate > note.date ? 'Holiday / Multi-day Event' : 'Note'}
+                </p>
+                {note.endDate && note.endDate > note.date && (
+                  <span className="text-[10px] font-medium px-1.5 py-0.2 rounded bg-amber-500/15 text-amber-400">
+                    {format(new Date(note.date + 'T00:00:00'), 'MMM d')} – {format(new Date(note.endDate + 'T00:00:00'), 'MMM d')}
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-foreground/80 leading-relaxed font-medium">{note.content}</p>
             </div>
             <span className="text-[10px] text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0 mt-0.5">Edit</span>
           </div>
@@ -986,9 +1006,10 @@ export default function InputPage() {
       <NoteModal
         isOpen={showNoteModal}
         onClose={() => setShowNoteModal(false)}
-        date={date}
-        formattedDate={format(new Date(date + 'T00:00:00'), 'MMMM d, yyyy')}
+        date={note?.date || date}
+        initialEndDate={note?.endDate || date}
         initialContent={note?.content || ''}
+        noteId={note?.id}
         onSave={handleNoteSave}
         onDelete={handleNoteDelete}
       />

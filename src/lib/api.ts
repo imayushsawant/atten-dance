@@ -47,6 +47,7 @@ export type AttendanceRecord = {
 export type Note = {
   id: string;
   date: string;
+  endDate?: string | null;
   content: string;
   createdAt: string;
   updatedAt: string;
@@ -154,9 +155,18 @@ export const api = {
   notes: {
     getByDate: (date: string) => request<Note | null>(`/notes/${date}`),
     getByRange: (start: string, end: string) => request<Note[]>(`/notes/range/${start}/${end}`),
-    upsert: (date: string, content: string) =>
-      request<Note>(`/notes/${date}`, { method: 'PUT', body: JSON.stringify({ content }) }),
+    upsert: (
+      date: string,
+      content: string,
+      options?: { startDate?: string; endDate?: string; noteId?: string }
+    ) =>
+      request<Note>(`/notes/${date}`, {
+        method: 'PUT',
+        body: JSON.stringify({ content, ...options }),
+      }),
     delete: (date: string) =>
       request<Note>(`/notes/${date}`, { method: 'DELETE' }),
+    deleteById: (id: string) =>
+      request<Note>(`/notes/id/${id}`, { method: 'DELETE' }),
   },
 };

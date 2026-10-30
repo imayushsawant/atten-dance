@@ -96,7 +96,8 @@ export const settings = pgTable('settings', {
 export const notes = pgTable('notes', {
   id: text('note_id').primaryKey(),
   userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-  date: text('date').notNull(), // YYYY-MM-DD
+  date: text('date').notNull(), // YYYY-MM-DD (start date)
+  endDate: text('end_date'), // YYYY-MM-DD (end date for multi-day notes)
   content: text('content').notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),

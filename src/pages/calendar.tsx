@@ -10,7 +10,6 @@ import {
   addMonths,
   subMonths,
   isSameMonth,
-  isSameDay,
   isToday,
   isFuture,
 } from 'date-fns';
@@ -22,7 +21,6 @@ import {
   BookOpen,
   FlaskConical,
   Calendar as CalendarIcon,
-  Minus,
   StickyNote,
 } from 'lucide-react';
 import { api } from '@/lib/api';
@@ -103,10 +101,18 @@ export default function CalendarPage() {
     return map;
   }, [records]);
 
+  // Map notes across all days in their date range (supporting multi-day spans)
   const notesByDate = useMemo(() => {
     const map: Record<string, Note> = {};
     for (const n of notes) {
-      map[n.date] = n;
+      const start = n.date;
+      const end = n.endDate || n.date;
+      let cur = new Date(start + 'T00:00:00');
+      const endObj = new Date(end + 'T00:00:00');
+      while (cur <= endObj) {
+        map[format(cur, 'yyyy-MM-dd')] = n;
+        cur = addDays(cur, 1);
+      }
     }
     return map;
   }, [notes]);
@@ -165,21 +171,31 @@ export default function CalendarPage() {
 
   const selectedNote = selectedDate ? notesByDate[selectedDate] : null;
 
-  async function handleNoteSave(content: string) {
+  async function handleNoteSave(content: string, startDate?: string, endDate?: string) {
     if (!selectedDate) return;
     try {
-      await api.notes.upsert(selectedDate, content);
-      loadNotes(); // reload to get the updated list
+      const sDate = startDate || selectedDate;
+      const eDate = endDate || sDate;
+      await api.notes.upsert(sDate, content, {
+        startDate: sDate,
+        endDate: eDate,
+        noteId: selectedNote?.id,
+      });
+      await loadNotes();
     } catch {
       // ignore
     }
   }
 
   async function handleNoteDelete() {
-    if (!selectedDate) return;
+    if (!selectedNote) return;
     try {
-      await api.notes.delete(selectedDate);
-      loadNotes();
+      if (selectedNote.id) {
+        await api.notes.deleteById(selectedNote.id);
+      } else {
+        await api.notes.delete(selectedNote.date);
+      }
+      await loadNotes();
     } catch {
       // ignore
     }
@@ -198,29 +214,37 @@ export default function CalendarPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Calendar</h1>
-        <p className="text-muted-foreground">Your attendance history at a glance</p>
+        <p className="text-muted-foreground">View your attendance history and timeline</p>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_340px]">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Calendar Grid */}
-        <div className="glass rounded-xl p-5">
+        <div className="lg:col-span-2 glass rounded-xl p-5">
           {/* Month Navigation */}
-          <div className="flex items-center justify-between mb-5">
-            <button
-              onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
-              className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </button>
-            <h2 className="text-sm font-semibold">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold">
               {format(currentMonth, 'MMMM yyyy')}
             </h2>
-            <button
-              onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
-              className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </button>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <button
+                onClick={() => setCurrentMonth(new Date())}
+                className="rounded-lg px-2.5 py-1 text-xs font-medium text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
+              >
+                Today
+              </button>
+              <button
+                onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
           </div>
 
           {/* Day Headers */}
@@ -247,22 +271,28 @@ export default function CalendarPage() {
               const attended = dayRecords.filter((r) => r.status === 'attended').length;
               const skipped = dayRecords.filter((r) => r.status === 'skipped').length;
               const hasRecords = dayRecords.length > 0;
-              const hasNote = !!notesByDate[dateStr];
+              const dayNote = notesByDate[dateStr];
+              const hasNote = !!dayNote;
+              const isMultiDay = Boolean(dayNote && dayNote.endDate && dayNote.endDate > dayNote.date);
+              const isNoteStart = isMultiDay && dateStr === dayNote?.date;
+              const isNoteEnd = isMultiDay && dateStr === dayNote?.endDate;
 
               return (
                 <button
                   key={dateStr}
                   onClick={() => handleDateClick(day)}
                   disabled={future}
+                  title={dayNote ? `${dayNote.content}${isMultiDay ? ` (${dayNote.date} to ${dayNote.endDate})` : ''}` : undefined}
                   className={cn(
-                    'relative flex flex-col items-center rounded-lg py-2 px-1 text-xs transition-all min-h-[52px]',
+                    'relative flex flex-col items-center py-2 px-1 text-xs transition-all min-h-[52px]',
+                    isMultiDay ? (isNoteStart ? 'rounded-l-lg' : isNoteEnd ? 'rounded-r-lg' : 'rounded-none') : 'rounded-lg',
                     !inMonth && 'opacity-30',
                     future && 'cursor-not-allowed opacity-20',
                     isSelected
-                      ? 'bg-primary/15 ring-1 ring-primary/40'
+                      ? 'bg-primary/15 ring-2 ring-primary/60 font-semibold z-10'
                       : 'hover:bg-secondary',
-                    today && !isSelected && 'ring-1 ring-primary/20',
-                    hasNote && !isSelected && 'bg-amber-500/5'
+                    today && !isSelected && 'ring-1 ring-primary/30',
+                    hasNote && !isSelected && (isMultiDay ? 'bg-amber-500/15 border-y border-amber-500/30' : 'bg-amber-500/10 border border-amber-500/25')
                   )}
                 >
                   {hasNote && (
@@ -272,7 +302,7 @@ export default function CalendarPage() {
                     className={cn(
                       'font-medium mb-1',
                       today && 'text-primary font-bold',
-                      isSelected && 'text-primary'
+                      isSelected && 'text-primary font-bold'
                     )}
                   >
                     {format(day, 'd')}
@@ -313,7 +343,7 @@ export default function CalendarPage() {
               <span className="h-2 w-2 rounded-full bg-danger" /> Skipped
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full bg-muted-foreground/30" /> No entry
+              <span className="h-2 w-2 rounded-full bg-amber-500" /> Note / Holiday
             </span>
           </div>
         </div>
@@ -395,10 +425,25 @@ export default function CalendarPage() {
                   <div className="flex items-start gap-2.5">
                     <StickyNote className="h-3.5 w-3.5 text-amber-500 mt-0.5 shrink-0" />
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium text-amber-400/90 mb-0.5">Note</p>
-                      <p className="text-xs text-foreground/80 leading-relaxed">{selectedNote.content}</p>
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <p className="text-xs font-semibold text-amber-400/90">
+                          {selectedNote.endDate && selectedNote.endDate > selectedNote.date
+                            ? 'Holiday / Multi-day Note'
+                            : 'Day Note'}
+                        </p>
+                        {selectedNote.endDate && selectedNote.endDate > selectedNote.date && (
+                          <span className="text-[10px] font-medium px-1.5 py-0.2 rounded bg-amber-500/15 text-amber-400">
+                            {format(new Date(selectedNote.date + 'T00:00:00'), 'MMM d')} – {format(new Date(selectedNote.endDate + 'T00:00:00'), 'MMM d')}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-foreground/80 leading-relaxed font-medium">
+                        {selectedNote.content}
+                      </p>
                     </div>
-                    <span className="text-[10px] text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0 mt-0.5">Edit</span>
+                    <span className="text-[10px] text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0 mt-0.5">
+                      Edit
+                    </span>
                   </div>
                 </button>
               )}
@@ -487,14 +532,15 @@ export default function CalendarPage() {
         </div>
       </div>
 
-      {/* Note Modal */}
+      {/* Note Modal — defaults to selectedDate */}
       {selectedDate && (
         <NoteModal
           isOpen={showNoteModal}
           onClose={() => setShowNoteModal(false)}
-          date={selectedDate}
-          formattedDate={format(new Date(selectedDate + 'T00:00:00'), 'MMMM d, yyyy')}
+          date={selectedNote?.date || selectedDate}
+          initialEndDate={selectedNote?.endDate || selectedDate}
           initialContent={selectedNote?.content || ''}
+          noteId={selectedNote?.id}
           onSave={handleNoteSave}
           onDelete={handleNoteDelete}
         />
