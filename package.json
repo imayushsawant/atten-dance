@@ -12,7 +12,8 @@
     "preview": "vite preview",
     "db:generate": "drizzle-kit generate",
     "db:push": "drizzle-kit push",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "db:indexes": "tsx server/apply_indexes.ts"
   },
   "dependencies": {
     "@better-auth/utils": "^0.4.2",

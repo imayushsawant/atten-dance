@@ -1,4 +1,4 @@
-import { pgTable, text, integer, boolean, timestamp } from 'drizzle-orm/pg-core';
+import { pgTable, text, integer, boolean, timestamp, index } from 'drizzle-orm/pg-core';
 
 // ─── BetterAuth Tables ───────────────────────────────────
 export const users = pgTable('users', {
@@ -21,7 +21,9 @@ export const session = pgTable('session', {
   ipAddress: text("ip_address"),
   userAgent: text("user_agent"),
   userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-});
+}, (table) => [
+  index('session_user_id_idx').on(table.userId),
+]);
 
 export const account = pgTable('account', {
   id: text("id").primaryKey(),
@@ -37,7 +39,9 @@ export const account = pgTable('account', {
   password: text("password"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
+}, (table) => [
+  index('account_user_id_idx').on(table.userId),
+]);
 
 export const verification = pgTable('verification', {
   id: text("id").primaryKey(),
@@ -60,7 +64,10 @@ export const semesters = pgTable('semesters', {
     .default('split_average'),
   shareCode: text('share_code').unique(),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-});
+}, (table) => [
+  index('semesters_user_id_idx').on(table.userId),
+  index('semesters_user_id_is_active_idx').on(table.userId, table.isActive),
+]);
 
 // ─── Subjects ────────────────────────────────────────────
 export const subjects = pgTable('subjects', {
@@ -71,7 +78,9 @@ export const subjects = pgTable('subjects', {
   name: text('name').notNull(),
   hasLecture: boolean('has_lecture').notNull().default(true),
   hasLab: boolean('has_lab').notNull().default(false),
-});
+}, (table) => [
+  index('subjects_semester_id_idx').on(table.semesterId),
+]);
 
 // ─── Attendance Records ──────────────────────────────────
 export const attendanceRecords = pgTable('attendance_record', {
@@ -84,7 +93,11 @@ export const attendanceRecords = pgTable('attendance_record', {
   date: text('date').notNull(), // YYYY-MM-DD
   orderIndex: integer('order_index').notNull().default(0),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-});
+}, (table) => [
+  index('attendance_record_subject_id_idx').on(table.subjectId),
+  index('attendance_record_date_idx').on(table.date),
+  index('attendance_record_subject_id_date_idx').on(table.subjectId, table.date),
+]);
 
 // ─── Settings ────────────────────────────────────────────
 export const settings = pgTable('settings', {
@@ -101,7 +114,10 @@ export const notes = pgTable('notes', {
   content: text('content').notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
-});
+}, (table) => [
+  index('notes_user_id_date_idx').on(table.userId, table.date),
+  index('notes_date_idx').on(table.date),
+]);
 
 // ─── Types ───────────────────────────────────────────────
 export type Semester = typeof semesters.$inferSelect;
