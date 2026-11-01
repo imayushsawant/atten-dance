@@ -18,7 +18,7 @@ import {
   Wand2,
   Clock,
 } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/lib/theme-provider';
 import { useSession, signOut } from '@/lib/auth-client';
@@ -40,12 +40,14 @@ const navItems = [
 export default function AppShell() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
-  const { theme, setTheme, resolved } = useTheme();
+  const { theme, setTheme } = useTheme();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const mainRef = useRef<HTMLElement>(null);
 
-  // Close sidebar on route change (mobile)
+  // Close sidebar on route change (mobile) & smoothly reset scroll
   useEffect(() => {
     setSidebarOpen(false);
+    mainRef.current?.scrollTo({ top: 0, behavior: 'instant' });
   }, [location.pathname]);
 
   function cycleTheme() {
@@ -90,26 +92,26 @@ export default function AppShell() {
               end={item.to === '/'}
               className={({ isActive }) =>
                 cn(
-                  'flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all duration-300',
+                  'flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all duration-200',
                   isActive
-                    ? 'bg-primary/10 text-primary glow-primary border border-primary/20'
+                    ? 'bg-primary/10 text-primary glow-primary border border-primary/20 shadow-sm'
                     : 'text-muted-foreground border border-transparent hover:bg-secondary hover:text-foreground'
                 )
               }
             >
               <item.icon className="h-4.5 w-4.5" />
-              {item.label}
+              <span>{item.label}</span>
             </NavLink>
           ))}
         </nav>
 
-        {/* Footer */}
-        <div className="border-t border-border p-3 space-y-1">
+        {/* Semester selector link */}
+        <div className="border-t border-border/50 p-3 space-y-2">
           <NavLink
             to="/semesters"
             className={({ isActive }) =>
               cn(
-                'flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all duration-300',
+                'flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all duration-200',
                 isActive
                   ? 'bg-primary/10 text-primary glow-primary border border-primary/20'
                   : 'text-muted-foreground border border-transparent hover:bg-secondary hover:text-foreground'
@@ -117,41 +119,46 @@ export default function AppShell() {
             }
           >
             <GraduationCap className="h-4.5 w-4.5" />
-            Manage Semesters
+            <span>Semesters</span>
           </NavLink>
+
+          {/* User profile & logout */}
           <UserFooter onLoggingOut={() => setIsLoggingOut(true)} />
         </div>
       </aside>
 
-      {/* Mobile overlay */}
+      {/* Backdrop for mobile */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+          className="fixed inset-0 z-40 bg-background/80 backdrop-blur-sm lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
-      {/* Main content */}
-      <div className="flex flex-1 flex-col overflow-hidden relative">
-        {/* Mobile header */}
-        <header className="flex h-14 items-center justify-between border-b border-border px-4 lg:hidden">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
-            >
-              {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            </button>
-            <div className="flex items-center gap-2">
-              <img src={Logo} alt="Atten-Dance Logo" className="h-7 w-7" />
-              <span className="font-bold">Atten-Dance</span>
-            </div>
-          </div>
+      {/* Main Content */}
+      <div className="flex flex-1 flex-col overflow-hidden lg:pl-4">
+        {/* Top bar */}
+        <header className="flex h-16 shrink-0 items-center justify-between border-b border-border/50 px-4 lg:hidden">
+          <button
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="rounded-xl p-2.5 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
+          >
+            {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+          <span className="text-base font-bold text-primary">Atten-Dance</span>
+          <button
+            onClick={cycleTheme}
+            className="flex items-center gap-1.5 rounded-xl border border-border/50 bg-secondary/50 px-3 py-1.5 text-xs font-medium text-foreground hover:bg-secondary transition-all"
+            title={`Current: ${themeLabel}. Click to switch.`}
+          >
+            <ThemeIcon className="h-3.5 w-3.5" />
+            <span>{themeLabel}</span>
+          </button>
         </header>
 
-        {/* Page content */}
-        <main className="flex-1 overflow-y-auto">
-          <div className="animate-fade-in p-4 md:p-6 lg:p-8">
+        {/* Page content with smooth route transition */}
+        <main ref={mainRef} className="flex-1 overflow-y-auto">
+          <div key={location.pathname} className="animate-fade-in p-4 md:p-6 lg:p-8">
             <Outlet />
           </div>
         </main>
