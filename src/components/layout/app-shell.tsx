@@ -17,6 +17,7 @@ import {
   LogOut,
   Wand2,
   Clock,
+  Star,
 } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
@@ -60,11 +61,11 @@ export default function AppShell() {
   const themeLabel = theme === 'dark' ? 'Dark' : theme === 'light' ? 'Light' : 'System';
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background p-0 lg:p-4">
+    <div className="flex h-[100dvh] lg:h-screen overflow-hidden bg-background p-0 lg:p-4">
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-50 flex w-64 flex-col bg-card transition-transform duration-300 lg:relative lg:translate-x-0 lg:rounded-2xl lg:border lg:border-border lg:shadow-2xl',
+          'fixed inset-y-0 left-0 z-50 flex w-64 flex-col bg-card transition-transform duration-300 pt-[env(safe-area-inset-top,0px)] pb-[env(safe-area-inset-bottom,0px)] lg:pt-0 lg:pb-0 lg:relative lg:translate-x-0 lg:rounded-2xl lg:border lg:border-border lg:shadow-2xl',
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         )}
       >
@@ -84,7 +85,7 @@ export default function AppShell() {
         </Link>
 
         {/* Navigation */}
-        <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
+        <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4 overscroll-contain">
           {navItems.map((item) => (
             <NavLink
               key={item.to}
@@ -105,7 +106,7 @@ export default function AppShell() {
           ))}
         </nav>
 
-        {/* Semester selector link */}
+        {/* Semester selector link & GitHub link for mobile */}
         <div className="border-t border-border/50 p-3 space-y-2">
           <NavLink
             to="/semesters"
@@ -121,6 +122,16 @@ export default function AppShell() {
             <GraduationCap className="h-4.5 w-4.5" />
             <span>Semesters</span>
           </NavLink>
+
+          <a
+            href="https://github.com/imayushsawant/atten-dance"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex lg:hidden items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium text-muted-foreground border border-transparent hover:bg-secondary hover:text-foreground transition-all duration-200"
+          >
+            <Star className="h-4.5 w-4.5" />
+            <span>Star on GitHub</span>
+          </a>
 
           {/* User profile & logout */}
           <UserFooter onLoggingOut={() => setIsLoggingOut(true)} />
@@ -138,7 +149,7 @@ export default function AppShell() {
       {/* Main Content */}
       <div className="flex flex-1 flex-col overflow-hidden lg:pl-4">
         {/* Top bar */}
-        <header className="flex h-16 shrink-0 items-center justify-between border-b border-border/50 px-4 lg:hidden">
+        <header className="flex h-[calc(4rem+env(safe-area-inset-top,0px))] pt-[env(safe-area-inset-top,0px)] shrink-0 items-center justify-between border-b border-border/50 px-4 lg:hidden">
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
             className="rounded-xl p-2.5 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
@@ -157,8 +168,8 @@ export default function AppShell() {
         </header>
 
         {/* Page content with smooth route transition */}
-        <main ref={mainRef} className="flex-1 overflow-y-auto">
-          <div key={location.pathname} className="animate-fade-in p-4 md:p-6 lg:p-8">
+        <main ref={mainRef} className="flex-1 overflow-y-auto overscroll-contain">
+          <div key={location.pathname} className="animate-fade-in p-4 md:p-6 lg:p-8 pb-[calc(2rem+env(safe-area-inset-bottom,0px))]">
             <Outlet />
           </div>
         </main>

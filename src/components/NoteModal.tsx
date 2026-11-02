@@ -155,7 +155,7 @@ export default function NoteModal({
 
       {/* Modal */}
       <div
-        className="relative w-full max-w-lg glass rounded-2xl shadow-2xl border border-border animate-in fade-in zoom-in-95 duration-200 overflow-hidden"
+        className="relative w-full max-w-lg glass rounded-2xl shadow-2xl border border-border animate-in fade-in zoom-in-95 duration-200 overflow-y-auto max-h-[calc(100dvh-2rem)] overscroll-contain"
         onKeyDown={handleKeyDown}
       >
         {/* Header */}

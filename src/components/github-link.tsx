@@ -6,7 +6,7 @@ export function GitHubLink() {
       rel="noopener noreferrer"
       title="Star on GitHub"
       aria-label="Star on GitHub"
-      className="fixed top-2.5 right-4 lg:top-6 lg:right-6 z-30 flex h-9 w-9 items-center justify-center rounded-full border border-border/70 bg-background/80 text-muted-foreground backdrop-blur-md transition-all duration-200 hover:scale-105 hover:border-border hover:bg-secondary hover:text-foreground shadow-sm group"
+      className="hidden lg:flex fixed top-6 right-6 z-30 h-9 w-9 items-center justify-center rounded-full border border-border/70 bg-background/80 text-muted-foreground backdrop-blur-md transition-all duration-200 hover:scale-105 hover:border-border hover:bg-secondary hover:text-foreground shadow-sm group"
     >
       <svg
         viewBox="0 0 24 24"
@@ -22,4 +22,3 @@ export function GitHubLink() {
     </a>
   );
 }
-

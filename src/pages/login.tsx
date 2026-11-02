@@ -49,7 +49,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="h-screen w-full lg:grid lg:grid-cols-10 bg-background overflow-hidden">
+    <div className="min-h-[100dvh] w-full lg:h-screen lg:grid lg:grid-cols-10 bg-background overflow-y-auto lg:overflow-hidden overscroll-contain">
 
       {/* 70% Left Side - Marketing & Features (Hidden on small screens) */}
       <div className="relative hidden lg:flex col-span-7 flex-col justify-center p-6 lg:p-8 xl:p-10 overflow-hidden border-r border-border/50">
@@ -125,7 +125,7 @@ export default function LoginPage() {
       </div>
 
       {/* 30% Right Side - Login Panel */}
-      <div className="col-span-12 lg:col-span-3 flex flex-col justify-center p-6 md:p-8 lg:p-6 bg-card relative z-20 shadow-2xl h-screen overflow-hidden">
+      <div className="col-span-12 lg:col-span-3 flex flex-col justify-center p-6 md:p-8 lg:p-6 bg-card relative z-20 shadow-2xl min-h-[100dvh] lg:h-screen overflow-y-auto lg:overflow-hidden py-12 lg:py-6 pt-[calc(2rem+env(safe-area-inset-top,0px))] pb-[calc(2rem+env(safe-area-inset-bottom,0px))] lg:pt-6 lg:pb-6">
         
         <div className="w-full max-w-sm mx-auto my-auto flex flex-col justify-center h-full max-h-[600px]">
           {/* Mobile Logo (Only visible on small screens) */}

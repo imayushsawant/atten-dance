@@ -919,7 +919,7 @@ export default function InputPage() {
                       onMouseUp={() => setDragAllowedId(null)}
                       onTouchStart={() => setDragAllowedId(record.id)}
                       onTouchEnd={() => setDragAllowedId(null)}
-                      className="cursor-grab active:cursor-grabbing text-muted-foreground/50 hover:text-foreground p-1 -ml-1 rounded transition-colors touch-none"
+                      className="hidden sm:flex cursor-grab active:cursor-grabbing text-muted-foreground/50 hover:text-foreground p-1 -ml-1 rounded transition-colors"
                       title="Drag to reorder sequence"
                     >
                       <GripVertical className="h-4 w-4" />

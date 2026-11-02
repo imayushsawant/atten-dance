@@ -81,6 +81,12 @@
     @apply border-border;
   }
 
+  html, body {
+    height: 100%;
+    overscroll-behavior-y: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
   body {
     @apply bg-background text-foreground font-sans antialiased;
     transition: background-color 0.3s ease, color 0.3s ease;
@@ -171,7 +177,7 @@
   animation: shimmer 2s infinite;
 }
 
-/* Smooth silky page transitions */
+/* Smooth silky page transitions without persistent will-change */
 @keyframes pageSlideIn {
   0% {
     opacity: 0;
@@ -184,8 +190,7 @@
 }
 
 .animate-fade-in {
-  animation: pageSlideIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
-  will-change: opacity, transform;
+  animation: pageSlideIn 0.24s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 /* Floating elements */
@@ -197,4 +202,25 @@
   0% { transform: translateY(0px); }
   50% { transform: translateY(-5px); }
   100% { transform: translateY(0px); }
+}
+
+/* Mobile scrolling utilities */
+.overscroll-contain {
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Disable sticky hover effects on touch screens */
+@media (hover: none) and (pointer: coarse) {
+  .hover\:scale-\[1\.02\]:hover {
+    transform: none;
+  }
 }
