@@ -10,9 +10,6 @@ import {
   GraduationCap,
   Menu,
   X,
-  Sun,
-  Moon,
-  Monitor,
   History as HistoryIcon,
   LogOut,
   Wand2,
@@ -21,7 +18,6 @@ import {
 } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
-import { useTheme } from '@/lib/theme-provider';
 import { useSession, signOut } from '@/lib/auth-client';
 import Logo from '@/assets/Logo.svg';
 
@@ -41,7 +37,6 @@ const navItems = [
 export default function AppShell() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
-  const { theme, setTheme } = useTheme();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const mainRef = useRef<HTMLElement>(null);
 
@@ -50,15 +45,6 @@ export default function AppShell() {
     setSidebarOpen(false);
     mainRef.current?.scrollTo({ top: 0, behavior: 'instant' });
   }, [location.pathname]);
-
-  function cycleTheme() {
-    const order: Array<'dark' | 'light' | 'system'> = ['dark', 'light', 'system'];
-    const idx = order.indexOf(theme);
-    setTheme(order[(idx + 1) % order.length]);
-  }
-
-  const ThemeIcon = theme === 'dark' ? Moon : theme === 'light' ? Sun : Monitor;
-  const themeLabel = theme === 'dark' ? 'Dark' : theme === 'light' ? 'Light' : 'System';
 
   return (
     <div className="flex h-[100dvh] lg:h-screen overflow-hidden bg-background p-0 lg:p-4">
@@ -153,18 +139,20 @@ export default function AppShell() {
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
             className="rounded-xl p-2.5 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
+            aria-label={sidebarOpen ? 'Close menu' : 'Open menu'}
           >
             {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
-          <span className="text-base font-bold text-primary">Atten-Dance</span>
-          <button
-            onClick={cycleTheme}
-            className="flex items-center gap-1.5 rounded-xl border border-border/50 bg-secondary/50 px-3 py-1.5 text-xs font-medium text-foreground hover:bg-secondary transition-all"
-            title={`Current: ${themeLabel}. Click to switch.`}
-          >
-            <ThemeIcon className="h-3.5 w-3.5" />
-            <span>{themeLabel}</span>
-          </button>
+          
+          <Link to="/" className="flex items-center gap-2.5 hover:opacity-90 transition-opacity">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/20 glow-primary p-1.5">
+              <img src={Logo} alt="Atten-Dance Logo" className="h-full w-full object-contain" />
+            </div>
+            <span className="text-base font-bold text-primary tracking-tight">Atten-Dance</span>
+          </Link>
+
+          {/* Invisible spacer to balance the hamburger icon and keep center content aligned */}
+          <div className="w-10" aria-hidden="true" />
         </header>
 
         {/* Page content with smooth route transition */}
