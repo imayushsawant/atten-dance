@@ -6,6 +6,7 @@ import {
   HeartPulseIcon,
   BookOpenIcon,
 } from '@/components/icons';
+import { Logo } from '@/components/logo';
 
 export default function LoginPage() {
   const { data: session, isPending: sessionPending } = useSession();
@@ -57,10 +58,9 @@ export default function LoginPage() {
       <div className="relative hidden lg:flex col-span-7 flex-col justify-between p-12 lg:p-16 border-r border-border-subtle bg-panel/30">
         <div>
           {/* Brand Mark */}
-          <div className="flex items-center gap-3 mb-12">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-forest-800 dark:bg-cta-bg text-text-on-dark relative">
-              <span className="font-serif text-xl font-bold">A</span>
-              <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-accent" />
+          <div className="flex items-center gap-3.5 mb-12">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-panel border border-border-subtle text-accent p-2 shadow-xs">
+              <Logo className="h-full w-full object-contain" />
             </div>
             <div>
               <div className="text-xl font-semibold tracking-tight text-text-primary">
@@ -131,12 +131,13 @@ export default function LoginPage() {
       <div className="col-span-12 lg:col-span-5 flex flex-col justify-center p-6 sm:p-10 lg:p-12 min-h-[100dvh] lg:h-screen bg-card">
         <div className="w-full max-w-sm mx-auto">
           {/* Mobile Brand Mark */}
-          <div className="flex lg:hidden items-center gap-2.5 mb-8">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-forest-800 dark:bg-cta-bg text-text-on-dark relative">
-              <span className="font-serif text-base font-bold">A</span>
-              <span className="absolute top-1 right-1 h-1 w-1 rounded-full bg-accent" />
+          <div className="flex lg:hidden items-center gap-3 mb-8">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-panel border border-border-subtle text-accent p-1.5 shadow-xs">
+              <Logo className="h-full w-full object-contain" />
             </div>
-            <span className="font-serif text-base font-medium text-text-primary">Atten-Dance</span>
+            <span className="font-semibold text-lg text-text-primary tracking-tight">
+              Atten<span className="text-accent">-</span>Dance
+            </span>
           </div>
 
           <div className="mb-6">

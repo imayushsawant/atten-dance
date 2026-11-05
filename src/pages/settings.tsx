@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { DownloadIcon } from '@/components/icons';
+import { Logo } from '@/components/logo';
 import { api } from '@/lib/api';
 import { useTheme } from '@/lib/theme-provider';
 import { cn } from '@/lib/utils';
@@ -163,10 +164,15 @@ export default function SettingsPage() {
 
       {/* Colophon / About */}
       <div className="ledger-panel p-6">
-        <span className="eyebrow block mb-1">Colophon</span>
-        <h2 className="font-serif text-lg font-normal text-text-primary mb-2">
-          Atten-Dance
-        </h2>
+        <span className="eyebrow block mb-2">Colophon</span>
+        <div className="flex items-center gap-3 mb-3">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card border border-border-subtle text-accent p-1.5 shadow-xs">
+            <Logo className="h-full w-full object-contain" />
+          </div>
+          <h2 className="font-serif text-lg font-normal text-text-primary">
+            Atten<span className="text-accent">-</span>Dance
+          </h2>
+        </div>
         <div className="space-y-1.5 text-xs text-text-secondary leading-relaxed">
           <p>
             An editorial attendance ledger crafted for students navigating mandatory attendance requirements.

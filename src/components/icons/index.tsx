@@ -89,4 +89,5 @@ export const MoreHorizontalIcon = createIcon(H.MoreHorizontalIcon, 'MoreHorizont
 export const HeartPulseIcon = createIcon(H.HeartPulseIcon, 'HeartPulseIcon');
 
 export { HugeiconsIcon };
+export { Logo } from '@/components/logo';
 export type { IconSvgElement, HugeiconsProps };

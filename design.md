@@ -141,7 +141,7 @@ Dark mode feels like the same paper ledger under ambient night lighting — deep
 ```
 
 #### Sidebar Architecture
-- **Logo Area:** Custom mark + wordmark **Atten-Dance** (hyphen highlighted in `--accent`), tagline below.
+- **Logo Area:** Custom SVG brand mark in `--accent` terracotta tile + wordmark **Atten-Dance** (hyphen highlighted in `--accent`), subtitle *"Attendance Ledger"* below.
 - **`WORKSPACE` Section:**
   - Dashboard (`/`)
   - Log Attendance (`/input`)

@@ -25,6 +25,7 @@ import { api } from '@/lib/api';
 import type { Analytics } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/lib/theme-provider';
+import { Logo } from '@/components/logo';
 
 function getChartStyles(resolved: 'dark' | 'light') {
   const isDark = resolved === 'dark';
@@ -111,8 +112,8 @@ export default function Dashboard() {
     return (
       <>
         <div className="flex flex-col items-center justify-center min-h-[60vh] text-center max-w-md mx-auto py-12">
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-panel border border-border-subtle mb-6 text-forest-800 dark:text-accent">
-            <GraduationCapIcon className="h-8 w-8" />
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-panel border border-border-subtle mb-6 text-accent p-3 shadow-xs">
+            <Logo className="h-full w-full object-contain" />
           </div>
           <span className="eyebrow mb-2">Welcome to Atten-Dance</span>
           <h1 className="font-serif text-3xl font-normal text-text-primary mb-3">

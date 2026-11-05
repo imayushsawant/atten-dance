@@ -24,6 +24,7 @@ import { useSession, signOut } from '@/lib/auth-client';
 import { useTheme } from '@/lib/theme-provider';
 import { api } from '@/lib/api';
 import type { Semester } from '@/lib/api';
+import { Logo } from '@/components/logo';
 
 const workspaceNavItems = [
   { to: '/', icon: DashboardIcon, label: 'Dashboard' },
@@ -73,10 +74,9 @@ export default function AppShell() {
         {/* Brand Header */}
         <div className="flex h-20 items-center justify-between border-b border-sidebar-divider px-5">
           <Link to="/" className="flex items-center gap-3 group">
-            {/* Logo Mark: pen/slash with orange dot */}
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-forest-700 text-text-on-dark relative">
-              <span className="font-serif text-lg font-bold">A</span>
-              <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-accent" />
+            {/* SVG Brand Logo Mark */}
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/10 border border-white/10 text-accent p-1.5 shadow-xs transition-colors group-hover:bg-white/15">
+              <Logo className="h-full w-full object-contain" />
             </div>
             <div>
               <div className="text-lg font-semibold tracking-tight text-text-on-dark flex items-center">
@@ -215,12 +215,13 @@ export default function AppShell() {
             <MenuIcon className="h-5 w-5" />
           </button>
 
-          <Link to="/" className="flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-md bg-forest-800 text-text-on-dark relative">
-              <span className="font-serif text-sm font-bold">A</span>
-              <span className="absolute top-1 right-1 h-1 w-1 rounded-full bg-accent" />
+          <Link to="/" className="flex items-center gap-2.5">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-panel border border-border-subtle text-accent p-1">
+              <Logo className="h-full w-full object-contain" />
             </div>
-            <span className="font-medium text-sm text-text-primary">Atten-Dance</span>
+            <span className="font-semibold text-sm text-text-primary tracking-tight">
+              Atten<span className="text-accent">-</span>Dance
+            </span>
           </Link>
 
           <div className="flex items-center gap-2">
