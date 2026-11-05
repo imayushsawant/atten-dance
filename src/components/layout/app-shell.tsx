@@ -1,24 +1,24 @@
 import { NavLink, Link, Outlet, useLocation } from 'react-router';
-import {
-  LayoutDashboard,
-  PenLine,
-  CalendarDays,
-  BarChart3,
-  ShieldCheck,
-  HeartPulse,
-  Settings,
-  GraduationCap,
-  Menu,
-  X,
-  History as HistoryIcon,
-  LogOut,
-  Wand2,
-  Clock,
-  Sun,
-  Moon,
-  MoreHorizontal,
-} from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
+import {
+  DashboardIcon,
+  PenLineIcon,
+  CalendarIcon,
+  AnalyticsIcon,
+  ShieldCheckIcon,
+  HeartPulseIcon,
+  HistoryIcon,
+  CalculatorIcon,
+  TimeWindowIcon,
+  SemestersIcon,
+  SettingsIcon,
+  MenuIcon,
+  CloseIcon,
+  LogoutIcon,
+  SunIcon,
+  MoonIcon,
+  MoreHorizontalIcon,
+} from '@/components/icons';
 import { cn } from '@/lib/utils';
 import { useSession, signOut } from '@/lib/auth-client';
 import { useTheme } from '@/lib/theme-provider';
@@ -26,15 +26,15 @@ import { api } from '@/lib/api';
 import type { Semester } from '@/lib/api';
 
 const workspaceNavItems = [
-  { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/input', icon: PenLine, label: 'Log Attendance' },
-  { to: '/calendar', icon: CalendarDays, label: 'Calendar' },
-  { to: '/analytics', icon: BarChart3, label: 'Analytics' },
-  { to: '/safe-skips', icon: ShieldCheck, label: 'Safe Skips' },
-  { to: '/recovery', icon: HeartPulse, label: 'Recovery' },
+  { to: '/', icon: DashboardIcon, label: 'Dashboard' },
+  { to: '/input', icon: PenLineIcon, label: 'Log Attendance' },
+  { to: '/calendar', icon: CalendarIcon, label: 'Calendar' },
+  { to: '/analytics', icon: AnalyticsIcon, label: 'Analytics' },
+  { to: '/safe-skips', icon: ShieldCheckIcon, label: 'Safe Skips' },
+  { to: '/recovery', icon: HeartPulseIcon, label: 'Recovery' },
   { to: '/history', icon: HistoryIcon, label: 'History' },
-  { to: '/predictor', icon: Wand2, label: 'Predictor' },
-  { to: '/time-window', icon: Clock, label: 'Time Window' },
+  { to: '/predictor', icon: CalculatorIcon, label: 'Predictor' },
+  { to: '/time-window', icon: TimeWindowIcon, label: 'Time Window' },
 ];
 
 export default function AppShell() {
@@ -94,7 +94,7 @@ export default function AppShell() {
             className="p-1.5 text-sidebar-text-muted hover:text-text-on-dark rounded-md lg:hidden"
             aria-label="Close navigation"
           >
-            <X className="h-5 w-5" />
+            <CloseIcon className="h-5 w-5" />
           </button>
         </div>
 
@@ -161,7 +161,7 @@ export default function AppShell() {
                   )
                 }
               >
-                <GraduationCap className="h-4.5 w-4.5 shrink-0 opacity-80 group-hover:opacity-100" />
+                <SemestersIcon className="h-4.5 w-4.5 shrink-0 opacity-80 group-hover:opacity-100" />
                 <span className="truncate">Manage Semesters</span>
               </NavLink>
             </nav>
@@ -179,12 +179,12 @@ export default function AppShell() {
             >
               {resolved === 'dark' ? (
                 <>
-                  <Sun className="h-3.5 w-3.5 text-warn" />
+                  <SunIcon className="h-3.5 w-3.5 text-warn" />
                   <span>Light</span>
                 </>
               ) : (
                 <>
-                  <Moon className="h-3.5 w-3.5 text-sidebar-text" />
+                  <MoonIcon className="h-3.5 w-3.5 text-sidebar-text" />
                   <span>Dark</span>
                 </>
               )}
@@ -212,7 +212,7 @@ export default function AppShell() {
             className="rounded-lg p-2 text-text-secondary hover:bg-panel hover:text-text-primary transition-colors"
             aria-label="Open navigation menu"
           >
-            <Menu className="h-5 w-5" />
+            <MenuIcon className="h-5 w-5" />
           </button>
 
           <Link to="/" className="flex items-center gap-2">
@@ -234,7 +234,7 @@ export default function AppShell() {
               className="p-2 text-text-secondary hover:text-text-primary rounded-lg transition-colors"
               aria-label="Toggle theme"
             >
-              {resolved === 'dark' ? <Sun className="h-4 w-4 text-warn" /> : <Moon className="h-4 w-4" />}
+              {resolved === 'dark' ? <SunIcon className="h-4 w-4 text-warn" /> : <MoonIcon className="h-4 w-4" />}
             </button>
           </div>
         </header>
@@ -259,7 +259,7 @@ export default function AppShell() {
                 )
               }
             >
-              <LayoutDashboard className="h-5 w-5" />
+              <DashboardIcon className="h-5 w-5" />
               <span>Dashboard</span>
             </NavLink>
 
@@ -272,7 +272,7 @@ export default function AppShell() {
                 )
               }
             >
-              <PenLine className="h-5 w-5" />
+              <PenLineIcon className="h-5 w-5" />
               <span>Log</span>
             </NavLink>
 
@@ -285,7 +285,7 @@ export default function AppShell() {
                 )
               }
             >
-              <CalendarDays className="h-5 w-5" />
+              <CalendarIcon className="h-5 w-5" />
               <span>Calendar</span>
             </NavLink>
 
@@ -298,7 +298,7 @@ export default function AppShell() {
                 )
               }
             >
-              <BarChart3 className="h-5 w-5" />
+              <AnalyticsIcon className="h-5 w-5" />
               <span>Analytics</span>
             </NavLink>
 
@@ -306,7 +306,7 @@ export default function AppShell() {
               onClick={() => setSidebarOpen(true)}
               className="flex flex-col items-center justify-center h-full gap-1 text-[11px] font-medium text-text-muted hover:text-text-primary transition-colors"
             >
-              <MoreHorizontal className="h-5 w-5" />
+              <MoreHorizontalIcon className="h-5 w-5" />
               <span>More</span>
             </button>
           </div>
@@ -365,7 +365,7 @@ function UserFooter({ onLoggingOut }: { onLoggingOut: () => void }) {
           className="p-1.5 text-sidebar-text-muted hover:text-text-on-dark rounded transition-colors"
           title="Settings"
         >
-          <Settings className="h-4 w-4" />
+          <SettingsIcon className="h-4 w-4" />
         </Link>
 
         <button
@@ -376,7 +376,7 @@ function UserFooter({ onLoggingOut }: { onLoggingOut: () => void }) {
           className="p-1.5 text-sidebar-text-muted hover:text-risk rounded transition-colors"
           title="Sign out"
         >
-          <LogOut className="h-4 w-4" />
+          <LogoutIcon className="h-4 w-4" />
         </button>
       </div>
     </div>

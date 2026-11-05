@@ -102,12 +102,18 @@ Dark mode feels like the same paper ledger under ambient night lighting — deep
 
 ---
 
-## 4. Typography
+## 4. Typography & Iconography
 
 | Role | Family | Fallback | Weights |
 |---|---|---|---|
 | **Display / Headings / Big Numbers** | **Source Serif 4** | Newsreader, Georgia, serif | 400 (Titles), 600 (Stats & Emphasis) |
 | **UI / Body / Tables / Navigation** | **Inter** | -apple-system, system-ui, sans-serif | 400 (Body), 500 (Labels/Nav), 600 (Semibold) |
+| **Iconography** | **Hugeicons (Stroke Rounded)** | `@hugeicons/react` + `@hugeicons/core-free-icons` | 1.5px consistent stroke width |
+
+### Iconography System
+- Standardized on **Hugeicons Stroke Rounded** icon family for a modern, refined editorial aesthetic.
+- Centralized in `@/components/icons` with a uniform 1.5 stroke width, rounded caps, and consistent pixel grid.
+- Used across all navigation items, KPI metrics, buttons, dialogs, calendars, and tables.
 
 ### Universal Type Scale
 

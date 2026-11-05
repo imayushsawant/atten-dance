@@ -14,16 +14,13 @@ import {
   isFuture,
 } from 'date-fns';
 import {
-  ChevronLeft,
-  ChevronRight,
-  Check,
-  X,
-  BookOpen,
-  FlaskConical,
-  Calendar as CalendarIcon,
-  StickyNote,
-  PenLine,
-} from 'lucide-react';
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  CheckIcon,
+  CloseIcon,
+  StickyNoteIcon,
+  PenLineIcon,
+} from '@/components/icons';
 import { api } from '@/lib/api';
 import type { Subject, AttendanceRecord, Note } from '@/lib/api';
 import { cn } from '@/lib/utils';
@@ -237,7 +234,7 @@ export default function CalendarPage() {
                 className="flex h-8 w-8 items-center justify-center rounded-lg border border-border-subtle text-text-muted hover:bg-panel hover:text-text-primary transition-colors"
                 title="Previous month"
               >
-                <ChevronLeft className="h-4 w-4" />
+                <ChevronLeftIcon className="h-4 w-4" />
               </button>
               <button
                 onClick={() => setCurrentMonth(new Date())}
@@ -250,7 +247,7 @@ export default function CalendarPage() {
                 className="flex h-8 w-8 items-center justify-center rounded-lg border border-border-subtle text-text-muted hover:bg-panel hover:text-text-primary transition-colors"
                 title="Next month"
               >
-                <ChevronRight className="h-4 w-4" />
+                <ChevronRightIcon className="h-4 w-4" />
               </button>
             </div>
           </div>
@@ -381,7 +378,7 @@ export default function CalendarPage() {
                     )}
                     title={selectedNote ? 'Edit note' : 'Add note'}
                   >
-                    <StickyNote className="h-4 w-4" />
+                    <StickyNoteIcon className="h-4 w-4" />
                   </button>
                 </div>
 
@@ -394,7 +391,7 @@ export default function CalendarPage() {
                       onClick={() => navigate(`/input?date=${selectedDate}`)}
                       className="inline-flex items-center gap-1.5 rounded-lg bg-forest-800 dark:bg-cta-bg px-4 py-2 text-xs font-medium text-text-on-dark hover:opacity-95 transition-opacity"
                     >
-                      <PenLine className="h-3.5 w-3.5" />
+                      <PenLineIcon className="h-3.5 w-3.5" />
                       Log Attendance
                     </button>
                   </div>
@@ -403,11 +400,11 @@ export default function CalendarPage() {
                     {/* Summary Counters */}
                     <div className="flex items-center gap-4 text-xs">
                       <span className="flex items-center gap-1.5 font-medium text-ok">
-                        <Check className="h-3.5 w-3.5" />
+                        <CheckIcon className="h-3.5 w-3.5" />
                         {selectedAttended.length} attended
                       </span>
                       <span className="flex items-center gap-1.5 font-medium text-risk">
-                        <X className="h-3.5 w-3.5" />
+                        <CloseIcon className="h-3.5 w-3.5" />
                         {selectedSkipped.length} skipped
                       </span>
                     </div>
@@ -429,7 +426,7 @@ export default function CalendarPage() {
                   className="w-full ledger-card border-warn/40 bg-warn/10 p-4 text-left transition-colors hover:bg-warn/15 group"
                 >
                   <div className="flex items-start gap-2.5">
-                    <StickyNote className="h-4 w-4 text-warn mt-0.5 shrink-0" />
+                    <StickyNoteIcon className="h-4 w-4 text-warn mt-0.5 shrink-0" />
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-semibold text-text-primary">
                         {selectedNote.endDate && selectedNote.endDate > selectedNote.date
@@ -469,7 +466,7 @@ export default function CalendarPage() {
                               'h-5 w-5 rounded flex items-center justify-center shrink-0',
                               isAttended ? 'bg-ok-bg text-ok' : 'bg-risk-bg text-risk'
                             )}>
-                              {isAttended ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
+                              {isAttended ? <CheckIcon className="h-3 w-3" /> : <CloseIcon className="h-3 w-3" />}
                             </div>
                             <span className="font-medium text-text-primary truncate">
                               {getSubjectName(record.subjectId)}

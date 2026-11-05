@@ -1,6 +1,11 @@
 import { useState } from 'react';
 import { useSession, signIn, signUp } from '@/lib/auth-client';
-import { ShieldCheck, BarChart3, HeartPulse, BookOpen } from 'lucide-react';
+import {
+  ShieldCheckIcon,
+  AnalyticsIcon,
+  HeartPulseIcon,
+  BookOpenIcon,
+} from '@/components/icons';
 
 export default function LoginPage() {
   const { data: session, isPending: sessionPending } = useSession();
@@ -77,7 +82,7 @@ export default function LoginPage() {
           <div className="grid grid-cols-2 gap-4 max-w-xl">
             <div className="ledger-card p-4">
               <div className="h-9 w-9 rounded-lg bg-ok-bg text-ok flex items-center justify-center mb-2.5">
-                <ShieldCheck className="h-4.5 w-4.5" />
+                <ShieldCheckIcon className="h-4.5 w-4.5" />
               </div>
               <h3 className="font-serif text-sm font-semibold text-text-primary mb-1">Safe Skips</h3>
               <p className="text-xs text-text-secondary leading-relaxed">
@@ -87,7 +92,7 @@ export default function LoginPage() {
 
             <div className="ledger-card p-4">
               <div className="h-9 w-9 rounded-lg bg-risk-bg text-risk flex items-center justify-center mb-2.5">
-                <HeartPulse className="h-4.5 w-4.5" />
+                <HeartPulseIcon className="h-4.5 w-4.5" />
               </div>
               <h3 className="font-serif text-sm font-semibold text-text-primary mb-1">Recovery Planner</h3>
               <p className="text-xs text-text-secondary leading-relaxed">
@@ -97,7 +102,7 @@ export default function LoginPage() {
 
             <div className="ledger-card p-4">
               <div className="h-9 w-9 rounded-lg bg-chip text-text-primary flex items-center justify-center mb-2.5">
-                <BarChart3 className="h-4.5 w-4.5" />
+                <AnalyticsIcon className="h-4.5 w-4.5" />
               </div>
               <h3 className="font-serif text-sm font-semibold text-text-primary mb-1">Deep Analytics</h3>
               <p className="text-xs text-text-secondary leading-relaxed">
@@ -107,7 +112,7 @@ export default function LoginPage() {
 
             <div className="ledger-card p-4">
               <div className="h-9 w-9 rounded-lg bg-panel text-forest-700 dark:text-text-primary flex items-center justify-center mb-2.5 border border-border-subtle">
-                <BookOpen className="h-4.5 w-4.5" />
+                <BookOpenIcon className="h-4.5 w-4.5" />
               </div>
               <h3 className="font-serif text-sm font-semibold text-text-primary mb-1">Verification Logs</h3>
               <p className="text-xs text-text-secondary leading-relaxed">

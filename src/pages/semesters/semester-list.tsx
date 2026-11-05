@@ -1,7 +1,18 @@
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link } from 'react-router';
-import { Plus, Trash2, Check, GraduationCap, Edit3, PowerOff, Share2, Download, Copy, AlertTriangle } from 'lucide-react';
+import {
+  PlusIcon,
+  TrashIcon,
+  CheckIcon,
+  GraduationCapIcon,
+  EditIcon,
+  PowerIcon,
+  ShareIcon,
+  DownloadIcon,
+  CopyIcon,
+  AlertTriangleIcon,
+} from '@/components/icons';
 import { api } from '@/lib/api';
 import type { Semester } from '@/lib/api';
 import { cn } from '@/lib/utils';
@@ -122,14 +133,14 @@ export default function SemesterList() {
             onClick={() => setImportModalOpen(true)}
             className="flex items-center gap-1.5 rounded-lg border border-border-strong bg-card px-3.5 py-2 text-xs font-medium text-text-secondary hover:bg-panel hover:text-text-primary transition-colors"
           >
-            <Download className="h-3.5 w-3.5" />
+            <DownloadIcon className="h-3.5 w-3.5" />
             Import
           </button>
           <Link
             to="/semesters/new"
             className="flex items-center gap-1.5 rounded-lg bg-forest-800 dark:bg-cta-bg px-4 py-2 text-xs font-medium text-text-on-dark hover:opacity-95 transition-opacity"
           >
-            <Plus className="h-3.5 w-3.5" />
+            <PlusIcon className="h-3.5 w-3.5" />
             New Semester
           </Link>
         </div>
@@ -137,14 +148,14 @@ export default function SemesterList() {
 
       {semesters.length === 0 ? (
         <div className="ledger-card p-12 text-center">
-          <GraduationCap className="h-10 w-10 text-text-muted mx-auto mb-3 opacity-60" />
+          <GraduationCapIcon className="h-10 w-10 text-text-muted mx-auto mb-3 opacity-60" />
           <h2 className="font-serif text-xl font-normal text-text-primary mb-1">No semesters enrolled</h2>
           <p className="text-xs text-text-secondary mb-6">Create your first semester to begin logging attendance.</p>
           <Link
             to="/semesters/new"
             className="inline-flex items-center gap-2 rounded-lg bg-forest-800 dark:bg-cta-bg px-5 py-2.5 text-xs font-medium text-text-on-dark hover:opacity-95 transition-opacity"
           >
-            <Plus className="h-4 w-4" />
+            <PlusIcon className="h-4 w-4" />
             Create Semester
           </Link>
         </div>
@@ -168,7 +179,7 @@ export default function SemesterList() {
                         : 'bg-chip text-text-muted'
                     )}
                   >
-                    <GraduationCap className="h-5 w-5" />
+                    <GraduationCapIcon className="h-5 w-5" />
                   </div>
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
@@ -197,14 +208,14 @@ export default function SemesterList() {
                     className="flex h-8 items-center gap-1.5 rounded-md border border-border-strong bg-card px-2.5 text-xs font-medium text-text-secondary hover:bg-panel hover:text-text-primary transition-colors"
                     title="Share semester"
                   >
-                    <Share2 className="h-3.5 w-3.5" />
+                    <ShareIcon className="h-3.5 w-3.5" />
                     Share
                   </button>
                   <Link
                     to={`/semesters/${sem.id}/edit`}
                     className="flex h-8 items-center gap-1.5 rounded-md border border-border-strong bg-card px-2.5 text-xs font-medium text-text-secondary hover:bg-panel hover:text-text-primary transition-colors"
                   >
-                    <Edit3 className="h-3.5 w-3.5" />
+                    <EditIcon className="h-3.5 w-3.5" />
                     Edit
                   </Link>
 
@@ -214,7 +225,7 @@ export default function SemesterList() {
                       className="flex h-8 items-center gap-1.5 rounded-md border border-warn/30 bg-warn/10 px-2.5 text-xs font-medium text-warn hover:bg-warn/20 transition-colors"
                       title="End semester"
                     >
-                      <PowerOff className="h-3.5 w-3.5" />
+                      <PowerIcon className="h-3.5 w-3.5" />
                       End
                     </button>
                   ) : (
@@ -222,7 +233,7 @@ export default function SemesterList() {
                       onClick={() => handleActivate(sem.id)}
                       className="flex h-8 items-center gap-1.5 rounded-md border border-border-strong bg-card px-2.5 text-xs font-medium text-text-secondary hover:bg-ok-bg hover:text-ok transition-colors"
                     >
-                      <Check className="h-3.5 w-3.5" />
+                      <CheckIcon className="h-3.5 w-3.5" />
                       Activate
                     </button>
                   )}
@@ -232,7 +243,7 @@ export default function SemesterList() {
                     className="flex h-8 w-8 items-center justify-center rounded-md text-text-muted hover:bg-risk-bg hover:text-risk transition-colors"
                     title="Delete semester"
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <TrashIcon className="h-4 w-4" />
                   </button>
                 </div>
               </div>
@@ -246,7 +257,7 @@ export default function SemesterList() {
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-fade-in">
           <div className="ledger-card w-full max-w-sm p-6 text-center">
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-warn/15 text-warn mx-auto mb-3">
-              <PowerOff className="h-6 w-6" />
+              <PowerIcon className="h-6 w-6" />
             </div>
             <h2 className="font-serif text-xl font-normal text-text-primary mb-1">End Semester?</h2>
             <p className="text-xs text-text-secondary mb-6 leading-relaxed">
@@ -276,7 +287,7 @@ export default function SemesterList() {
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-fade-in">
           <div className="ledger-card w-full max-w-sm p-6 text-center border-risk/40">
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-risk-bg text-risk mx-auto mb-3">
-              <AlertTriangle className="h-6 w-6" />
+              <AlertTriangleIcon className="h-6 w-6" />
             </div>
             <h2 className="font-serif text-xl font-normal text-text-primary mb-1">Delete Semester?</h2>
             <p className="text-xs text-text-secondary mb-6 leading-relaxed">
@@ -306,7 +317,7 @@ export default function SemesterList() {
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-fade-in">
           <div className="ledger-card w-full max-w-sm p-6 text-center">
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-chip text-forest-800 dark:text-accent mx-auto mb-3">
-              <Share2 className="h-6 w-6" />
+              <ShareIcon className="h-6 w-6" />
             </div>
             <span className="eyebrow text-[10px]">Share Code</span>
             <h2 className="font-serif text-xl font-normal text-text-primary mt-1 mb-2">Share Semester</h2>
@@ -324,7 +335,7 @@ export default function SemesterList() {
                 className="p-1.5 rounded hover:bg-chip transition-colors text-text-muted hover:text-text-primary"
                 title="Copy code"
               >
-                {copied ? <Check className="h-4 w-4 text-ok" /> : <Copy className="h-4 w-4" />}
+                {copied ? <CheckIcon className="h-4 w-4 text-ok" /> : <CopyIcon className="h-4 w-4" />}
               </button>
             </div>
             <button
@@ -343,7 +354,7 @@ export default function SemesterList() {
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-fade-in">
           <div className="ledger-card w-full max-w-sm p-6 text-center">
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-chip text-forest-800 dark:text-accent mx-auto mb-3">
-              <Download className="h-6 w-6" />
+              <DownloadIcon className="h-6 w-6" />
             </div>
             <span className="eyebrow text-[10px]">Import Structure</span>
             <h2 className="font-serif text-xl font-normal text-text-primary mt-1 mb-2">Import Semester</h2>

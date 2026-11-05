@@ -1,5 +1,13 @@
 import { useEffect, useState } from 'react';
-import { Plus, Minus, RotateCcw, Check, X, BookOpen, FlaskConical } from 'lucide-react';
+import {
+  PlusIcon,
+  MinusIcon,
+  RotateCcwIcon,
+  CheckIcon,
+  CloseIcon,
+  BookOpenIcon,
+  FlaskConicalIcon,
+} from '@/components/icons';
 import { api } from '@/lib/api';
 import type { Analytics } from '@/lib/api';
 import { cn } from '@/lib/utils';
@@ -307,7 +315,7 @@ export default function PredictorPage() {
                       className="flex h-8 w-8 items-center justify-center rounded-md text-text-muted hover:bg-risk-bg hover:text-risk transition-colors"
                       title="Remove instance"
                     >
-                      <Minus className="h-3.5 w-3.5" />
+                      <MinusIcon className="h-3.5 w-3.5" />
                     </button>
                   )}
                   <button
@@ -315,7 +323,7 @@ export default function PredictorPage() {
                     className="flex h-8 w-8 items-center justify-center rounded-md bg-panel text-text-secondary hover:text-text-primary border border-border-subtle transition-colors"
                     title={`Add another ${type}`}
                   >
-                    <Plus className="h-3.5 w-3.5" />
+                    <PlusIcon className="h-3.5 w-3.5" />
                   </button>
 
                   <button
@@ -327,7 +335,7 @@ export default function PredictorPage() {
                         : 'border-border-subtle bg-card text-text-secondary hover:bg-ok-bg/50 hover:text-ok'
                     )}
                   >
-                    <Check className="h-3.5 w-3.5" />
+                    <CheckIcon className="h-3.5 w-3.5" />
                     <span className="hidden sm:inline">Present</span>
                   </button>
                   <button
@@ -339,7 +347,7 @@ export default function PredictorPage() {
                         : 'border-border-subtle bg-card text-text-secondary hover:bg-risk-bg/50 hover:text-risk'
                     )}
                   >
-                    <X className="h-3.5 w-3.5" />
+                    <CloseIcon className="h-3.5 w-3.5" />
                     <span className="hidden sm:inline">Bunked</span>
                   </button>
                 </div>
@@ -392,7 +400,7 @@ export default function PredictorPage() {
             onClick={handleReset}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border-strong bg-card text-xs font-medium text-text-secondary hover:bg-panel hover:text-text-primary transition-colors"
           >
-            <RotateCcw className="h-3.5 w-3.5" />
+            <RotateCcwIcon className="h-3.5 w-3.5" />
             Reset
           </button>
         </div>
@@ -497,7 +505,7 @@ export default function PredictorPage() {
               <div className="space-y-6 pt-2 border-t border-border-subtle">
                 <div className="space-y-3">
                   <h3 className="text-sm font-semibold text-text-primary flex items-center gap-2">
-                    <BookOpen className="h-4 w-4 text-forest-800 dark:text-accent" />
+                    <BookOpenIcon className="h-4 w-4 text-forest-800 dark:text-accent" />
                     Lectures Simulation
                   </h3>
                   <div className="grid grid-cols-2 gap-3">
@@ -518,7 +526,7 @@ export default function PredictorPage() {
                 
                 <div className="space-y-3">
                   <h3 className="text-sm font-semibold text-text-primary flex items-center gap-2">
-                    <FlaskConical className="h-4 w-4 text-forest-800 dark:text-accent" />
+                    <FlaskConicalIcon className="h-4 w-4 text-forest-800 dark:text-accent" />
                     Labs Simulation
                   </h3>
                   <div className="grid grid-cols-2 gap-3">
@@ -543,13 +551,13 @@ export default function PredictorPage() {
               {renderSection(
                 'lecture',
                 lectureEntries,
-                <BookOpen className="h-4 w-4" />
+                <BookOpenIcon className="h-4 w-4" />
               )}
 
               {renderSection(
                 'lab',
                 labEntries,
-                <FlaskConical className="h-4 w-4" />
+                <FlaskConicalIcon className="h-4 w-4" />
               )}
             </div>
           )}
@@ -579,7 +587,7 @@ function Stepper({
           disabled={value <= 0}
           className="h-7 w-7 flex items-center justify-center rounded-md border border-border-strong bg-card text-text-secondary hover:bg-panel disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
         >
-          <Minus className="h-3 w-3" />
+          <MinusIcon className="h-3 w-3" />
         </button>
         <span className={cn('font-serif text-xl font-semibold', value > 0 ? color : 'text-text-primary')}>
           {value}
@@ -588,7 +596,7 @@ function Stepper({
           onClick={() => onChange(1)}
           className="h-7 w-7 flex items-center justify-center rounded-md border border-border-strong bg-card text-text-secondary hover:bg-panel transition-colors"
         >
-          <Plus className="h-3 w-3" />
+          <PlusIcon className="h-3 w-3" />
         </button>
       </div>
     </div>

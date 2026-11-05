@@ -2,14 +2,14 @@ import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useNavigate } from 'react-router';
 import {
-  PenLine,
-  ShieldCheck,
-  AlertTriangle,
-  BookOpen,
-  GraduationCap,
-  Download,
-  ChevronRight,
-} from 'lucide-react';
+  PenLineIcon,
+  ShieldCheckIcon,
+  AlertTriangleIcon,
+  BookOpenIcon,
+  GraduationCapIcon,
+  DownloadIcon,
+  ChevronRightIcon,
+} from '@/components/icons';
 import {
   ResponsiveContainer,
   BarChart,
@@ -112,7 +112,7 @@ export default function Dashboard() {
       <>
         <div className="flex flex-col items-center justify-center min-h-[60vh] text-center max-w-md mx-auto py-12">
           <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-panel border border-border-subtle mb-6 text-forest-800 dark:text-accent">
-            <GraduationCap className="h-8 w-8" />
+            <GraduationCapIcon className="h-8 w-8" />
           </div>
           <span className="eyebrow mb-2">Welcome to Atten-Dance</span>
           <h1 className="font-serif text-3xl font-normal text-text-primary mb-3">
@@ -125,7 +125,7 @@ export default function Dashboard() {
             to="/semesters/new"
             className="inline-flex items-center gap-2 rounded-lg bg-forest-800 dark:bg-cta-bg px-6 py-3 text-sm font-medium text-text-on-dark transition-opacity hover:opacity-95"
           >
-            <GraduationCap className="h-4 w-4" />
+            <GraduationCapIcon className="h-4 w-4" />
             Create Your First Semester
           </Link>
           <div className="mt-6 flex flex-col items-center gap-1.5">
@@ -134,7 +134,7 @@ export default function Dashboard() {
               onClick={() => setImportModalOpen(true)}
               className="flex items-center gap-1.5 text-xs font-medium text-text-secondary hover:text-text-primary transition-colors underline underline-offset-4"
             >
-              <Download className="h-3.5 w-3.5" />
+              <DownloadIcon className="h-3.5 w-3.5" />
               Import semester with share code
             </button>
           </div>
@@ -145,7 +145,7 @@ export default function Dashboard() {
             <div className="ledger-card w-full max-w-sm p-6">
               <div className="text-center mb-6">
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-panel mx-auto mb-3 text-forest-800 dark:text-accent">
-                  <Download className="h-6 w-6" />
+                  <DownloadIcon className="h-6 w-6" />
                 </div>
                 <span className="eyebrow">Import</span>
                 <h2 className="font-serif text-xl font-normal text-text-primary mt-1 mb-2">Import Semester</h2>
@@ -313,7 +313,7 @@ export default function Dashboard() {
               <div className="flex items-center justify-between mb-2">
                 <span className="eyebrow">Safe Skips</span>
                 <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-ok-bg text-ok">
-                  <ShieldCheck className="h-5 w-5" />
+                  <ShieldCheckIcon className="h-5 w-5" />
                 </div>
               </div>
               <div className="font-serif text-4xl sm:text-5xl font-semibold text-text-primary tracking-tight">
@@ -322,7 +322,7 @@ export default function Dashboard() {
             </div>
             <p className="text-xs text-text-secondary mt-4 group-hover:text-text-primary transition-colors flex items-center justify-between">
               <span>Sessions you can miss</span>
-              <ChevronRight className="h-3.5 w-3.5 text-text-muted" />
+              <ChevronRightIcon className="h-3.5 w-3.5 text-text-muted" />
             </p>
           </Link>
 
@@ -335,7 +335,7 @@ export default function Dashboard() {
               <div className="flex items-center justify-between mb-2">
                 <span className="eyebrow">At Risk</span>
                 <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-risk-bg text-risk">
-                  <AlertTriangle className="h-5 w-5" />
+                  <AlertTriangleIcon className="h-5 w-5" />
                 </div>
               </div>
               <div className={cn(
@@ -347,7 +347,7 @@ export default function Dashboard() {
             </div>
             <p className="text-xs text-text-secondary mt-4 group-hover:text-text-primary transition-colors flex items-center justify-between">
               <span>{subjectsBelow > 0 ? 'Below target threshold' : 'All subjects safe'}</span>
-              <ChevronRight className="h-3.5 w-3.5 text-text-muted" />
+              <ChevronRightIcon className="h-3.5 w-3.5 text-text-muted" />
             </p>
           </Link>
 
@@ -357,7 +357,7 @@ export default function Dashboard() {
               <div className="flex items-center justify-between mb-2">
                 <span className="eyebrow">Subjects</span>
                 <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-chip text-text-secondary">
-                  <BookOpen className="h-5 w-5" />
+                  <BookOpenIcon className="h-5 w-5" />
                 </div>
               </div>
               <div className="font-serif text-4xl sm:text-5xl font-semibold text-text-primary tracking-tight">
@@ -477,7 +477,7 @@ export default function Dashboard() {
               className="text-xs font-semibold text-text-secondary hover:text-text-primary flex items-center gap-1 transition-colors"
             >
               <span>View full analytics</span>
-              <ChevronRight className="h-3.5 w-3.5" />
+              <ChevronRightIcon className="h-3.5 w-3.5" />
             </Link>
           </div>
         </div>
@@ -497,13 +497,13 @@ export default function Dashboard() {
                   className="flex items-center gap-3.5 p-3.5 rounded-lg bg-cta-bg text-cta-text hover:opacity-95 transition-all group"
                 >
                   <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-cta-tile text-cta-text">
-                    <PenLine className="h-5 w-5" />
+                    <PenLineIcon className="h-5 w-5" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-semibold truncate">Log Attendance</div>
                     <div className="text-xs text-sidebar-text-muted truncate">Record today's sessions</div>
                   </div>
-                  <ChevronRight className="h-4 w-4 text-cta-text/70 group-hover:translate-x-0.5 transition-transform" />
+                  <ChevronRightIcon className="h-4 w-4 text-cta-text/70 group-hover:translate-x-0.5 transition-transform" />
                 </Link>
 
                 {/* 2. Secondary CTA: Safe Skips */}
@@ -512,7 +512,7 @@ export default function Dashboard() {
                   className="flex items-center gap-3.5 p-3.5 rounded-lg bg-card border border-border-subtle text-text-primary hover:border-border-strong transition-all group"
                 >
                   <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-ok-bg text-ok">
-                    <ShieldCheck className="h-5 w-5" />
+                    <ShieldCheckIcon className="h-5 w-5" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-semibold truncate">Safe Skips</div>
@@ -520,7 +520,7 @@ export default function Dashboard() {
                       {totalSafeSkips > 0 ? `${totalSafeSkips} sessions safe to miss` : 'Calculate bunk buffers'}
                     </div>
                   </div>
-                  <ChevronRight className="h-4 w-4 text-text-muted group-hover:translate-x-0.5 transition-transform" />
+                  <ChevronRightIcon className="h-4 w-4 text-text-muted group-hover:translate-x-0.5 transition-transform" />
                 </Link>
 
                 {/* 3. Secondary CTA: Recovery Plan */}
@@ -532,7 +532,7 @@ export default function Dashboard() {
                     'flex h-11 w-11 shrink-0 items-center justify-center rounded-lg',
                     subjectsBelow > 0 ? 'bg-risk-bg text-risk' : 'bg-ok-bg text-ok'
                   )}>
-                    <AlertTriangle className="h-5 w-5" />
+                    <AlertTriangleIcon className="h-5 w-5" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-semibold truncate">Recovery Plan</div>
@@ -540,7 +540,7 @@ export default function Dashboard() {
                       {subjectsBelow > 0 ? `${subjectsBelow} subject${subjectsBelow > 1 ? 's' : ''} below threshold` : 'All subjects above target'}
                     </div>
                   </div>
-                  <ChevronRight className="h-4 w-4 text-text-muted group-hover:translate-x-0.5 transition-transform" />
+                  <ChevronRightIcon className="h-4 w-4 text-text-muted group-hover:translate-x-0.5 transition-transform" />
                 </Link>
               </div>
             </div>
@@ -565,7 +565,7 @@ export default function Dashboard() {
             className="text-xs font-semibold text-text-secondary hover:text-text-primary flex items-center gap-1 transition-colors"
           >
             <span>Full Analytics</span>
-            <ChevronRight className="h-3.5 w-3.5" />
+            <ChevronRightIcon className="h-3.5 w-3.5" />
           </Link>
         </div>
 

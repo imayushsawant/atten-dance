@@ -1,5 +1,11 @@
 import { useEffect, useState } from 'react';
-import { ShieldCheck, BookOpen, FlaskConical, AlertTriangle, Target, TrendingUp } from 'lucide-react';
+import {
+  ShieldCheckIcon,
+  BookOpenIcon,
+  FlaskConicalIcon,
+  AlertTriangleIcon,
+  TargetIcon,
+} from '@/components/icons';
 import { api } from '@/lib/api';
 import type { Analytics } from '@/lib/api';
 import { cn } from '@/lib/utils';
@@ -85,7 +91,7 @@ export default function SafeSkipsPage() {
         <div className="ledger-card p-6">
           <div className="flex items-center gap-3 mb-4">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-ok-bg text-ok">
-              <ShieldCheck className="h-5 w-5" />
+              <ShieldCheckIcon className="h-5 w-5" />
             </div>
             <div>
               <span className="eyebrow text-[10px]">Overall Bunk Buffer</span>
@@ -108,7 +114,7 @@ export default function SafeSkipsPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
             <div className="rounded-lg border border-border-subtle bg-card p-4">
               <div className="flex items-center gap-2 mb-2 text-xs text-text-muted">
-                <BookOpen className="h-4 w-4" />
+                <BookOpenIcon className="h-4 w-4" />
                 <span className="font-semibold uppercase tracking-wider text-[10px]">If only skipping Lectures</span>
               </div>
               <div className="font-serif text-3xl font-semibold text-text-primary">
@@ -119,7 +125,7 @@ export default function SafeSkipsPage() {
 
             <div className="rounded-lg border border-border-subtle bg-card p-4">
               <div className="flex items-center gap-2 mb-2 text-xs text-text-muted">
-                <FlaskConical className="h-4 w-4" />
+                <FlaskConicalIcon className="h-4 w-4" />
                 <span className="font-semibold uppercase tracking-wider text-[10px]">If only skipping Labs</span>
               </div>
               <div className="font-serif text-3xl font-semibold text-text-primary">
@@ -133,7 +139,7 @@ export default function SafeSkipsPage() {
           {analytics.overall.safeSkips.combinations?.length > 0 && (
             <div className="mt-4 pt-4 border-t border-border-subtle">
               <span className="eyebrow text-[10px] block mb-2 flex items-center gap-1.5">
-                <Target className="h-3 w-3" />
+                <TargetIcon className="h-3 w-3" />
                 Valid Split Combinations
               </span>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -159,7 +165,7 @@ export default function SafeSkipsPage() {
       ) : (
         <div className="ledger-card p-6 text-center border-risk/40 bg-risk-bg/20">
           <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-risk-bg text-risk mx-auto mb-3">
-            <AlertTriangle className="h-6 w-6" />
+            <AlertTriangleIcon className="h-6 w-6" />
           </div>
           <h2 className="font-serif text-xl font-normal text-text-primary mb-1">
             Overall is currently at {analytics.overall.percentage.toFixed(2)}%
@@ -204,12 +210,12 @@ export default function SafeSkipsPage() {
                   </div>
                   {isAtRisk ? (
                     <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-risk-bg text-risk">
-                      <AlertTriangle className="h-3 w-3" />
+                      <AlertTriangleIcon className="h-3 w-3" />
                       At Risk
                     </span>
                   ) : (
                     <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-ok-bg text-ok">
-                      <ShieldCheck className="h-3 w-3" />
+                      <ShieldCheckIcon className="h-3 w-3" />
                       Buffer Available
                     </span>
                   )}
@@ -220,7 +226,7 @@ export default function SafeSkipsPage() {
                   {hasLecture && (
                     <div className="rounded-lg border border-border-subtle bg-panel/30 p-3 text-center">
                       <div className="flex items-center justify-center gap-1.5 mb-1 text-xs text-text-muted">
-                        <BookOpen className="h-3.5 w-3.5" />
+                        <BookOpenIcon className="h-3.5 w-3.5" />
                         <span className="font-semibold uppercase tracking-wider text-[10px]">Lectures</span>
                       </div>
                       <div className={cn(
@@ -239,7 +245,7 @@ export default function SafeSkipsPage() {
                   {hasLab && (
                     <div className="rounded-lg border border-border-subtle bg-panel/30 p-3 text-center">
                       <div className="flex items-center justify-center gap-1.5 mb-1 text-xs text-text-muted">
-                        <FlaskConical className="h-3.5 w-3.5" />
+                        <FlaskConicalIcon className="h-3.5 w-3.5" />
                         <span className="font-semibold uppercase tracking-wider text-[10px]">Labs</span>
                       </div>
                       <div className={cn(
@@ -257,7 +263,7 @@ export default function SafeSkipsPage() {
                   {/* Combined */}
                   <div className="rounded-lg border border-border-subtle bg-panel/30 p-3 text-center">
                     <div className="flex items-center justify-center gap-1.5 mb-1 text-xs text-text-muted">
-                      <ShieldCheck className="h-3.5 w-3.5" />
+                      <ShieldCheckIcon className="h-3.5 w-3.5" />
                       <span className="font-semibold uppercase tracking-wider text-[10px]">Combined</span>
                     </div>
                     <div className={cn(

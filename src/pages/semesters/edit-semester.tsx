@@ -1,7 +1,17 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate, useParams } from 'react-router';
-import { Plus, Trash2, BookOpen, FlaskConical, GraduationCap, Check, ChevronDown, ChevronUp, AlertCircle } from 'lucide-react';
+import {
+  PlusIcon,
+  TrashIcon,
+  BookOpenIcon,
+  FlaskConicalIcon,
+  GraduationCapIcon,
+  CheckIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
+  AlertCircleIcon,
+} from '@/components/icons';
 import type { CalculationMethod } from '@/lib/api';
 import { api } from '@/lib/api';
 import { cn } from '@/lib/utils';
@@ -179,7 +189,7 @@ export default function EditSemester() {
         <div className="ledger-card p-6">
           <label className="eyebrow block mb-2">Semester Title</label>
           <div className="relative">
-            <GraduationCap className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" />
+            <GraduationCapIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" />
             <input
               type="text"
               value={name}
@@ -255,7 +265,7 @@ export default function EditSemester() {
                         : 'border-border-strong bg-card'
                     )}
                   >
-                    {calculationMethod === 'total_sessions' && <Check className="h-3 w-3" />}
+                    {calculationMethod === 'total_sessions' && <CheckIcon className="h-3 w-3" />}
                   </div>
                   <span className="text-sm font-semibold text-text-primary">
                     Total Sessions (Raw Combined)
@@ -268,7 +278,7 @@ export default function EditSemester() {
                   className="flex items-center gap-1 text-xs text-text-muted hover:text-text-primary py-1 px-2 rounded transition-colors"
                 >
                   <span>{expandedMethod === 'total_sessions' ? 'Hide details' : 'View formula'}</span>
-                  {expandedMethod === 'total_sessions' ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+                  {expandedMethod === 'total_sessions' ? <ChevronUpIcon className="h-3.5 w-3.5" /> : <ChevronDownIcon className="h-3.5 w-3.5" />}
                 </button>
               </div>
 
@@ -302,7 +312,7 @@ export default function EditSemester() {
                         : 'border-border-strong bg-card'
                     )}
                   >
-                    {calculationMethod === 'split_average' && <Check className="h-3 w-3" />}
+                    {calculationMethod === 'split_average' && <CheckIcon className="h-3 w-3" />}
                   </div>
                   <span className="text-sm font-semibold text-text-primary">
                     Component Average (50 / 50 Split)
@@ -315,7 +325,7 @@ export default function EditSemester() {
                   className="flex items-center gap-1 text-xs text-text-muted hover:text-text-primary py-1 px-2 rounded transition-colors"
                 >
                   <span>{expandedMethod === 'split_average' ? 'Hide details' : 'View formula'}</span>
-                  {expandedMethod === 'split_average' ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+                  {expandedMethod === 'split_average' ? <ChevronUpIcon className="h-3.5 w-3.5" /> : <ChevronDownIcon className="h-3.5 w-3.5" />}
                 </button>
               </div>
 
@@ -367,7 +377,7 @@ export default function EditSemester() {
                           : 'border-border-strong bg-card text-text-muted hover:text-text-primary'
                       )}
                     >
-                      <BookOpen className="h-3.5 w-3.5" />
+                      <BookOpenIcon className="h-3.5 w-3.5" />
                       Lectures
                     </button>
                     <button
@@ -380,7 +390,7 @@ export default function EditSemester() {
                           : 'border-border-strong bg-card text-text-muted hover:text-text-primary'
                       )}
                     >
-                      <FlaskConical className="h-3.5 w-3.5" />
+                      <FlaskConicalIcon className="h-3.5 w-3.5" />
                       Labs
                     </button>
                   </div>
@@ -391,7 +401,7 @@ export default function EditSemester() {
                   disabled={subjects.length <= 1}
                   className="mt-1 flex h-8 w-8 items-center justify-center rounded-md text-text-muted hover:bg-risk-bg hover:text-risk transition-colors disabled:opacity-20"
                 >
-                  <Trash2 className="h-4 w-4" />
+                  <TrashIcon className="h-4 w-4" />
                 </button>
               </div>
             ))}
@@ -402,7 +412,7 @@ export default function EditSemester() {
             onClick={addSubject}
             className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-border-strong bg-card px-4 py-2.5 text-xs font-medium text-text-primary hover:bg-panel transition-colors"
           >
-            <Plus className="h-3.5 w-3.5" />
+            <PlusIcon className="h-3.5 w-3.5" />
             Add Another Subject
           </button>
         </div>
@@ -437,7 +447,7 @@ export default function EditSemester() {
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-fade-in">
           <div className="ledger-card w-full max-w-sm p-6 text-center border-risk/40">
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-risk-bg text-risk mx-auto mb-3">
-              <AlertCircle className="h-6 w-6" />
+              <AlertCircleIcon className="h-6 w-6" />
             </div>
             <h2 className="font-serif text-xl font-normal text-text-primary mb-2">Cannot Disable Component</h2>
             <p className="text-xs text-text-secondary mb-6 leading-relaxed">

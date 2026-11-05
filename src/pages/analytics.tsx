@@ -1,6 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
-import { BookOpen, FlaskConical, TrendingUp, TrendingDown, ChevronRight } from 'lucide-react';
+import {
+  BookOpenIcon,
+  FlaskConicalIcon,
+  TrendingUpIcon,
+  TrendingDownIcon,
+  ChevronRightIcon,
+} from '@/components/icons';
 import { api } from '@/lib/api';
 import type { Analytics } from '@/lib/api';
 import { useTheme } from '@/lib/theme-provider';
@@ -372,14 +378,14 @@ export default function AnalyticsPage() {
                   </div>
                   <div className="flex items-center gap-2">
                     {isOk ? (
-                      <TrendingUp className="h-4 w-4 text-ok" />
+                      <TrendingUpIcon className="h-4 w-4 text-ok" />
                     ) : (
-                      <TrendingDown className="h-4 w-4 text-risk" />
+                      <TrendingDownIcon className="h-4 w-4 text-risk" />
                     )}
                     <span className={cn('font-serif text-xl font-semibold tabular-nums', statusColor)}>
                       {s.combined.percentage.toFixed(1)}%
                     </span>
-                    <ChevronRight className="h-4 w-4 text-text-muted group-hover:translate-x-0.5 transition-transform ml-1" />
+                    <ChevronRightIcon className="h-4 w-4 text-text-muted group-hover:translate-x-0.5 transition-transform ml-1" />
                   </div>
                 </div>
 
@@ -389,7 +395,7 @@ export default function AnalyticsPage() {
                     <div className="rounded-lg border border-border-subtle bg-panel/30 p-3">
                       <div className="flex items-center justify-between mb-1.5 text-xs">
                         <div className="flex items-center gap-1.5 text-text-muted">
-                          <BookOpen className="h-3.5 w-3.5" />
+                          <BookOpenIcon className="h-3.5 w-3.5" />
                           <span className="font-semibold uppercase tracking-wider text-[10px]">Lectures</span>
                         </div>
                         <span className={cn(
@@ -419,7 +425,7 @@ export default function AnalyticsPage() {
                     <div className="rounded-lg border border-border-subtle bg-panel/30 p-3">
                       <div className="flex items-center justify-between mb-1.5 text-xs">
                         <div className="flex items-center gap-1.5 text-text-muted">
-                          <FlaskConical className="h-3.5 w-3.5" />
+                          <FlaskConicalIcon className="h-3.5 w-3.5" />
                           <span className="font-semibold uppercase tracking-wider text-[10px]">Labs</span>
                         </div>
                         <span className={cn(

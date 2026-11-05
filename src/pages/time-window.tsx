@@ -12,7 +12,12 @@ import {
   isSameDay,
   isToday,
 } from 'date-fns';
-import { CalendarRange, Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import {
+  TimeWindowIcon,
+  SearchIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+} from '@/components/icons';
 import { api } from '@/lib/api';
 import type { TimeWindowAnalytics } from '@/lib/api';
 import { useTheme } from '@/lib/theme-provider';
@@ -126,7 +131,7 @@ function CalendarPicker({
           !value && 'text-text-muted'
         )}
       >
-        <CalendarRange className="h-4 w-4 text-text-muted shrink-0" />
+        <TimeWindowIcon className="h-4 w-4 text-text-muted shrink-0" />
         <span className="font-medium text-text-primary">{value ? formatDate(value) : 'Pick date'}</span>
       </button>
 
@@ -138,7 +143,7 @@ function CalendarPicker({
               onClick={() => setViewMonth(subMonths(viewMonth, 1))}
               className="flex h-7 w-7 items-center justify-center rounded text-text-muted hover:bg-panel hover:text-text-primary transition-colors"
             >
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeftIcon className="h-4 w-4" />
             </button>
             <span className="font-serif text-sm font-medium text-text-primary">
               {format(viewMonth, 'MMMM yyyy')}
@@ -148,7 +153,7 @@ function CalendarPicker({
               onClick={() => setViewMonth(addMonths(viewMonth, 1))}
               className="flex h-7 w-7 items-center justify-center rounded text-text-muted hover:bg-panel hover:text-text-primary transition-colors"
             >
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRightIcon className="h-4 w-4" />
             </button>
           </div>
 
@@ -303,7 +308,7 @@ export default function TimeWindowPage() {
             {loading ? (
               <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-text-on-dark border-t-transparent" />
             ) : (
-              <Search className="h-3.5 w-3.5" />
+              <SearchIcon className="h-3.5 w-3.5" />
             )}
             {loading ? 'Analyzing…' : 'Analyze Window'}
           </button>
@@ -328,7 +333,7 @@ export default function TimeWindowPage() {
       {/* Empty State */}
       {!loading && hasSearched && !analytics && !error && (
         <div className="ledger-card p-12 text-center">
-          <CalendarRange className="h-10 w-10 text-text-muted mx-auto mb-2 opacity-50" />
+          <TimeWindowIcon className="h-10 w-10 text-text-muted mx-auto mb-2 opacity-50" />
           <h2 className="font-serif text-lg font-normal text-text-primary">No sessions logged in this window</h2>
           <p className="text-xs text-text-muted mt-1">Try expanding the date range.</p>
         </div>
@@ -340,7 +345,7 @@ export default function TimeWindowPage() {
           {/* Summary Pill Bar */}
           <div className="ledger-panel p-4 flex flex-wrap items-center gap-4 text-xs">
             <div className="flex items-center gap-2">
-              <CalendarRange className="h-4 w-4 text-forest-800 dark:text-accent" />
+              <TimeWindowIcon className="h-4 w-4 text-forest-800 dark:text-accent" />
               <span className="font-medium text-text-primary">{formatDate(analytics.startDate)}</span>
               <span className="text-text-muted">→</span>
               <span className="font-medium text-text-primary">{formatDate(analytics.endDate)}</span>

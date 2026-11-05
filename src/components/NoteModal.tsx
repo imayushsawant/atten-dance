@@ -1,6 +1,13 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Save, Trash2, StickyNote, Calendar, Clock } from 'lucide-react';
+import {
+  CloseIcon,
+  SaveIcon,
+  TrashIcon,
+  StickyNoteIcon,
+  CalendarIcon,
+  ClockIcon,
+} from '@/components/icons';
 import { format, addDays, differenceInCalendarDays } from 'date-fns';
 import { cn } from '@/lib/utils';
 
@@ -162,7 +169,7 @@ export default function NoteModal({
         <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-border-subtle">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-warn/15 text-warn">
-              <StickyNote className="h-5 w-5" />
+              <StickyNoteIcon className="h-5 w-5" />
             </div>
             <div>
               <span className="eyebrow text-[10px]">
@@ -178,7 +185,7 @@ export default function NoteModal({
             onClick={onClose}
             className="flex h-8 w-8 items-center justify-center rounded-lg text-text-muted hover:bg-panel hover:text-text-primary transition-colors"
           >
-            <X className="h-4 w-4" />
+            <CloseIcon className="h-4 w-4" />
           </button>
         </div>
 
@@ -187,7 +194,7 @@ export default function NoteModal({
           {/* Preset Duration Chips */}
           <div>
             <label className="eyebrow text-[10px] block mb-2 flex items-center gap-1.5">
-              <Clock className="h-3 w-3" />
+              <ClockIcon className="h-3 w-3" />
               Duration Preset
             </label>
             <div className="flex flex-wrap gap-1.5">
@@ -216,7 +223,7 @@ export default function NoteModal({
           <div className="grid grid-cols-2 gap-3 pt-1">
             <div>
               <label className="eyebrow text-[10px] block mb-1.5 flex items-center gap-1.5">
-                <Calendar className="h-3 w-3 text-forest-800 dark:text-accent" />
+                <CalendarIcon className="h-3 w-3 text-forest-800 dark:text-accent" />
                 From Date
               </label>
               <input
@@ -228,7 +235,7 @@ export default function NoteModal({
             </div>
             <div>
               <label className="eyebrow text-[10px] block mb-1.5 flex items-center gap-1.5">
-                <Calendar className="h-3 w-3 text-forest-800 dark:text-accent" />
+                <CalendarIcon className="h-3 w-3 text-forest-800 dark:text-accent" />
                 To Date ({durationDays} {durationDays === 1 ? 'day' : 'days'})
               </label>
               <input
@@ -287,7 +294,7 @@ export default function NoteModal({
                 disabled={saving}
                 className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium text-risk bg-risk-bg/60 hover:bg-risk-bg transition-colors disabled:opacity-40"
               >
-                <Trash2 className="h-3.5 w-3.5" />
+                <TrashIcon className="h-3.5 w-3.5" />
                 Delete
               </button>
             )}
@@ -310,7 +317,7 @@ export default function NoteModal({
                 'disabled:opacity-40 disabled:cursor-not-allowed'
               )}
             >
-              <Save className="h-3.5 w-3.5" />
+              <SaveIcon className="h-3.5 w-3.5" />
               {saving ? 'Saving…' : 'Save Note'}
             </button>
           </div>

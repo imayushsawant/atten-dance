@@ -1,15 +1,13 @@
 import { useEffect, useState } from 'react';
 import {
-  HeartPulse,
-  BookOpen,
-  FlaskConical,
-  Target,
-  ArrowUp,
-  CheckCircle2,
-  TrendingUp,
-  AlertTriangle,
-  ShieldCheck,
-} from 'lucide-react';
+  HeartPulseIcon,
+  BookOpenIcon,
+  FlaskConicalIcon,
+  TargetIcon,
+  CheckCircleIcon,
+  TrendingUpIcon,
+  AlertTriangleIcon,
+} from '@/components/icons';
 import { api } from '@/lib/api';
 import type { Analytics, TargetResult } from '@/lib/api';
 import { cn } from '@/lib/utils';
@@ -127,7 +125,7 @@ export default function RecoveryPage() {
           onClick={() => document.getElementById('custom-target-calc')?.scrollIntoView({ behavior: 'smooth' })}
           className="self-start sm:self-auto flex items-center gap-2 rounded-lg border border-border-strong bg-card px-3.5 py-2 text-xs font-medium text-text-secondary hover:bg-panel hover:text-text-primary transition-colors"
         >
-          <Target className="h-3.5 w-3.5 text-forest-800 dark:text-accent" />
+          <TargetIcon className="h-3.5 w-3.5 text-forest-800 dark:text-accent" />
           Goal Simulator
         </button>
       </div>
@@ -137,7 +135,7 @@ export default function RecoveryPage() {
         <div className="ledger-card p-6 border-ok/40 bg-ok-bg/15">
           <div className="flex items-start gap-3.5">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-ok-bg text-ok shrink-0">
-              <CheckCircle2 className="h-5 w-5" />
+              <CheckCircleIcon className="h-5 w-5" />
             </div>
             <div>
               <span className="eyebrow text-[10px]">Overall Standing</span>
@@ -156,7 +154,7 @@ export default function RecoveryPage() {
         <div className="ledger-card p-6 border-risk/40 bg-risk-bg/15">
           <div className="flex items-start gap-3.5">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-risk-bg text-risk shrink-0">
-              <HeartPulse className="h-5 w-5" />
+              <HeartPulseIcon className="h-5 w-5" />
             </div>
             <div>
               <span className="eyebrow text-[10px]">Action Required</span>
@@ -175,14 +173,14 @@ export default function RecoveryPage() {
       {analytics.overall.percentage < threshold && (analytics.overall.recovery.lecture > 0 || analytics.overall.recovery.lab > 0) && (
         <div className="ledger-card p-6">
           <div className="flex items-center gap-2 mb-3">
-            <TrendingUp className="h-4 w-4 text-forest-800 dark:text-accent" />
+            <TrendingUpIcon className="h-4 w-4 text-forest-800 dark:text-accent" />
             <h2 className="font-serif text-lg font-normal text-text-primary">Overall recovery targets</h2>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="rounded-lg border border-border-subtle bg-panel/30 p-4">
               <div className="flex items-center gap-2 mb-2 text-xs text-text-muted">
-                <BookOpen className="h-4 w-4" />
+                <BookOpenIcon className="h-4 w-4" />
                 <span className="font-semibold uppercase tracking-wider text-[10px]">Attending Lectures Only</span>
               </div>
               {analytics.overall.recovery.lecture === -1 ? (
@@ -197,7 +195,7 @@ export default function RecoveryPage() {
 
             <div className="rounded-lg border border-border-subtle bg-panel/30 p-4">
               <div className="flex items-center gap-2 mb-2 text-xs text-text-muted">
-                <FlaskConical className="h-4 w-4" />
+                <FlaskConicalIcon className="h-4 w-4" />
                 <span className="font-semibold uppercase tracking-wider text-[10px]">Attending Labs Only</span>
               </div>
               {analytics.overall.recovery.lab === -1 ? (
@@ -214,7 +212,7 @@ export default function RecoveryPage() {
           {analytics.overall.recovery.combinations?.length > 0 && (
             <div className="mt-4 pt-4 border-t border-border-subtle">
               <span className="eyebrow text-[10px] block mb-2 flex items-center gap-1.5">
-                <Target className="h-3 w-3" />
+                <TargetIcon className="h-3 w-3" />
                 Balanced Attendance Combinations
               </span>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -243,7 +241,7 @@ export default function RecoveryPage() {
       {edgeSubjects.length > 0 && (
         <div className="ledger-card p-6 border-warn/40 bg-warn/10">
           <div className="flex items-center gap-2.5 mb-3 text-warn">
-            <AlertTriangle className="h-5 w-5" />
+            <AlertTriangleIcon className="h-5 w-5" />
             <h2 className="font-serif text-lg font-normal text-text-primary">
               Edge Warning — zero skips remaining
             </h2>
@@ -305,7 +303,7 @@ export default function RecoveryPage() {
                     <div className="rounded-lg border border-border-subtle bg-panel/30 p-4">
                       <div className="flex items-center justify-between text-xs mb-2">
                         <span className="font-semibold uppercase tracking-wider text-[10px] text-text-muted flex items-center gap-1.5">
-                          <BookOpen className="h-3.5 w-3.5" /> Lectures
+                          <BookOpenIcon className="h-3.5 w-3.5" /> Lectures
                         </span>
                         <span className="font-semibold text-risk">{s.lecture.percentage.toFixed(1)}%</span>
                       </div>
@@ -322,7 +320,7 @@ export default function RecoveryPage() {
                     <div className="rounded-lg border border-border-subtle bg-panel/30 p-4">
                       <div className="flex items-center justify-between text-xs mb-2">
                         <span className="font-semibold uppercase tracking-wider text-[10px] text-text-muted flex items-center gap-1.5">
-                          <FlaskConical className="h-3.5 w-3.5" /> Labs
+                          <FlaskConicalIcon className="h-3.5 w-3.5" /> Labs
                         </span>
                         <span className="font-semibold text-risk">{s.lab.percentage.toFixed(1)}%</span>
                       </div>
@@ -344,7 +342,7 @@ export default function RecoveryPage() {
       {/* Goal Simulator / Custom Target Calculator */}
       <div id="custom-target-calc" className="ledger-card p-6">
         <div className="flex items-center gap-2 mb-2">
-          <Target className="h-4 w-4 text-forest-800 dark:text-accent" />
+          <TargetIcon className="h-4 w-4 text-forest-800 dark:text-accent" />
           <h2 className="font-serif text-xl font-normal text-text-primary">Goal Simulator</h2>
         </div>
         <p className="text-xs text-text-secondary mb-6">

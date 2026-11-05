@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Settings as SettingsIcon, RotateCcw, Download, Sun, Moon, Monitor } from 'lucide-react';
+import { DownloadIcon } from '@/components/icons';
 import { api } from '@/lib/api';
 import { useTheme } from '@/lib/theme-provider';
 import { cn } from '@/lib/utils';
@@ -152,7 +152,7 @@ export default function SettingsPage() {
           className="flex items-center gap-3 w-full rounded-lg border border-border-strong bg-card p-4 text-xs font-medium text-text-primary hover:bg-panel transition-colors"
         >
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-chip text-text-primary shrink-0">
-            <Download className="h-4 w-4" />
+            <DownloadIcon className="h-4 w-4" />
           </div>
           <div className="text-left">
             <div className="font-semibold text-text-primary">Export Ledger Data (JSON)</div>

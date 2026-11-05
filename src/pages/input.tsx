@@ -15,22 +15,22 @@ import {
   isFuture,
 } from 'date-fns';
 import {
-  CalendarDays,
-  Check,
-  X,
-  BookOpen,
-  FlaskConical,
-  Trash2,
-  Send,
-  Minus,
-  ChevronDown,
-  ChevronUp,
-  ChevronLeft,
-  ChevronRight,
-  Plus,
-  StickyNote,
-  GripVertical,
-} from 'lucide-react';
+  CalendarIcon,
+  CheckIcon,
+  CloseIcon,
+  BookOpenIcon,
+  FlaskConicalIcon,
+  TrashIcon,
+  SendIcon,
+  MinusIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  PlusIcon,
+  StickyNoteIcon,
+  GripVerticalIcon,
+} from '@/components/icons';
 import { api } from '@/lib/api';
 import type { Subject, AttendanceRecord, Note } from '@/lib/api';
 import { cn } from '@/lib/utils';
@@ -511,14 +511,14 @@ export default function InputPage() {
               onClick={() => markSectionAttended(type)}
               className="flex items-center gap-1 rounded-md border border-border-strong bg-card px-2.5 py-1 text-[11px] font-medium text-ok hover:bg-ok-bg transition-colors"
             >
-              <Check className="h-3 w-3" />
+              <CheckIcon className="h-3 w-3" />
               All
             </button>
             <button
               onClick={() => markSectionSkipped(type)}
               className="flex items-center gap-1 rounded-md border border-border-strong bg-card px-2.5 py-1 text-[11px] font-medium text-risk hover:bg-risk-bg transition-colors"
             >
-              <X className="h-3 w-3" />
+              <CloseIcon className="h-3 w-3" />
               All
             </button>
             <button
@@ -526,7 +526,7 @@ export default function InputPage() {
               className="flex items-center gap-1 rounded-md border border-border-subtle bg-card px-2.5 py-1 text-[11px] font-medium text-text-muted hover:text-text-primary hover:bg-panel transition-colors"
               title="Reset section"
             >
-              <Minus className="h-3 w-3" />
+              <MinusIcon className="h-3 w-3" />
             </button>
           </div>
         </div>
@@ -579,7 +579,7 @@ export default function InputPage() {
                       className="flex h-8 w-8 items-center justify-center rounded-md text-text-muted hover:bg-risk-bg hover:text-risk transition-colors"
                       title="Remove this extra session"
                     >
-                      <Minus className="h-3.5 w-3.5" />
+                      <MinusIcon className="h-3.5 w-3.5" />
                     </button>
                   )}
                   <button
@@ -587,7 +587,7 @@ export default function InputPage() {
                     className="flex h-8 w-8 items-center justify-center rounded-md bg-panel text-text-secondary hover:text-text-primary hover:border-border-strong border border-border-subtle transition-colors"
                     title={`Add another ${type}`}
                   >
-                    <Plus className="h-3.5 w-3.5" />
+                    <PlusIcon className="h-3.5 w-3.5" />
                   </button>
 
                   {/* Present Button */}
@@ -600,7 +600,7 @@ export default function InputPage() {
                         : 'border-border-subtle bg-card text-text-secondary hover:bg-ok-bg/50 hover:text-ok'
                     )}
                   >
-                    <Check className="h-3.5 w-3.5" />
+                    <CheckIcon className="h-3.5 w-3.5" />
                     <span className="hidden sm:inline">Present</span>
                   </button>
 
@@ -614,7 +614,7 @@ export default function InputPage() {
                         : 'border-border-subtle bg-card text-text-secondary hover:bg-risk-bg/50 hover:text-risk'
                     )}
                   >
-                    <X className="h-3.5 w-3.5" />
+                    <CloseIcon className="h-3.5 w-3.5" />
                     <span className="hidden sm:inline">Bunked</span>
                   </button>
                 </div>
@@ -654,7 +654,7 @@ export default function InputPage() {
           className="flex h-9 w-9 items-center justify-center rounded-lg border border-border-subtle bg-card text-text-secondary hover:bg-panel hover:text-text-primary transition-colors"
           title="Previous day"
         >
-          <ChevronLeft className="h-4 w-4" />
+          <ChevronLeftIcon className="h-4 w-4" />
         </button>
 
         <div className="relative flex-1 flex justify-center">
@@ -666,7 +666,7 @@ export default function InputPage() {
               {date === format(new Date(), 'yyyy-MM-dd') ? 'Today' : format(new Date(date + 'T00:00:00'), 'EEEE')}
             </span>
             <div className="flex items-center gap-2">
-              <CalendarDays className="h-4 w-4 text-forest-800 dark:text-accent" />
+              <CalendarIcon className="h-4 w-4 text-forest-800 dark:text-accent" />
               <span className="font-serif text-base font-medium text-text-primary group-hover:text-forest-800 dark:group-hover:text-accent transition-colors">
                 {format(new Date(date + 'T00:00:00'), 'MMMM d, yyyy')}
               </span>
@@ -684,7 +684,7 @@ export default function InputPage() {
             )}
             title={note ? 'View/edit note' : 'Add a note'}
           >
-            <StickyNote className="h-4 w-4" />
+            <StickyNoteIcon className="h-4 w-4" />
             {note && (
               <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-warn" />
             )}
@@ -698,7 +698,7 @@ export default function InputPage() {
                   onClick={() => setCalendarMonth(subMonths(calendarMonth, 1))}
                   className="flex h-7 w-7 items-center justify-center rounded text-text-muted hover:text-text-primary hover:bg-panel transition-colors"
                 >
-                  <ChevronLeft className="h-4 w-4" />
+                  <ChevronLeftIcon className="h-4 w-4" />
                 </button>
                 <span className="font-serif font-medium text-sm text-text-primary">
                   {format(calendarMonth, 'MMMM yyyy')}
@@ -707,7 +707,7 @@ export default function InputPage() {
                   onClick={() => setCalendarMonth(addMonths(calendarMonth, 1))}
                   className="flex h-7 w-7 items-center justify-center rounded text-text-muted hover:text-text-primary hover:bg-panel transition-colors"
                 >
-                  <ChevronRight className="h-4 w-4" />
+                  <ChevronRightIcon className="h-4 w-4" />
                 </button>
               </div>
 
@@ -765,7 +765,7 @@ export default function InputPage() {
           )}
           title="Next day"
         >
-          <ChevronRight className="h-4 w-4" />
+          <ChevronRightIcon className="h-4 w-4" />
         </button>
       </div>
 
@@ -776,7 +776,7 @@ export default function InputPage() {
           className="w-full rounded-xl border border-warn/30 bg-warn/10 px-4 py-3 text-left transition-colors hover:bg-warn/15 group"
         >
           <div className="flex items-start gap-2.5">
-            <StickyNote className="h-4 w-4 text-warn mt-0.5 shrink-0" />
+            <StickyNoteIcon className="h-4 w-4 text-warn mt-0.5 shrink-0" />
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-0.5">
                 <p className="text-xs font-semibold text-text-primary">
@@ -812,14 +812,14 @@ export default function InputPage() {
       {renderSection(
         'lecture',
         lectureEntries,
-        <BookOpen className="h-4 w-4" />
+        <BookOpenIcon className="h-4 w-4" />
       )}
 
       {/* Labs */}
       {renderSection(
         'lab',
         labEntries,
-        <FlaskConical className="h-4 w-4" />
+        <FlaskConicalIcon className="h-4 w-4" />
       )}
 
       {/* Submit Button */}
@@ -837,14 +837,14 @@ export default function InputPage() {
         >
           {justSaved ? (
             <>
-              <Check className="h-4 w-4" />
+              <CheckIcon className="h-4 w-4" />
               Saved to Ledger
             </>
           ) : saving ? (
             'Saving…'
           ) : (
             <>
-              <Send className="h-4 w-4" />
+              <SendIcon className="h-4 w-4" />
               Save {orderedMarkedEntries.length} {orderedMarkedEntries.length === 1 ? 'Session' : 'Sessions'}
             </>
           )}
@@ -855,7 +855,7 @@ export default function InputPage() {
       {entries.length === 0 && !loading && dayRecords.length > 0 && (
         <div className="ledger-card p-8 text-center">
           <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-ok-bg text-ok mx-auto mb-3">
-            <Check className="h-6 w-6" />
+            <CheckIcon className="h-6 w-6" />
           </div>
           <p className="font-serif text-lg font-medium text-text-primary">All caught up</p>
           <p className="text-xs text-text-muted mt-1">
@@ -873,7 +873,7 @@ export default function InputPage() {
           >
             <div className="flex items-center gap-3">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-chip text-text-primary">
-                <Check className="h-4 w-4" />
+                <CheckIcon className="h-4 w-4" />
               </div>
               <div className="text-left">
                 <div className="flex items-center gap-2">
@@ -890,9 +890,9 @@ export default function InputPage() {
               </div>
             </div>
             {showLogged ? (
-              <ChevronUp className="h-4 w-4 text-text-muted" />
+              <ChevronUpIcon className="h-4 w-4 text-text-muted" />
             ) : (
-              <ChevronDown className="h-4 w-4 text-text-muted" />
+              <ChevronDownIcon className="h-4 w-4 text-text-muted" />
             )}
           </button>
 
@@ -927,7 +927,7 @@ export default function InputPage() {
                       className="hidden sm:flex cursor-grab active:cursor-grabbing text-text-muted hover:text-text-primary p-1 -ml-1 rounded transition-colors"
                       title="Drag to reorder sequence"
                     >
-                      <GripVertical className="h-4 w-4" />
+                      <GripVerticalIcon className="h-4 w-4" />
                     </div>
 
                     {/* Sequence badge */}
@@ -943,9 +943,9 @@ export default function InputPage() {
                       )}
                     >
                       {record.status === 'attended' ? (
-                        <Check className="h-3.5 w-3.5" />
+                        <CheckIcon className="h-3.5 w-3.5" />
                       ) : (
-                        <X className="h-3.5 w-3.5" />
+                        <CloseIcon className="h-3.5 w-3.5" />
                       )}
                     </div>
 
@@ -974,7 +974,7 @@ export default function InputPage() {
                         className="flex h-7 w-7 items-center justify-center rounded text-text-muted hover:bg-panel hover:text-text-primary disabled:opacity-20 transition-colors"
                         title="Move earlier"
                       >
-                        <ChevronUp className="h-3.5 w-3.5" />
+                        <ChevronUpIcon className="h-3.5 w-3.5" />
                       </button>
                       <button
                         disabled={index === dayRecords.length - 1 || isReordering}
@@ -982,7 +982,7 @@ export default function InputPage() {
                         className="flex h-7 w-7 items-center justify-center rounded text-text-muted hover:bg-panel hover:text-text-primary disabled:opacity-20 transition-colors"
                         title="Move later"
                       >
-                        <ChevronDown className="h-3.5 w-3.5" />
+                        <ChevronDownIcon className="h-3.5 w-3.5" />
                       </button>
                     </div>
 
@@ -992,7 +992,7 @@ export default function InputPage() {
                       className="flex h-7 w-7 items-center justify-center rounded text-text-muted hover:bg-risk-bg hover:text-risk transition-colors shrink-0"
                       title="Delete record"
                     >
-                      <Trash2 className="h-3.5 w-3.5" />
+                      <TrashIcon className="h-3.5 w-3.5" />
                     </button>
                   </div>
                 );

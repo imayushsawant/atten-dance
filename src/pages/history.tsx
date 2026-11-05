@@ -2,7 +2,14 @@ import { useEffect, useState, useMemo } from 'react';
 import { useSearchParams } from 'react-router';
 import { api } from '@/lib/api';
 import type { Subject, AttendanceRecord } from '@/lib/api';
-import { BookOpen, FlaskConical, History as HistoryIcon, Trash2, Check, X } from 'lucide-react';
+import {
+  BookOpenIcon,
+  FlaskConicalIcon,
+  HistoryIcon,
+  TrashIcon,
+  CheckIcon,
+  CloseIcon,
+} from '@/components/icons';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 
@@ -166,7 +173,7 @@ export default function HistoryPage() {
                       : "text-text-muted hover:text-text-primary"
                 )}
               >
-                <BookOpen className="h-3 w-3" /> Lectures
+                <BookOpenIcon className="h-3 w-3" /> Lectures
               </button>
               <button
                 onClick={() => setSelectedType('lab')}
@@ -180,7 +187,7 @@ export default function HistoryPage() {
                       : "text-text-muted hover:text-text-primary"
                 )}
               >
-                <FlaskConical className="h-3 w-3" /> Labs
+                <FlaskConicalIcon className="h-3 w-3" /> Labs
               </button>
             </div>
           </div>
@@ -219,7 +226,7 @@ export default function HistoryPage() {
                               ? "bg-ok-bg text-ok" 
                               : "bg-risk-bg text-risk"
                           )}>
-                            {isAttended ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
+                            {isAttended ? <CheckIcon className="h-3 w-3" /> : <CloseIcon className="h-3 w-3" />}
                             {isAttended ? 'Present' : 'Bunked'}
                           </span>
                         </td>
@@ -229,7 +236,7 @@ export default function HistoryPage() {
                             className="p-1.5 rounded-md text-text-muted hover:bg-risk-bg hover:text-risk transition-colors"
                             title="Delete Record"
                           >
-                            <Trash2 className="h-3.5 w-3.5" />
+                            <TrashIcon className="h-3.5 w-3.5" />
                           </button>
                         </td>
                       </tr>
