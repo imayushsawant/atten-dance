@@ -23,9 +23,6 @@ export default function Dashboard() {
   const [importCode, setImportCode] = useState('');
   const [importError, setImportError] = useState('');
   const [importing, setImporting] = useState(false);
-  const [viewMode, setViewMode] = useState<'focus' | 'compact'>(() => {
-    return (localStorage.getItem('dashboard_view_mode') as 'focus' | 'compact') || 'focus';
-  });
 
   async function loadData() {
     try {
@@ -47,11 +44,6 @@ export default function Dashboard() {
   useEffect(() => {
     loadData();
   }, []);
-
-  function handleViewChange(mode: 'focus' | 'compact') {
-    setViewMode(mode);
-    localStorage.setItem('dashboard_view_mode', mode);
-  }
 
   async function handleImport(e: React.FormEvent) {
     e.preventDefault();
@@ -223,40 +215,10 @@ export default function Dashboard() {
             <span>Target: {threshold}%</span>
           </div>
         </div>
-
-        {/* View Segmented Toggle (Focus / Compact) */}
-        <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
-          <span className="eyebrow text-[10px]">View</span>
-          <div className="flex items-center p-1 rounded-lg bg-chip border border-border-subtle text-xs">
-            <button
-              onClick={() => handleViewChange('focus')}
-              className={cn(
-                'px-3 py-1 rounded-md text-[11px] font-semibold tracking-wider uppercase transition-colors',
-                viewMode === 'focus'
-                  ? 'bg-forest-800 dark:bg-cta-bg text-text-on-dark shadow-xs'
-                  : 'text-text-muted hover:text-text-primary'
-              )}
-            >
-              Focus
-            </button>
-            <button
-              onClick={() => handleViewChange('compact')}
-              className={cn(
-                'px-3 py-1 rounded-md text-[11px] font-semibold tracking-wider uppercase transition-colors',
-                viewMode === 'compact'
-                  ? 'bg-forest-800 dark:bg-cta-bg text-text-on-dark shadow-xs'
-                  : 'text-text-muted hover:text-text-primary'
-              )}
-            >
-              Compact
-            </button>
-          </div>
-        </div>
       </div>
 
       {/* ──────────────── Row 1: KPI Strip ──────────────── */}
-      {viewMode === 'focus' ? (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-12">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-12">
           {/* Card 1: Overall Attendance with Ring Chart (approx 4.5 / 12 cols) */}
           <div className="ledger-card p-6 lg:col-span-5 flex flex-col justify-between">
             <div className="flex items-start justify-between gap-4">
@@ -368,51 +330,9 @@ export default function Dashboard() {
             </p>
           </div>
         </div>
-      ) : (
-        /* Compact View Metric Row */
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <div className="ledger-card p-4">
-            <span className="eyebrow text-[10px]">Overall</span>
-            <div className="font-serif text-2xl font-semibold text-text-primary mt-1">
-              {overall.percentage.toFixed(1)}%
-            </div>
-            <p className="text-[11px] text-text-muted mt-0.5 truncate">
-              {overall.attended} / {overall.total} sessions
-            </p>
-          </div>
 
-          <Link to="/safe-skips" className="ledger-card p-4 hover:border-border-strong transition-colors">
-            <span className="eyebrow text-[10px]">Safe Skips</span>
-            <div className="font-serif text-2xl font-semibold text-ok mt-1">
-              {totalSafeSkips === Infinity ? '∞' : totalSafeSkips}
-            </div>
-            <p className="text-[11px] text-text-muted mt-0.5">Available to bunk</p>
-          </Link>
-
-          <Link to="/recovery" className="ledger-card p-4 hover:border-border-strong transition-colors">
-            <span className="eyebrow text-[10px]">At Risk</span>
-            <div className={cn(
-              'font-serif text-2xl font-semibold mt-1',
-              subjectsBelow > 0 ? 'text-risk' : 'text-ok'
-            )}>
-              {subjectsBelow}
-            </div>
-            <p className="text-[11px] text-text-muted mt-0.5">{subjectsBelow > 0 ? 'Needs attention' : 'All on track'}</p>
-          </Link>
-
-          <div className="ledger-card p-4">
-            <span className="eyebrow text-[10px]">Subjects</span>
-            <div className="font-serif text-2xl font-semibold text-text-primary mt-1">
-              {stats.length}
-            </div>
-            <p className="text-[11px] text-text-muted mt-0.5">Enrolled</p>
-          </div>
-        </div>
-      )}
-
-      {/* ──────────────── Row 2: Chart & Next Move (Focus View only) ──────────────── */}
-      {viewMode === 'focus' && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+      {/* ──────────────── Row 2: Chart & Next Move ──────────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
           {/* Horizontal Bar Chart (8 cols on desktop) */}
           <div className="ledger-card p-6 lg:col-span-8 flex flex-col justify-between">
             <div>
@@ -565,7 +485,6 @@ export default function Dashboard() {
             </p>
           </div>
         </div>
-      )}
 
       {/* ──────────────── Row 3: Subject Ledger Table ──────────────── */}
       <div className="ledger-card p-6">

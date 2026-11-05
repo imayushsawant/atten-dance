@@ -182,20 +182,12 @@ Dark mode feels like the same paper ledger under ambient night lighting — deep
 - **Eyebrow:** `ATTENDANCE LEDGER / [ACTIVE SEMESTER NAME]`
 - **H1:** Editorial statement (e.g. *"Know where you stand."*)
 - **Subtitle & Mode Pill:** Current total sessions logged across subjects + calculation method chip (e.g. `50 / 50 SPLIT` or `TOTAL SESSIONS`).
-- **Right Controls:**
-  - Segmented View Toggle: **`[ FOCUS | COMPACT ]`**.
-  - User avatar / profile shortcut.
+- **Target Indicator:** Target threshold percentage indicator.
 
-#### View Toggle Logic (Option A)
-- **`Focus` View (Default):**
-  - **Row 1 (KPI Strip):** 4 cards (Overall Attendance with Ring Chart, Safe Skips, At Risk, Total Subjects).
-  - **Row 2:** Horizontal Bar Chart + "Next Move" Panel.
-  - **Row 3:** Complete Subject Data Table.
-- **`Compact` View:**
-  - Streamlines the dashboard for rapid daily review.
-  - Collapses KPI row into 4 compact summary metric tiles without the large ring.
-  - Hides the "Next Move" panel and subject chart.
-  - Elevates the Subject Data Table to full prominence with condensed row height.
+#### Dashboard Layout
+- **Row 1 (KPI Strip):** 4 cards (Overall Attendance with Ring Chart, Safe Skips, At Risk, Total Subjects).
+- **Row 2:** Horizontal Bar Chart + "Next Move" Recommended Actions Panel.
+- **Row 3:** Complete Subject Ledger Data Table.
 
 #### Row 1: KPI Strip
 1. **Overall Attendance Card:**
