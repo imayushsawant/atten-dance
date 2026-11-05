@@ -10,12 +10,39 @@ import {
   Download,
   ChevronRight,
 } from 'lucide-react';
+import {
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Cell,
+  CartesianGrid,
+  ReferenceLine,
+} from 'recharts';
 import { api } from '@/lib/api';
 import type { Analytics } from '@/lib/api';
 import { cn } from '@/lib/utils';
+import { useTheme } from '@/lib/theme-provider';
+
+function getChartStyles(resolved: 'dark' | 'light') {
+  const isDark = resolved === 'dark';
+  return {
+    tick: isDark ? '#7F8C80' : '#8A8F85',
+    grid: isDark ? '#233229' : '#E6E1D5',
+    tooltipBg: isDark ? '#16211B' : '#FBF9F5',
+    tooltipBorder: isDark ? '#33463B' : '#D9D3C4',
+    tooltipColor: isDark ? '#F1EDE0' : '#1F3329',
+    ok: isDark ? '#9DB38A' : '#7A8B6A',
+    warn: isDark ? '#E3B766' : '#D4A04A',
+    risk: isDark ? '#E27D67' : '#C65F4A',
+  };
+}
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const { resolved } = useTheme();
   const [analytics, setAnalytics] = useState<Analytics | null>(null);
   const [loading, setLoading] = useState(true);
   const [noSemester, setNoSemester] = useState(false);
@@ -192,6 +219,16 @@ export default function Dashboard() {
         ? 'warn'
         : 'risk';
 
+  const cs = getChartStyles(resolved);
+
+  const chartData = stats.map((s) => ({
+    name: s.subjectName.length > 14 ? s.subjectName.substring(0, 14) + '…' : s.subjectName,
+    fullName: s.subjectName,
+    combined: Number(s.combined.percentage.toFixed(1)),
+    lecture: s.lecture.percentage,
+    lab: s.lab.percentage,
+  }));
+
   return (
     <div className="space-y-8">
       {/* ──────────────── Page Header ──────────────── */}
@@ -218,57 +255,59 @@ export default function Dashboard() {
       </div>
 
       {/* ──────────────── Row 1: KPI Strip ──────────────── */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-12">
-          {/* Card 1: Overall Attendance with Ring Chart (approx 4.5 / 12 cols) */}
-          <div className="ledger-card p-6 lg:col-span-5 flex flex-col justify-between">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <span className="eyebrow">Overall Attendance</span>
-                <div className="flex items-baseline gap-1 mt-2">
-                  <span className="font-serif text-4xl sm:text-5xl font-semibold text-text-primary tracking-tight">
-                    {overall.percentage.toFixed(1)}
-                  </span>
-                  <span className="font-serif text-2xl font-semibold text-text-primary">%</span>
-                </div>
-                <p className="text-xs text-text-secondary mt-1">
-                  {semester.calculationMethod === 'total_sessions'
-                    ? 'Raw attendance across all sessions'
-                    : 'Weighted: 50% lectures + 50% labs'}
-                </p>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+        {/* Card 1: Overall Attendance with Ring Chart (5 cols on desktop) */}
+        <div className="ledger-card p-6 lg:col-span-5 flex flex-col justify-between">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <span className="eyebrow">Overall Attendance</span>
+              <div className="flex items-baseline gap-1 mt-2">
+                <span className="font-serif text-4xl sm:text-5xl font-semibold text-text-primary tracking-tight">
+                  {overall.percentage.toFixed(1)}
+                </span>
+                <span className="font-serif text-2xl font-semibold text-text-primary">%</span>
               </div>
-
-              {/* Circular Ring Chart */}
-              <div className="shrink-0">
-                <RingChart
-                  percentage={overall.percentage}
-                  threshold={threshold}
-                  status={overallStatus}
-                />
-              </div>
+              <p className="text-xs text-text-secondary mt-1">
+                {semester.calculationMethod === 'total_sessions'
+                  ? 'Raw attendance across all sessions'
+                  : 'Weighted: 50% lectures + 50% labs'}
+              </p>
             </div>
 
-            {/* Sub-metrics breakdown */}
-            <div className="mt-6 pt-4 border-t border-border-subtle flex items-center justify-between text-xs">
-              <div className="flex items-center gap-2">
-                <span className="eyebrow text-[10px]">Lectures</span>
-                <span className="font-semibold text-text-primary">
-                  {lAttended} / {lTotal}
-                </span>
-              </div>
-              <div className="h-3 w-px bg-border-subtle" />
-              <div className="flex items-center gap-2">
-                <span className="eyebrow text-[10px]">Labs</span>
-                <span className="font-semibold text-text-primary">
-                  {labAttended} / {labTotal}
-                </span>
-              </div>
+            {/* Circular Ring Chart */}
+            <div className="shrink-0">
+              <RingChart
+                percentage={overall.percentage}
+                threshold={threshold}
+                status={overallStatus}
+              />
             </div>
           </div>
 
-          {/* Card 2: Safe Skips (approx 2.3 / 12 cols) */}
+          {/* Sub-metrics breakdown */}
+          <div className="mt-6 pt-4 border-t border-border-subtle flex items-center justify-between text-xs">
+            <div className="flex items-center gap-2">
+              <span className="eyebrow text-[10px]">Lectures</span>
+              <span className="font-semibold text-text-primary">
+                {lAttended} / {lTotal}
+              </span>
+            </div>
+            <div className="h-3 w-px bg-border-subtle" />
+            <div className="flex items-center gap-2">
+              <span className="eyebrow text-[10px]">Labs</span>
+              <span className="font-semibold text-text-primary">
+                {labAttended} / {labTotal}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* 3 Secondary Cards (7 cols on desktop, 3 equal columns) */}
+        <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {/* Card 2: Safe Skips */}
           <Link
             to="/safe-skips"
-            className="ledger-card p-6 lg:col-span-2.5 flex flex-col justify-between hover:border-border-strong transition-colors group"
+            className="ledger-card p-6 flex flex-col justify-between hover:border-border-strong transition-colors group"
           >
             <div>
               <div className="flex items-center justify-between mb-2">
@@ -287,10 +326,10 @@ export default function Dashboard() {
             </p>
           </Link>
 
-          {/* Card 3: At Risk (approx 2.3 / 12 cols) */}
+          {/* Card 3: At Risk */}
           <Link
             to="/recovery"
-            className="ledger-card p-6 lg:col-span-2.5 flex flex-col justify-between hover:border-border-strong transition-colors group"
+            className="ledger-card p-6 flex flex-col justify-between hover:border-border-strong transition-colors group"
           >
             <div>
               <div className="flex items-center justify-between mb-2">
@@ -312,8 +351,8 @@ export default function Dashboard() {
             </p>
           </Link>
 
-          {/* Card 4: Total Subjects (approx 2.2 / 12 cols) */}
-          <div className="ledger-card p-6 lg:col-span-2 flex flex-col justify-between">
+          {/* Card 4: Total Subjects */}
+          <div className="ledger-card p-6 flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between mb-2">
                 <span className="eyebrow">Subjects</span>
@@ -330,92 +369,118 @@ export default function Dashboard() {
             </p>
           </div>
         </div>
+      </div>
 
       {/* ──────────────── Row 2: Chart & Next Move ──────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-          {/* Horizontal Bar Chart (8 cols on desktop) */}
-          <div className="ledger-card p-6 lg:col-span-8 flex flex-col justify-between">
-            <div>
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-6">
-                <div>
-                  <span className="eyebrow">Subject Performance</span>
-                  <h2 className="font-serif text-xl sm:text-2xl font-normal text-text-primary mt-1">
-                    A subject-by-subject view
-                  </h2>
-                </div>
-
-                {/* Legend */}
-                <div className="flex items-center gap-3 text-xs text-text-secondary">
-                  <span className="flex items-center gap-1.5">
-                    <span className="h-2 w-2 rounded-full bg-ok" />
-                    <span>Above {threshold}%</span>
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <span className="h-2 w-2 rounded-full bg-warn" />
-                    <span>Near {threshold}%</span>
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <span className="h-2 w-2 rounded-full bg-risk" />
-                    <span>Below {threshold}%</span>
-                  </span>
-                </div>
+        {/* Subject Performance: Vertical Bar Chart (8 cols on desktop) */}
+        <div className="ledger-card p-6 lg:col-span-8 flex flex-col justify-between">
+          <div>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
+              <div>
+                <span className="eyebrow">Subject Performance</span>
+                <h2 className="font-serif text-xl sm:text-2xl font-normal text-text-primary mt-1">
+                  Attendance by subject
+                </h2>
               </div>
 
-              {/* Horizontal Bar Rows */}
-              <div className="space-y-4">
-                {stats.map((s) => {
-                  const pct = s.combined.percentage;
-                  const isOk = pct >= threshold;
-                  const isWarn = pct >= threshold - 5 && pct < threshold;
-                  const barColor = isOk ? 'bg-ok' : isWarn ? 'bg-warn' : 'bg-risk';
-                  const textColor = isOk ? 'text-ok' : isWarn ? 'text-warn' : 'text-risk';
-
-                  return (
-                    <div key={s.subjectId} className="flex items-center gap-3 text-sm">
-                      {/* Subject Name Column */}
-                      <div className="w-32 sm:w-48 lg:w-56 shrink-0 truncate font-medium text-text-primary" title={s.subjectName}>
-                        {s.subjectName}
-                      </div>
-
-                      {/* Bar Track Area with gridlines */}
-                      <div className="relative flex-1 h-3.5 rounded-xs bg-track overflow-hidden">
-                        {/* 75% target threshold marker */}
-                        <div
-                          className="absolute top-0 bottom-0 w-px bg-border-strong z-10 opacity-70"
-                          style={{ left: `${threshold}%` }}
-                        />
-                        {/* Colored progress bar with square edge */}
-                        <div
-                          className={cn('h-full transition-all duration-700 ease-out', barColor)}
-                          style={{ width: `${Math.min(pct, 100)}%` }}
-                        />
-                      </div>
-
-                      {/* Fixed-Width Value Column (56px) - Solves Issue #1: never overlaps 100%! */}
-                      <div className={cn('w-14 shrink-0 text-right font-medium text-xs tabular-nums', textColor)}>
-                        {pct.toFixed(1)}%
-                      </div>
-                    </div>
-                  );
-                })}
+              {/* Legend */}
+              <div className="flex items-center gap-3 text-xs text-text-secondary">
+                <span className="flex items-center gap-1.5">
+                  <span className="h-2 w-2 rounded-full bg-ok" />
+                  <span>Above {threshold}%</span>
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="h-2 w-2 rounded-full bg-warn" />
+                  <span>Near {threshold}%</span>
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="h-2 w-2 rounded-full bg-risk" />
+                  <span>Below {threshold}%</span>
+                </span>
               </div>
             </div>
 
-            {/* Gridline axis ticks at bottom */}
-            <div className="mt-6 pt-3 border-t border-border-subtle flex items-center text-[10px] text-text-muted">
-              <div className="w-32 sm:w-48 lg:w-56 shrink-0 text-text-muted uppercase tracking-wider font-semibold">
-                Grid Scale
+            {chartData.length > 0 ? (
+              <div className="h-64 sm:h-72 w-full mt-2">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={chartData} barCategoryGap="20%">
+                    <CartesianGrid strokeDasharray="3 3" stroke={cs.grid} vertical={false} />
+                    <XAxis
+                      dataKey="name"
+                      tick={{ fill: cs.tick, fontSize: 11 }}
+                      axisLine={{ stroke: cs.grid }}
+                      tickLine={false}
+                    />
+                    <YAxis
+                      domain={[0, 100]}
+                      tick={{ fill: cs.tick, fontSize: 11 }}
+                      axisLine={false}
+                      tickLine={false}
+                      tickFormatter={(v) => `${v}%`}
+                    />
+                    <Tooltip
+                      cursor={{ fill: resolved === 'dark' ? 'rgba(255,255,255,0.04)' : 'rgba(31,51,41,0.04)' }}
+                      contentStyle={{
+                        backgroundColor: cs.tooltipBg,
+                        border: `1px solid ${cs.tooltipBorder}`,
+                        borderRadius: '8px',
+                        fontSize: '12px',
+                        color: cs.tooltipColor,
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                      }}
+                      labelStyle={{ color: cs.tooltipColor, fontWeight: 600, marginBottom: '4px' }}
+                      labelFormatter={(_, payload) => {
+                        if (payload && payload[0] && payload[0].payload) {
+                          return payload[0].payload.fullName;
+                        }
+                        return '';
+                      }}
+                      formatter={(value: any) => [`${Number(value).toFixed(1)}%`, 'Attendance']}
+                    />
+                    <ReferenceLine
+                      y={threshold}
+                      stroke={cs.risk}
+                      strokeDasharray="4 4"
+                      strokeWidth={1.5}
+                    />
+                    <Bar dataKey="combined" maxBarSize={44} radius={[4, 4, 0, 0]}>
+                      {chartData.map((entry, index) => (
+                        <Cell
+                          key={index}
+                          fill={
+                            entry.combined >= threshold
+                              ? cs.ok
+                              : entry.combined >= threshold - 5
+                                ? cs.warn
+                                : cs.risk
+                          }
+                        />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
               </div>
-              <div className="relative flex-1 flex justify-between px-1">
-                <span>0%</span>
-                <span>25%</span>
-                <span>50%</span>
-                <span className="font-semibold text-text-secondary">{threshold}% (Target)</span>
-                <span>100%</span>
+            ) : (
+              <div className="h-64 flex items-center justify-center text-xs text-text-muted">
+                No subjects registered yet this semester.
               </div>
-              <div className="w-14 shrink-0" />
-            </div>
+            )}
           </div>
+
+          <div className="mt-4 pt-3 border-t border-border-subtle flex flex-wrap items-center justify-between gap-2 text-xs text-text-secondary">
+            <span className="text-[11px] text-text-muted">
+              Target threshold marker at {threshold}%
+            </span>
+            <Link
+              to="/analytics"
+              className="text-xs font-semibold text-text-secondary hover:text-text-primary flex items-center gap-1 transition-colors"
+            >
+              <span>View full analytics</span>
+              <ChevronRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+        </div>
 
           {/* "Next Move" Panel (4 cols on desktop) */}
           <div className="ledger-panel p-6 lg:col-span-4 flex flex-col justify-between">

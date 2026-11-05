@@ -185,40 +185,44 @@ Dark mode feels like the same paper ledger under ambient night lighting — deep
 - **Target Indicator:** Target threshold percentage indicator.
 
 #### Dashboard Layout
-- **Row 1 (KPI Strip):** 4 cards (Overall Attendance with Ring Chart, Safe Skips, At Risk, Total Subjects).
-- **Row 2:** Horizontal Bar Chart + "Next Move" Recommended Actions Panel.
+- **Row 1 (KPI Strip):** Completely fills the 12-column grid. Overall Attendance card spans 5 columns; remaining 7 columns host a 3-column subgrid for Safe Skips, At Risk, and Total Subjects.
+- **Row 2:** Subject Performance Vertical Bar Chart (8 cols) + "Next Move" Recommended Actions Panel (4 cols).
 - **Row 3:** Complete Subject Ledger Data Table.
 
-#### Row 1: KPI Strip
-1. **Overall Attendance Card:**
+#### Row 1: KPI Strip (Full-Grid Fill)
+1. **Overall Attendance Card (`lg:col-span-5`):**
    - Eyebrow: `OVERALL ATTENDANCE`
    - Big serif percentage (e.g., `77.7%`).
    - Caption: Clarifies calculation method (e.g., *"Weighted: 50% lectures + 50% labs"* or *"Raw attendance across all sessions"*).
    - Sub-metrics row: `LECTURES [attended]/[total]   LABS [attended]/[total]`.
    - Right visual: Circular Ring Chart (106px diameter, 12px stroke) with center percentage and `CURRENT POSITION` label.
-2. **Safe Skips Card:**
-   - Eyebrow: `SAFE SKIPS`
-   - Big serif number (safe skips count or `∞`).
-   - Caption: *"Sessions you can safely miss"*.
-   - Right visual: `--ok-bg` tile with sage shield or calendar glyph.
-3. **At Risk Card:**
-   - Eyebrow: `AT RISK`
-   - Big serif number in terracotta `--risk`.
-   - Caption: *"Subjects below target threshold"*.
-   - Right visual: `--risk-bg` tile with terracotta alert glyph.
-4. **Total Subjects Card:**
-   - Eyebrow: `TOTAL SUBJECTS`
-   - Big serif number in `--text-primary`.
-   - Caption: *"Registered this semester"*.
-   - Right visual: Neutral tile with book glyph.
+2. **Secondary Subgrid (`lg:col-span-7`, 3 equal columns `grid-cols-1 sm:grid-cols-3`):**
+   - **Safe Skips Card:**
+     - Eyebrow: `SAFE SKIPS`
+     - Big serif number (safe skips count or `∞`).
+     - Caption: *"Sessions you can safely miss"*.
+     - Icon: `--ok-bg` tile with sage shield glyph.
+   - **At Risk Card:**
+     - Eyebrow: `AT RISK`
+     - Big serif number in terracotta `--risk` (or `--ok` if 0).
+     - Caption: *"Subjects below target threshold"*.
+     - Icon: `--risk-bg` tile with terracotta alert glyph.
+   - **Total Subjects Card:**
+     - Eyebrow: `TOTAL SUBJECTS`
+     - Big serif number in `--text-primary`.
+     - Caption: *"Registered this semester"*.
+     - Icon: Neutral tile with book glyph.
 
-#### Row 2: Chart & "Next Move" Panel
-- **Subject-by-Subject Bar Chart:**
-  - Title: *"A subject-by-subject view"* with legend (*Above target / Near target / Below target*).
-  - Horizontal progress tracks (`--bg-track`) with square-cut colored fill bars.
-  - **Fixed-width value column (56px)** right of the tracks to prevent value label collision at 100%.
-  - Subtle vertical reference lines at 0%, 25%, 50%, 75%, 100% with the active target threshold line highlighted.
-- **"Next Move" Panel:**
+#### Row 2: Vertical Bar Chart & "Next Move" Panel
+- **Subject-by-Subject Vertical Bar Chart (`lg:col-span-8`):**
+  - Responsive vertical bar chart built with Recharts `BarChart`.
+  - Automatically distributes and sizes bars based on subject count with `maxBarSize={44}`, eliminating awkward gaps whether 3 or 10 subjects are registered.
+  - X-Axis displays subject names (with full name in themed tooltip).
+  - Y-Axis scaled 0% - 100% with light subtle grid lines.
+  - Dashed horizontal ReferenceLine at the semester target threshold (e.g. 75%).
+  - Color-coded bars: Sage (`--ok`) for $\ge$ target, Ochre (`--warn`) for near target, Terracotta (`--risk`) for below target.
+  - Header legend and footer link to full analytics.
+- **"Next Move" Panel (`lg:col-span-4`):**
   - Recessed container (`--bg-panel`) with 28px padding.
   - Eyebrow: `NEXT MOVE`
   - Title: *"Recommended next actions"*
