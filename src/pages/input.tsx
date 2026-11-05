@@ -138,7 +138,6 @@ export default function InputPage() {
     }
   }
 
-  // We filter out subjects that already have an entry for the selected date
   function buildEntries(subjectList: Subject[], currentRecords: AttendanceRecord[]) {
     const rows: EntryRow[] = [];
     const loggedKeys = new Set(currentRecords.map(r => `${r.subjectId}-${r.type}`));
@@ -166,7 +165,6 @@ export default function InputPage() {
       setSubjects(active.subjects || []);
       const allRecords = await api.attendance.getBySemester(active.id);
       setLoggedDates(new Set(allRecords.map(r => r.date)));
-      // Entries will be built by loadDayRecords
     } catch {
       // ignore
     } finally {
@@ -182,12 +180,10 @@ export default function InputPage() {
 
       setEntries((prev) => {
         if (preserveUnmarked) {
-          // After submit: keep unmarked entries, remove submitted ones
           const loggedKeys = new Set(records.map(r => `${r.subjectId}-${r.type}`));
           const remaining = prev.filter(p => p.status === null);
           const existingKeys = new Set(remaining.map(e => `${e.subjectId}-${e.type}`));
 
-          // Add default rows for subject+types not logged and not already in entries
           for (const s of subjects) {
             if (s.hasLecture && !loggedKeys.has(`${s.id}-lecture`) && !existingKeys.has(`${s.id}-lecture`)) {
               remaining.push({
@@ -205,7 +201,6 @@ export default function InputPage() {
           return remaining;
         }
 
-        // Fresh load (date change, initial): rebuild from scratch
         return buildEntries(subjects, records);
       });
 
@@ -215,7 +210,6 @@ export default function InputPage() {
         setMarkedOrder((prev) => prev.filter(id => entries.some(e => e.instanceId === id && e.status !== null)));
       }
 
-      // Also update logged dates if the current day has records or not
       setLoggedDates(prev => {
         const next = new Set(prev);
         if (records.length > 0) next.add(date);
@@ -292,7 +286,6 @@ export default function InputPage() {
 
   function addInstance(subjectId: string, subjectName: string, type: 'lecture' | 'lab') {
     setEntries((prev) => {
-      // Insert the new instance right after the last instance of this subject+type
       const lastIndex = prev.reduce((acc, e, i) =>
         e.subjectId === subjectId && e.type === type ? i : acc, -1);
       const newEntry: EntryRow = {
@@ -348,7 +341,6 @@ export default function InputPage() {
   const lectureEntries = entries.filter((e) => e.type === 'lecture');
   const labEntries = entries.filter((e) => e.type === 'lab');
 
-  // Preserve the sequence in which user clicked Present or Absent
   const orderedMarkedEntries = useMemo(() => {
     const map = new Map(entries.map(e => [e.instanceId, e]));
     const result: EntryRow[] = [];
@@ -358,7 +350,6 @@ export default function InputPage() {
         result.push(entry);
       }
     }
-    // Fallback: any marked entry not yet in markedOrder
     for (const entry of entries) {
       if (entry.status !== null && !result.some(r => r.instanceId === entry.instanceId)) {
         result.push(entry);
@@ -372,7 +363,6 @@ export default function InputPage() {
     setSaving(true);
     setJustSaved(false);
     try {
-      // Calculate orderIndex starting after existing day records to preserve sequence
       const payload = orderedMarkedEntries.map((e, index) => ({
         subjectId: e.subjectId,
         semesterId: semesterId!,
@@ -382,7 +372,6 @@ export default function InputPage() {
         orderIndex: dayRecords.length + index,
       }));
       await api.attendance.createBulk(payload);
-      // Re-load to hide submitted and move to 'logged' section
       await loadDayRecords(true);
       setJustSaved(true);
       setTimeout(() => setJustSaved(false), 2500);
@@ -396,13 +385,12 @@ export default function InputPage() {
   async function handleDeleteRecord(id: string) {
     try {
       await api.attendance.delete(id);
-      await loadDayRecords(); // will add it back to the input list
+      await loadDayRecords();
     } catch {
       // ignore
     }
   }
 
-  // ─── Drag & Drop Reordering for Already Logged Records ───────────
   async function persistReorder(records: AttendanceRecord[]) {
     setIsReordering(true);
     try {
@@ -467,22 +455,26 @@ export default function InputPage() {
 
   if (loading) {
     return (
-      <div className="space-y-6 max-w-2xl mx-auto">
-        <div className="h-8 w-48 rounded shimmer" />
-        <div className="h-12 rounded-xl shimmer" />
-        {[...Array(5)].map((_, i) => (
-          <div key={i} className="h-16 rounded-xl shimmer" />
-        ))}
+      <div className="space-y-6 max-w-3xl mx-auto animate-fade-in">
+        <div className="space-y-2">
+          <div className="h-4 w-32 rounded shimmer" />
+          <div className="h-9 w-64 rounded shimmer" />
+        </div>
+        <div className="h-16 rounded-xl shimmer" />
+        <div className="h-48 rounded-xl shimmer" />
       </div>
     );
   }
 
   if (noSemester) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[50vh] text-center">
-        <p className="text-lg font-medium mb-2">No active semester</p>
-        <p className="text-sm text-muted-foreground">
-          Create a semester first to start logging attendance.
+      <div className="flex flex-col items-center justify-center min-h-[50vh] text-center max-w-md mx-auto py-12">
+        <span className="eyebrow mb-2">No Active Semester</span>
+        <h1 className="font-serif text-2xl font-normal text-text-primary mb-2">
+          Create a semester first
+        </h1>
+        <p className="text-sm text-text-secondary">
+          You need an active semester to log daily attendance records.
         </p>
       </div>
     );
@@ -492,7 +484,6 @@ export default function InputPage() {
     type: 'lecture' | 'lab',
     sectionEntries: EntryRow[],
     icon: React.ReactNode,
-    bgClass: string
   ) {
     if (sectionEntries.length === 0) return null;
 
@@ -503,44 +494,45 @@ export default function InputPage() {
         {/* Section Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className={cn('flex h-8 w-8 items-center justify-center rounded-lg', bgClass)}>
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-chip text-forest-700 dark:text-text-primary">
               {icon}
             </div>
             <div>
-              <h2 className="text-sm font-semibold">
+              <h2 className="font-serif text-base font-normal text-text-primary">
                 {type === 'lecture' ? 'Lectures' : 'Labs'}
               </h2>
-              <p className="text-[10px] text-muted-foreground">
-                {markedCount}/{sectionEntries.length} marked
+              <p className="text-[11px] text-text-muted">
+                {markedCount} of {sectionEntries.length} marked
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1.5">
             <button
               onClick={() => markSectionAttended(type)}
-              className="flex items-center gap-1 rounded-md bg-success/10 px-2 py-1 text-[10px] font-medium text-success hover:bg-success/20 transition-colors"
+              className="flex items-center gap-1 rounded-md border border-border-strong bg-card px-2.5 py-1 text-[11px] font-medium text-ok hover:bg-ok-bg transition-colors"
             >
-              <Check className="h-2.5 w-2.5" />
+              <Check className="h-3 w-3" />
               All
             </button>
             <button
               onClick={() => markSectionSkipped(type)}
-              className="flex items-center gap-1 rounded-md bg-danger/10 px-2 py-1 text-[10px] font-medium text-danger hover:bg-danger/20 transition-colors"
+              className="flex items-center gap-1 rounded-md border border-border-strong bg-card px-2.5 py-1 text-[11px] font-medium text-risk hover:bg-risk-bg transition-colors"
             >
-              <X className="h-2.5 w-2.5" />
+              <X className="h-3 w-3" />
               All
             </button>
             <button
               onClick={() => resetSection(type)}
-              className="flex items-center gap-1 rounded-md bg-secondary px-2 py-1 text-[10px] font-medium text-muted-foreground hover:bg-secondary/80 transition-colors"
+              className="flex items-center gap-1 rounded-md border border-border-subtle bg-card px-2.5 py-1 text-[11px] font-medium text-text-muted hover:text-text-primary hover:bg-panel transition-colors"
+              title="Reset section"
             >
-              <Minus className="h-2.5 w-2.5" />
+              <Minus className="h-3 w-3" />
             </button>
           </div>
         </div>
 
-        {/* Entries */}
-        <div className="glass rounded-xl overflow-hidden divide-y divide-border">
+        {/* Entries Table/List */}
+        <div className="ledger-card overflow-hidden divide-y divide-border-subtle">
           {sectionEntries.map((entry) => {
             const label = getEntryLabel(entry);
             const instancesOfKind = entries.filter(
@@ -554,24 +546,24 @@ export default function InputPage() {
               <div
                 key={entry.instanceId}
                 className={cn(
-                  'flex items-center gap-4 px-4 py-3.5 transition-colors',
-                  entry.status === 'attended' && 'bg-success/[0.04]',
-                  entry.status === 'skipped' && 'bg-danger/[0.04]'
+                  'flex items-center gap-3 px-4 py-3.5 transition-colors',
+                  entry.status === 'attended' && 'bg-ok-bg/30',
+                  entry.status === 'skipped' && 'bg-risk-bg/30'
                 )}
               >
-                {/* Subject Name + Badge + Sequence Number */}
+                {/* Subject Name + Tags */}
                 <div className="flex-1 min-w-0 flex items-center gap-2">
-                  <p className="text-sm font-semibold text-foreground truncate">
+                  <p className="text-sm font-medium text-text-primary truncate">
                     {entry.subjectName}
                   </p>
                   {label && (
-                    <span className="shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-primary/10 text-primary">
+                    <span className="shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-chip text-text-secondary">
                       {label}
                     </span>
                   )}
                   {sequenceNumber !== null && (
                     <span
-                      className="shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-primary/10 text-primary border border-primary/20"
+                      className="shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-panel text-forest-700 dark:text-text-primary border border-border-subtle"
                       title={`Marked #${sequenceNumber} in sequence`}
                     >
                       #{sequenceNumber}
@@ -579,46 +571,47 @@ export default function InputPage() {
                   )}
                 </div>
 
-                {/* Action Buttons */}
+                {/* Status Toggles & Instance Controls */}
                 <div className="flex items-center gap-1.5 shrink-0">
-                  {/* Remove instance (only when duplicates exist) */}
                   {canRemove && (
                     <button
                       onClick={() => removeInstance(entry.instanceId)}
-                      className="flex h-9 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-danger/15 hover:text-danger transition-colors"
-                      title="Remove this instance"
+                      className="flex h-8 w-8 items-center justify-center rounded-md text-text-muted hover:bg-risk-bg hover:text-risk transition-colors"
+                      title="Remove this extra session"
                     >
                       <Minus className="h-3.5 w-3.5" />
                     </button>
                   )}
-                  {/* Add another instance */}
                   <button
                     onClick={() => addInstance(entry.subjectId, entry.subjectName, entry.type)}
-                    className="flex h-9 w-8 items-center justify-center rounded-lg bg-secondary text-muted-foreground hover:bg-primary/15 hover:text-primary transition-colors"
+                    className="flex h-8 w-8 items-center justify-center rounded-md bg-panel text-text-secondary hover:text-text-primary hover:border-border-strong border border-border-subtle transition-colors"
                     title={`Add another ${type}`}
                   >
                     <Plus className="h-3.5 w-3.5" />
                   </button>
 
+                  {/* Present Button */}
                   <button
                     onClick={() => setEntryStatus(entry.instanceId, 'attended')}
                     className={cn(
-                      'flex h-9 items-center gap-1.5 rounded-lg px-3.5 text-xs font-medium transition-all',
+                      'flex h-8 items-center gap-1.5 rounded-md px-3 text-xs font-medium border transition-colors',
                       entry.status === 'attended'
-                        ? 'bg-success text-success-foreground shadow-sm shadow-success/25 font-semibold'
-                        : 'bg-secondary text-muted-foreground hover:bg-success/15 hover:text-success'
+                        ? 'bg-ok-bg border-ok text-ok font-semibold'
+                        : 'border-border-subtle bg-card text-text-secondary hover:bg-ok-bg/50 hover:text-ok'
                     )}
                   >
                     <Check className="h-3.5 w-3.5" />
                     <span className="hidden sm:inline">Present</span>
                   </button>
+
+                  {/* Bunked Button */}
                   <button
                     onClick={() => setEntryStatus(entry.instanceId, 'skipped')}
                     className={cn(
-                      'flex h-9 items-center gap-1.5 rounded-lg px-3.5 text-xs font-medium transition-all',
+                      'flex h-8 items-center gap-1.5 rounded-md px-3 text-xs font-medium border transition-colors',
                       entry.status === 'skipped'
-                        ? 'bg-danger text-danger-foreground shadow-sm shadow-danger/25 font-semibold'
-                        : 'bg-secondary text-muted-foreground hover:bg-danger/15 hover:text-danger'
+                        ? 'bg-risk-bg border-risk text-risk font-semibold'
+                        : 'border-border-subtle bg-card text-text-secondary hover:bg-risk-bg/50 hover:text-risk'
                     )}
                   >
                     <X className="h-3.5 w-3.5" />
@@ -634,8 +627,8 @@ export default function InputPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
-      {/* Full screen click-away overlay (rendered outside glass to avoid containing block trap) */}
+    <div className="max-w-3xl mx-auto space-y-6">
+      {/* Full screen click-away overlay for calendar */}
       {showCalendar && (
         <div
           className="fixed inset-0 z-40"
@@ -643,31 +636,38 @@ export default function InputPage() {
         />
       )}
 
+      {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Log Attendance</h1>
-        <p className="text-muted-foreground">Mark all your subjects for the day in the sequence they occurred</p>
+        <span className="eyebrow">Workspace / Log Attendance</span>
+        <h1 className="font-serif text-3xl font-normal text-text-primary mt-1">
+          Record daily sessions
+        </h1>
+        <p className="text-xs text-text-secondary mt-1">
+          Mark the classes you attended or skipped in the order they took place today.
+        </p>
       </div>
 
-      {/* Date Picker */}
-      <div className="glass rounded-xl p-3 flex items-center justify-between relative z-50">
+      {/* Date Navigator Card */}
+      <div className="ledger-card p-3 sm:p-4 flex items-center justify-between relative z-50">
         <button
           onClick={() => setDate(format(subDays(new Date(date + 'T00:00:00'), 1), 'yyyy-MM-dd'))}
-          className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary/50 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
+          className="flex h-9 w-9 items-center justify-center rounded-lg border border-border-subtle bg-card text-text-secondary hover:bg-panel hover:text-text-primary transition-colors"
+          title="Previous day"
         >
-          <ChevronLeft className="h-5 w-5" />
+          <ChevronLeft className="h-4 w-4" />
         </button>
 
         <div className="relative flex-1 flex justify-center">
           <button
             onClick={() => setShowCalendar(!showCalendar)}
-            className="flex flex-col items-center cursor-pointer group px-4 py-1 rounded-lg hover:bg-secondary/30 transition-colors"
+            className="flex flex-col items-center cursor-pointer group px-4 py-1 rounded-lg hover:bg-panel transition-colors"
           >
-            <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-0.5 group-hover:text-foreground transition-colors">
+            <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-text-muted mb-0.5">
               {date === format(new Date(), 'yyyy-MM-dd') ? 'Today' : format(new Date(date + 'T00:00:00'), 'EEEE')}
             </span>
             <div className="flex items-center gap-2">
-              <CalendarDays className="h-4 w-4 text-primary" />
-              <span className="text-sm font-bold group-hover:text-primary transition-colors">
+              <CalendarDays className="h-4 w-4 text-forest-800 dark:text-accent" />
+              <span className="font-serif text-base font-medium text-text-primary group-hover:text-forest-800 dark:group-hover:text-accent transition-colors">
                 {format(new Date(date + 'T00:00:00'), 'MMMM d, yyyy')}
               </span>
             </div>
@@ -677,42 +677,43 @@ export default function InputPage() {
           <button
             onClick={(e) => { e.stopPropagation(); setShowNoteModal(true); }}
             className={cn(
-              'absolute right-0 top-1/2 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-lg transition-all',
+              'absolute right-0 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-lg transition-all',
               note
-                ? 'text-amber-500 bg-amber-500/10 hover:bg-amber-500/20'
-                : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
+                ? 'text-warn bg-warn/15 border border-warn/30'
+                : 'text-text-muted hover:bg-panel hover:text-text-primary'
             )}
             title={note ? 'View/edit note' : 'Add a note'}
           >
             <StickyNote className="h-4 w-4" />
             {note && (
-              <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-amber-500" />
+              <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-warn" />
             )}
           </button>
 
+          {/* Calendar Dropdown */}
           {showCalendar && (
-            <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 z-50 bg-background rounded-xl p-4 w-[280px] shadow-2xl border border-border animate-in fade-in zoom-in-95 duration-200">
-              <div className="flex items-center justify-between mb-4">
+            <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 z-50 ledger-card p-4 w-[290px] shadow-xl animate-fade-in">
+              <div className="flex items-center justify-between mb-3 pb-2 border-b border-border-subtle">
                 <button
                   onClick={() => setCalendarMonth(subMonths(calendarMonth, 1))}
-                  className="flex h-7 w-7 items-center justify-center rounded hover:bg-secondary transition-colors"
+                  className="flex h-7 w-7 items-center justify-center rounded text-text-muted hover:text-text-primary hover:bg-panel transition-colors"
                 >
-                  <ChevronLeft className="h-4 w-4 text-muted-foreground" />
+                  <ChevronLeft className="h-4 w-4" />
                 </button>
-                <span className="font-semibold text-sm">
+                <span className="font-serif font-medium text-sm text-text-primary">
                   {format(calendarMonth, 'MMMM yyyy')}
                 </span>
                 <button
                   onClick={() => setCalendarMonth(addMonths(calendarMonth, 1))}
-                  className="flex h-7 w-7 items-center justify-center rounded hover:bg-secondary transition-colors"
+                  className="flex h-7 w-7 items-center justify-center rounded text-text-muted hover:text-text-primary hover:bg-panel transition-colors"
                 >
-                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                  <ChevronRight className="h-4 w-4" />
                 </button>
               </div>
 
-              <div className="grid grid-cols-7 mb-2">
+              <div className="grid grid-cols-7 mb-2 text-center text-[10px] font-semibold text-text-muted uppercase tracking-wider">
                 {['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'].map(d => (
-                  <div key={d} className="text-center text-[10px] font-medium text-muted-foreground">{d}</div>
+                  <div key={d}>{d}</div>
                 ))}
               </div>
 
@@ -736,12 +737,12 @@ export default function InputPage() {
                       }}
                       className={cn(
                         "flex h-8 w-8 items-center justify-center rounded-md text-xs transition-colors",
-                        !inMonth && "opacity-30",
+                        !inMonth && "opacity-25",
                         future && "opacity-20 cursor-not-allowed",
-                        isSelected && "bg-primary text-primary-foreground font-bold shadow-sm",
-                        !isSelected && !future && "hover:bg-secondary",
-                        today && !isSelected && !hasLog && "ring-1 ring-primary/30 text-primary font-bold",
-                        hasLog && !isSelected && "ring-1 ring-inset ring-primary/40 text-primary bg-primary/5"
+                        isSelected && "bg-forest-800 dark:bg-cta-bg text-text-on-dark font-semibold",
+                        !isSelected && !future && "hover:bg-panel text-text-primary",
+                        today && !isSelected && "ring-1 ring-forest-800/40 text-forest-800 dark:text-accent font-semibold",
+                        hasLog && !isSelected && "bg-chip font-medium text-text-primary"
                       )}
                     >
                       {format(day, 'd')}
@@ -757,13 +758,14 @@ export default function InputPage() {
           onClick={() => setDate(format(addDays(new Date(date + 'T00:00:00'), 1), 'yyyy-MM-dd'))}
           disabled={date === format(new Date(), 'yyyy-MM-dd')}
           className={cn(
-            "flex h-10 w-10 items-center justify-center rounded-lg transition-colors",
+            "flex h-9 w-9 items-center justify-center rounded-lg border border-border-subtle bg-card transition-colors",
             date === format(new Date(), 'yyyy-MM-dd')
-              ? "opacity-30 cursor-not-allowed bg-transparent text-muted-foreground"
-              : "bg-secondary/50 text-muted-foreground hover:bg-secondary hover:text-foreground"
+              ? "opacity-30 cursor-not-allowed text-text-muted"
+              : "text-text-secondary hover:bg-panel hover:text-text-primary"
           )}
+          title="Next day"
         >
-          <ChevronRight className="h-5 w-5" />
+          <ChevronRight className="h-4 w-4" />
         </button>
       </div>
 
@@ -771,55 +773,53 @@ export default function InputPage() {
       {note && (
         <button
           onClick={() => setShowNoteModal(true)}
-          className="w-full rounded-xl border border-amber-500/20 bg-amber-500/5 px-4 py-3 text-left transition-colors hover:bg-amber-500/10 group"
+          className="w-full rounded-xl border border-warn/30 bg-warn/10 px-4 py-3 text-left transition-colors hover:bg-warn/15 group"
         >
           <div className="flex items-start gap-2.5">
-            <StickyNote className="h-3.5 w-3.5 text-amber-500 mt-0.5 shrink-0" />
+            <StickyNote className="h-4 w-4 text-warn mt-0.5 shrink-0" />
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-0.5">
-                <p className="text-xs font-semibold text-amber-400/90">
-                  {note.endDate && note.endDate > note.date ? 'Holiday / Multi-day Event' : 'Note'}
+                <p className="text-xs font-semibold text-text-primary">
+                  {note.endDate && note.endDate > note.date ? 'Holiday / Multi-day Event' : 'Day Note'}
                 </p>
                 {note.endDate && note.endDate > note.date && (
-                  <span className="text-[10px] font-medium px-1.5 py-0.2 rounded bg-amber-500/15 text-amber-400">
+                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-warn/20 text-warn">
                     {format(new Date(note.date + 'T00:00:00'), 'MMM d')} – {format(new Date(note.endDate + 'T00:00:00'), 'MMM d')}
                   </span>
                 )}
               </div>
-              <p className="text-xs text-foreground/80 leading-relaxed font-medium">{note.content}</p>
+              <p className="text-xs text-text-secondary leading-relaxed font-normal">{note.content}</p>
             </div>
-            <span className="text-[10px] text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0 mt-0.5">Edit</span>
+            <span className="text-[11px] text-text-muted opacity-0 group-hover:opacity-100 transition-opacity shrink-0">Edit</span>
           </div>
         </button>
       )}
 
-      {/* Information Banner */}
-      <div className="rounded-lg border border-border bg-secondary/30 px-4 py-3 text-xs text-muted-foreground flex items-center justify-between">
-        <span>Only mark subjects that had classes. Unmarked items are treated as "No Class" when you submit.</span>
+      {/* Info Notice */}
+      <div className="rounded-lg border border-border-subtle bg-panel/60 px-4 py-2.5 text-xs text-text-secondary flex items-center justify-between">
+        <span>Only mark subjects that had classes. Unmarked items are treated as "No Class".</span>
         {orderedMarkedEntries.length > 0 && (
           <button
             onClick={resetAll}
-            className="text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors shrink-0 ml-3 underline"
+            className="text-[11px] font-medium text-text-primary hover:underline ml-3 shrink-0"
           >
             Reset All
           </button>
         )}
       </div>
 
-      {/* Lectures Section */}
+      {/* Lectures */}
       {renderSection(
         'lecture',
         lectureEntries,
-        <BookOpen className="h-4 w-4 text-primary" />,
-        'bg-primary/10'
+        <BookOpen className="h-4 w-4" />
       )}
 
-      {/* Labs Section */}
+      {/* Labs */}
       {renderSection(
         'lab',
         labEntries,
-        <FlaskConical className="h-4 w-4 text-chart-4" />,
-        'bg-chart-4/10'
+        <FlaskConical className="h-4 w-4" />
       )}
 
       {/* Submit Button */}
@@ -828,71 +828,76 @@ export default function InputPage() {
           onClick={handleSubmit}
           disabled={saving || orderedMarkedEntries.length === 0}
           className={cn(
-            'w-full rounded-xl py-3.5 text-sm font-semibold transition-all flex items-center justify-center gap-2',
+            'w-full rounded-lg py-3.5 text-sm font-medium transition-all flex items-center justify-center gap-2',
             justSaved
-              ? 'bg-success text-success-foreground'
-              : 'bg-primary text-primary-foreground hover:opacity-90 glow-primary',
+              ? 'bg-ok-bg text-ok border border-ok'
+              : 'bg-cta-bg text-cta-text hover:opacity-95',
             'disabled:opacity-40 disabled:cursor-not-allowed'
           )}
         >
           {justSaved ? (
             <>
               <Check className="h-4 w-4" />
-              Saved Successfully!
+              Saved to Ledger
             </>
           ) : saving ? (
             'Saving…'
           ) : (
             <>
               <Send className="h-4 w-4" />
-              Log {orderedMarkedEntries.length} {orderedMarkedEntries.length === 1 ? 'Entry' : 'Entries'}
+              Save {orderedMarkedEntries.length} {orderedMarkedEntries.length === 1 ? 'Session' : 'Sessions'}
             </>
           )}
         </button>
       )}
 
+      {/* All Caught Up Card */}
       {entries.length === 0 && !loading && dayRecords.length > 0 && (
-        <div className="glass rounded-xl p-8 text-center text-success glow-success">
-          <Check className="h-10 w-10 mx-auto mb-3" />
-          <p className="font-semibold text-lg">All caught up!</p>
-          <p className="text-sm text-muted-foreground mt-1">You've logged all available subjects for this date.</p>
+        <div className="ledger-card p-8 text-center">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-ok-bg text-ok mx-auto mb-3">
+            <Check className="h-6 w-6" />
+          </div>
+          <p className="font-serif text-lg font-medium text-text-primary">All caught up</p>
+          <p className="text-xs text-text-muted mt-1">
+            You've logged all available subjects for this date.
+          </p>
         </div>
       )}
 
-      {/* Already logged for this date (supports drag & drop reordering) */}
+      {/* Already Logged Section */}
       {dayRecords.length > 0 && (
-        <div className="glass rounded-xl overflow-hidden mt-8">
+        <div className="ledger-card overflow-hidden mt-6">
           <button
             onClick={() => setShowLogged(!showLogged)}
-            className="flex w-full items-center justify-between px-5 py-4 hover:bg-secondary/30 transition-colors"
+            className="flex w-full items-center justify-between px-5 py-4 hover:bg-panel/50 transition-colors"
           >
             <div className="flex items-center gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-secondary">
-                <Check className="h-4 w-4 text-foreground" />
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-chip text-text-primary">
+                <Check className="h-4 w-4" />
               </div>
               <div className="text-left">
                 <div className="flex items-center gap-2">
-                  <h2 className="text-sm font-semibold">Already Logged</h2>
+                  <h2 className="font-serif text-base font-normal text-text-primary">Already Logged</h2>
                   {isReordering && (
-                    <span className="text-[10px] text-primary animate-pulse font-medium">
-                      Saving order…
+                    <span className="text-[10px] text-accent animate-pulse font-medium">
+                      Saving sequence…
                     </span>
                   )}
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  {dayRecords.length} entries for {format(new Date(date + 'T00:00:00'), 'MMM d')} • Drag or use arrows to change sequence
+                <p className="text-xs text-text-muted">
+                  {dayRecords.length} recorded session{dayRecords.length > 1 ? 's' : ''} for {format(new Date(date + 'T00:00:00'), 'MMM d')}
                 </p>
               </div>
             </div>
             {showLogged ? (
-              <ChevronUp className="h-5 w-5 text-muted-foreground" />
+              <ChevronUp className="h-4 w-4 text-text-muted" />
             ) : (
-              <ChevronDown className="h-5 w-5 text-muted-foreground" />
+              <ChevronDown className="h-4 w-4 text-text-muted" />
             )}
           </button>
 
           {showLogged && (
-            <div className="divide-y divide-border border-t border-border">
+            <div className="divide-y divide-border-subtle border-t border-border-subtle">
               {dayRecords.map((record, index) => {
                 const label = getRecordLabel(record);
                 const isBeingDragged = draggedRecordIndex === index;
@@ -908,9 +913,9 @@ export default function InputPage() {
                     onDragEnd={handleRecordDragEnd}
                     className={cn(
                       'flex items-center gap-2.5 sm:gap-3 px-3 sm:px-5 py-3 transition-all select-none',
-                      isBeingDragged && 'opacity-40 bg-muted/40 scale-[0.99]',
-                      isOver && 'border-t-2 border-primary bg-primary/[0.04]',
-                      record.status === 'attended' ? 'hover:bg-success/[0.02]' : 'hover:bg-danger/[0.02]'
+                      isBeingDragged && 'opacity-40 bg-chip scale-[0.99]',
+                      isOver && 'border-t-2 border-forest-800 dark:border-accent bg-panel/60',
+                      record.status === 'attended' ? 'hover:bg-ok-bg/10' : 'hover:bg-risk-bg/10'
                     )}
                   >
                     {/* Drag handle */}
@@ -919,59 +924,54 @@ export default function InputPage() {
                       onMouseUp={() => setDragAllowedId(null)}
                       onTouchStart={() => setDragAllowedId(record.id)}
                       onTouchEnd={() => setDragAllowedId(null)}
-                      className="hidden sm:flex cursor-grab active:cursor-grabbing text-muted-foreground/50 hover:text-foreground p-1 -ml-1 rounded transition-colors"
+                      className="hidden sm:flex cursor-grab active:cursor-grabbing text-text-muted hover:text-text-primary p-1 -ml-1 rounded transition-colors"
                       title="Drag to reorder sequence"
                     >
                       <GripVertical className="h-4 w-4" />
                     </div>
 
                     {/* Sequence badge */}
-                    <span className="shrink-0 text-[11px] font-bold text-muted-foreground w-5 text-center">
+                    <span className="shrink-0 text-[11px] font-semibold text-text-muted w-5 text-center">
                       #{index + 1}
                     </span>
 
-                    {/* Status icon */}
+                    {/* Status icon tile */}
                     <div
                       className={cn(
                         'flex h-7 w-7 items-center justify-center rounded-md shrink-0',
-                        record.status === 'attended' ? 'bg-success/15' : 'bg-danger/15'
+                        record.status === 'attended' ? 'bg-ok-bg text-ok' : 'bg-risk-bg text-risk'
                       )}
                     >
                       {record.status === 'attended' ? (
-                        <Check className="h-3.5 w-3.5 text-success" />
+                        <Check className="h-3.5 w-3.5" />
                       ) : (
-                        <X className="h-3.5 w-3.5 text-danger" />
+                        <X className="h-3.5 w-3.5" />
                       )}
                     </div>
 
                     {/* Subject info */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <p className="text-sm font-medium truncate">
+                        <p className="text-sm font-medium text-text-primary truncate">
                           {getSubjectName(record.subjectId)}
                         </p>
                         {label && (
-                          <span className="shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-primary/10 text-primary">
+                          <span className="shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-chip text-text-secondary">
                             {label}
                           </span>
                         )}
                       </div>
-                      <p className="text-[10px] text-muted-foreground flex items-center gap-1.5 mt-0.5">
-                        {record.type === 'lecture' ? (
-                          <BookOpen className="h-2.5 w-2.5" />
-                        ) : (
-                          <FlaskConical className="h-2.5 w-2.5" />
-                        )}
+                      <p className="text-[10px] text-text-muted flex items-center gap-1 mt-0.5">
                         {record.type === 'lecture' ? 'Lecture' : 'Lab'}
                       </p>
                     </div>
 
-                    {/* Up / Down reorder buttons */}
+                    {/* Up / Down reorder arrows */}
                     <div className="flex items-center gap-0.5 shrink-0">
                       <button
                         disabled={index === 0 || isReordering}
                         onClick={() => handleMoveRecord(index, 'up')}
-                        className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-secondary hover:text-foreground disabled:opacity-20 disabled:hover:bg-transparent disabled:hover:text-muted-foreground transition-colors"
+                        className="flex h-7 w-7 items-center justify-center rounded text-text-muted hover:bg-panel hover:text-text-primary disabled:opacity-20 transition-colors"
                         title="Move earlier"
                       >
                         <ChevronUp className="h-3.5 w-3.5" />
@@ -979,7 +979,7 @@ export default function InputPage() {
                       <button
                         disabled={index === dayRecords.length - 1 || isReordering}
                         onClick={() => handleMoveRecord(index, 'down')}
-                        className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-secondary hover:text-foreground disabled:opacity-20 disabled:hover:bg-transparent disabled:hover:text-muted-foreground transition-colors"
+                        className="flex h-7 w-7 items-center justify-center rounded text-text-muted hover:bg-panel hover:text-text-primary disabled:opacity-20 transition-colors"
                         title="Move later"
                       >
                         <ChevronDown className="h-3.5 w-3.5" />
@@ -989,10 +989,10 @@ export default function InputPage() {
                     {/* Delete button */}
                     <button
                       onClick={() => handleDeleteRecord(record.id)}
-                      className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-danger/15 hover:text-danger transition-colors shrink-0"
-                      title="Delete to re-log"
+                      className="flex h-7 w-7 items-center justify-center rounded text-text-muted hover:bg-risk-bg hover:text-risk transition-colors shrink-0"
+                      title="Delete record"
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash2 className="h-3.5 w-3.5" />
                     </button>
                   </div>
                 );

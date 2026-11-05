@@ -1,11 +1,10 @@
 import { useState } from 'react';
 import { useSession, signIn, signUp } from '@/lib/auth-client';
-import { ShieldCheck, BarChart3, HeartPulse, History } from 'lucide-react';
-import Logo from '@/assets/Logo.svg';
+import { ShieldCheck, BarChart3, HeartPulse, BookOpen } from 'lucide-react';
 
 export default function LoginPage() {
   const { data: session, isPending: sessionPending } = useSession();
-  
+
   const [isSignUp, setIsSignUp] = useState(true);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -13,7 +12,6 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // If already logged in, redirect
   if (session && !sessionPending) {
     window.location.href = '/';
     return null;
@@ -49,196 +47,192 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-[100dvh] w-full lg:h-screen lg:grid lg:grid-cols-10 bg-background overflow-y-auto lg:overflow-hidden overscroll-contain">
-
-      {/* 70% Left Side - Marketing & Features (Hidden on small screens) */}
-      <div className="relative hidden lg:flex col-span-7 flex-col justify-center p-6 lg:p-8 xl:p-10 overflow-hidden border-r border-border/50">
-        
-        {/* Ambient background glows */}
-        <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="absolute -left-20 -top-20 h-[400px] w-[400px] rounded-full bg-primary/10 blur-[100px]" />
-          <div className="absolute bottom-0 right-10 h-[300px] w-[300px] rounded-full bg-primary/5 blur-[100px]" />
-        </div>
-
-        <div className="relative z-10 max-w-4xl w-full mx-auto my-auto flex flex-col justify-center h-full max-h-[750px]">
-          <div className="flex items-center gap-4 mb-4 xl:mb-5">
-            <div className="flex h-14 w-14 xl:h-16 xl:w-16 items-center justify-center rounded-2xl bg-primary/20 glow-primary p-2.5 floating-panel">
-              <img src={Logo} alt="Atten-Dance Logo" className="h-full w-full object-contain" />
+    <div className="min-h-[100dvh] w-full lg:h-screen lg:grid lg:grid-cols-12 bg-page text-text-primary font-sans overflow-y-auto lg:overflow-hidden overscroll-contain">
+      {/* 60% Left Side - Editorial Brand & Features (Hidden on mobile) */}
+      <div className="relative hidden lg:flex col-span-7 flex-col justify-between p-12 lg:p-16 border-r border-border-subtle bg-panel/30">
+        <div>
+          {/* Brand Mark */}
+          <div className="flex items-center gap-3 mb-12">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-forest-800 dark:bg-cta-bg text-text-on-dark relative">
+              <span className="font-serif text-xl font-bold">A</span>
+              <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-accent" />
             </div>
-            <h1 className="text-2xl xl:text-3xl font-bold tracking-tight text-foreground">
-              Atten-Dance
-            </h1>
+            <div>
+              <div className="text-xl font-semibold tracking-tight text-text-primary">
+                Atten<span className="text-accent">-</span>Dance
+              </div>
+              <p className="text-xs text-text-muted">Attendance Ledger</p>
+            </div>
           </div>
 
-          <h2 className="text-2xl xl:text-4xl font-black tracking-tight mb-2 xl:mb-3 text-gradient leading-tight">
-            Stop guessing. <br />
-            Start strategizing your attendance.
-          </h2>
-          
-          <p className="text-sm xl:text-base text-muted-foreground max-w-2xl mb-6 xl:mb-8 leading-relaxed">
-            Because colleges make you dance for attendance. Take back control of your schedule with algorithmic precision. Know exactly when you can safely sleep in, and when you absolutely must show up.
+          <span className="eyebrow block mb-3">Academic Ledger</span>
+          <h1 className="font-serif text-4xl lg:text-5xl font-normal tracking-tight text-text-primary max-w-xl leading-tight mb-4">
+            Stop guessing. Start strategizing your attendance.
+          </h1>
+          <p className="text-sm text-text-secondary max-w-lg leading-relaxed mb-10">
+            Because colleges make you dance for attendance. Take control of your schedule with mathematical clarity. Know exactly when you can safely sleep in, and when you must show up.
           </p>
 
-          {/* Feature Grid */}
-          <div className="grid grid-cols-2 gap-4 xl:gap-5">
-            <div className="glass rounded-xl p-4 xl:p-5 transition-all hover:-translate-y-1 hover:glow-primary">
-              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center mb-3 border border-primary/20">
-                <ShieldCheck className="h-5 w-5 text-primary" />
+          {/* Features Grid */}
+          <div className="grid grid-cols-2 gap-4 max-w-xl">
+            <div className="ledger-card p-4">
+              <div className="h-9 w-9 rounded-lg bg-ok-bg text-ok flex items-center justify-center mb-2.5">
+                <ShieldCheck className="h-4.5 w-4.5" />
               </div>
-              <h3 className="text-sm xl:text-base font-bold text-foreground mb-1">Safe Skips</h3>
-              <p className="text-xs xl:text-sm text-muted-foreground leading-relaxed">
-                Calculates the exact number of lectures and labs you can bunk right now without ever dropping below your threshold.
+              <h3 className="font-serif text-sm font-semibold text-text-primary mb-1">Safe Skips</h3>
+              <p className="text-xs text-text-secondary leading-relaxed">
+                Calculates the exact number of lectures and labs you can miss right now before dropping below target.
               </p>
             </div>
 
-            <div className="glass rounded-xl p-4 xl:p-5 transition-all hover:-translate-y-1 hover:glow-danger">
-              <div className="h-10 w-10 rounded-lg bg-danger/10 flex items-center justify-center mb-3 border border-danger/20">
-                <HeartPulse className="h-5 w-5 text-danger" />
+            <div className="ledger-card p-4">
+              <div className="h-9 w-9 rounded-lg bg-risk-bg text-risk flex items-center justify-center mb-2.5">
+                <HeartPulse className="h-4.5 w-4.5" />
               </div>
-              <h3 className="text-sm xl:text-base font-bold text-foreground mb-1">Recovery Planner</h3>
-              <p className="text-xs xl:text-sm text-muted-foreground leading-relaxed">
-                Currently in the danger zone? We'll generate combinations of consecutive sessions you need to attend to bounce back.
+              <h3 className="font-serif text-sm font-semibold text-text-primary mb-1">Recovery Planner</h3>
+              <p className="text-xs text-text-secondary leading-relaxed">
+                Generates consecutive attendance quotas and balanced combinations to restore good standing.
               </p>
             </div>
 
-            <div className="glass rounded-xl p-4 xl:p-5 transition-all hover:-translate-y-1 hover:glow-primary">
-              <div className="h-10 w-10 rounded-lg bg-chart-1/10 flex items-center justify-center mb-3 border border-chart-1/20">
-                <BarChart3 className="h-5 w-5 text-chart-1" />
+            <div className="ledger-card p-4">
+              <div className="h-9 w-9 rounded-lg bg-chip text-text-primary flex items-center justify-center mb-2.5">
+                <BarChart3 className="h-4.5 w-4.5" />
               </div>
-              <h3 className="text-sm xl:text-base font-bold text-foreground mb-1">Deep Analytics</h3>
-              <p className="text-xs xl:text-sm text-muted-foreground leading-relaxed">
-                Visualize your attendance habits over time with stunning, interactive charts. Spot trends before they become problems.
+              <h3 className="font-serif text-sm font-semibold text-text-primary mb-1">Deep Analytics</h3>
+              <p className="text-xs text-text-secondary leading-relaxed">
+                Inspect subject-by-subject performance, 50/50 split comparisons, and threshold margins.
               </p>
             </div>
 
-            <div className="glass rounded-xl p-4 xl:p-5 transition-all hover:-translate-y-1 hover:glow-primary">
-              <div className="h-10 w-10 rounded-lg bg-chart-4/10 flex items-center justify-center mb-3 border border-chart-4/20">
-                <History className="h-5 w-5 text-chart-4" />
+            <div className="ledger-card p-4">
+              <div className="h-9 w-9 rounded-lg bg-panel text-forest-700 dark:text-text-primary flex items-center justify-center mb-2.5 border border-border-subtle">
+                <BookOpen className="h-4.5 w-4.5" />
               </div>
-              <h3 className="text-sm xl:text-base font-bold text-foreground mb-1">Subject-wise Records</h3>
-              <p className="text-xs xl:text-sm text-muted-foreground leading-relaxed">
-                Detailed logs for every subject. Prove your teachers wrong when they incorrectly claim you were absent.
+              <h3 className="font-serif text-sm font-semibold text-text-primary mb-1">Verification Logs</h3>
+              <p className="text-xs text-text-secondary leading-relaxed">
+                Daily chronologically sorted session records with multi-instance support and holiday notes.
               </p>
             </div>
           </div>
+        </div>
+
+        <div className="text-[11px] text-text-muted">
+          Atten-Dance • Local-first privacy architecture
         </div>
       </div>
 
-      {/* 30% Right Side - Login Panel */}
-      <div className="col-span-12 lg:col-span-3 flex flex-col justify-center p-6 md:p-8 lg:p-6 bg-card relative z-20 shadow-2xl min-h-[100dvh] lg:h-screen overflow-y-auto lg:overflow-hidden py-12 lg:py-6 pt-[calc(2rem+env(safe-area-inset-top,0px))] pb-[calc(2rem+env(safe-area-inset-bottom,0px))] lg:pt-6 lg:pb-6">
-        
-        <div className="w-full max-w-sm mx-auto my-auto flex flex-col justify-center h-full max-h-[600px]">
-          {/* Mobile Logo (Only visible on small screens) */}
-          <div className="flex lg:hidden flex-col items-center text-center gap-4 mb-8">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/20 glow-primary p-2.5">
-              <img src={Logo} alt="Atten-Dance Logo" className="h-full w-full object-contain" />
+      {/* 40% Right Side - Authentication Form */}
+      <div className="col-span-12 lg:col-span-5 flex flex-col justify-center p-6 sm:p-10 lg:p-12 min-h-[100dvh] lg:h-screen bg-card">
+        <div className="w-full max-w-sm mx-auto">
+          {/* Mobile Brand Mark */}
+          <div className="flex lg:hidden items-center gap-2.5 mb-8">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-forest-800 dark:bg-cta-bg text-text-on-dark relative">
+              <span className="font-serif text-base font-bold">A</span>
+              <span className="absolute top-1 right-1 h-1 w-1 rounded-full bg-accent" />
             </div>
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight text-gradient mb-1.5">
-                Atten-Dance
-              </h1>
-              <p className="text-xs text-muted-foreground">
-                Because colleges make you dance for attendance.
-              </p>
-            </div>
+            <span className="font-serif text-base font-medium text-text-primary">Atten-Dance</span>
           </div>
 
-          <div className="mb-6 lg:mb-8">
-            <h2 className="text-xl font-bold text-foreground">Welcome to Atten-Dance</h2>
-            <p className="mt-1.5 text-xs text-muted-foreground">
-              Sign in to sync your attendance data across all your devices.
+          <div className="mb-6">
+            <span className="eyebrow block mb-1">Access Account</span>
+            <h2 className="font-serif text-2xl font-normal text-text-primary">
+              {isSignUp ? 'Create your ledger' : 'Welcome back'}
+            </h2>
+            <p className="text-xs text-text-secondary mt-1">
+              {isSignUp
+                ? 'Register to sync your attendance across all your devices.'
+                : 'Enter your credentials to continue tracking your term.'}
             </p>
           </div>
 
-          {/* Email/Password Form */}
-          <form onSubmit={handleEmailAuth} className="space-y-3 mb-6">
+          {/* Email / Password Form */}
+          <form onSubmit={handleEmailAuth} className="space-y-3.5 mb-6">
             {isSignUp && (
               <div>
-                <input 
-                  type="text" 
-                  placeholder="Full Name"
+                <label className="eyebrow text-[10px] block mb-1">Full Name</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Alex Rivera"
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-colors"
+                  className="w-full rounded-md border border-border-strong bg-card px-3.5 py-2.5 text-xs text-text-primary placeholder:text-text-muted outline-none focus:border-forest-800 dark:focus:border-accent transition-colors"
                 />
               </div>
             )}
+
             <div>
-              <input 
-                type="email" 
-                placeholder="Email Address"
+              <label className="eyebrow text-[10px] block mb-1">Email Address</label>
+              <input
+                type="email"
+                placeholder="name@university.edu"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-colors"
-              />
-            </div>
-            <div>
-              <input 
-                type="password" 
-                placeholder="Password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-colors"
+                className="w-full rounded-md border border-border-strong bg-card px-3.5 py-2.5 text-xs text-text-primary placeholder:text-text-muted outline-none focus:border-forest-800 dark:focus:border-accent transition-colors"
               />
             </div>
 
-            {error && <p className="text-xs text-danger font-medium">{error}</p>}
+            <div>
+              <label className="eyebrow text-[10px] block mb-1">Password</label>
+              <input
+                type="password"
+                placeholder="••••••••"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full rounded-md border border-border-strong bg-card px-3.5 py-2.5 text-xs text-text-primary placeholder:text-text-muted outline-none focus:border-forest-800 dark:focus:border-accent transition-colors"
+              />
+            </div>
+
+            {error && (
+              <p className="text-xs text-risk font-medium pt-1">{error}</p>
+            )}
 
             <button
               type="submit"
               disabled={isLoading || sessionPending}
-              className="w-full rounded-xl bg-primary px-4 py-3 text-sm font-bold text-primary-foreground transition-all hover:bg-primary/90 hover:glow-primary disabled:opacity-50"
+              className="w-full rounded-md bg-forest-800 dark:bg-cta-bg text-text-on-dark py-2.5 text-xs font-medium hover:opacity-95 transition-opacity disabled:opacity-50 mt-2"
             >
-              {isLoading ? 'Please wait...' : (isSignUp ? 'Create Account' : 'Sign In')}
+              {isLoading ? 'Processing…' : (isSignUp ? 'Create Ledger Account' : 'Sign In')}
             </button>
-            
-            <div className="text-center mt-2">
-              <button 
-                type="button" 
+
+            <div className="text-center pt-2">
+              <button
+                type="button"
                 onClick={() => { setIsSignUp(!isSignUp); setError(''); }}
-                className="text-xs text-muted-foreground hover:text-primary transition-colors"
+                className="text-xs text-text-secondary hover:text-text-primary underline transition-colors"
               >
-                {isSignUp ? 'Already have an account? Sign in' : "Don't have an account? Sign up"}
+                {isSignUp ? 'Already registered? Sign in' : "New to Atten-Dance? Create an account"}
               </button>
             </div>
           </form>
 
           {/* Divider */}
-          <div className="mb-6 flex items-center gap-3">
-             <div className="h-px flex-1 bg-border" />
-             <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Or</span>
-             <div className="h-px flex-1 bg-border" />
+          <div className="mb-6 flex items-center gap-3 text-border-subtle">
+            <div className="h-px flex-1 bg-border-subtle" />
+            <span className="eyebrow text-[10px]">Or</span>
+            <div className="h-px flex-1 bg-border-subtle" />
           </div>
 
-          {/* OAuth Buttons */}
-          <div className="space-y-3">
-            <button
-              id="login-google"
-              type="button"
-              onClick={() => signIn.social({ provider: 'google', callbackURL: '/' })}
-              disabled={sessionPending}
-              className="group flex w-full items-center justify-center gap-3 rounded-xl border border-border bg-background px-4 py-3 text-sm font-medium text-foreground transition-all duration-300 hover:bg-secondary hover:border-primary/40 hover:glow-primary disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {/* Google icon */}
-              <svg className="h-4 w-4" viewBox="0 0 24 24">
-                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4" />
-                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
-                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
-                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
-              </svg>
-              <span className="transition-colors group-hover:text-primary">Continue with Google</span>
-            </button>
-          </div>
-
-          <p className="mt-8 text-center text-[10px] leading-relaxed text-muted-foreground/60">
-            By continuing, you agree to our Terms of Service and Privacy Policy. <br />
-            We only request your name and email address.
-          </p>
+          {/* Google OAuth */}
+          <button
+            id="login-google"
+            type="button"
+            onClick={() => signIn.social({ provider: 'google', callbackURL: '/' })}
+            disabled={sessionPending}
+            className="flex w-full items-center justify-center gap-2.5 rounded-md border border-border-strong bg-card px-4 py-2.5 text-xs font-medium text-text-primary hover:bg-panel transition-colors disabled:opacity-50"
+          >
+            <svg className="h-4 w-4" viewBox="0 0 24 24">
+              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4" />
+              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
+              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
+            </svg>
+            <span>Continue with Google</span>
+          </button>
         </div>
-
       </div>
     </div>
   );

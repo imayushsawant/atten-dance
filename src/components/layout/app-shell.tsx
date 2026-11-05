@@ -14,14 +14,18 @@ import {
   LogOut,
   Wand2,
   Clock,
-  Star,
+  Sun,
+  Moon,
+  MoreHorizontal,
 } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { useSession, signOut } from '@/lib/auth-client';
-import Logo from '@/assets/Logo.svg';
+import { useTheme } from '@/lib/theme-provider';
+import { api } from '@/lib/api';
+import type { Semester } from '@/lib/api';
 
-const navItems = [
+const workspaceNavItems = [
   { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/input', icon: PenLine, label: 'Log Attendance' },
   { to: '/calendar', icon: CalendarDays, label: 'Calendar' },
@@ -31,142 +35,289 @@ const navItems = [
   { to: '/history', icon: HistoryIcon, label: 'History' },
   { to: '/predictor', icon: Wand2, label: 'Predictor' },
   { to: '/time-window', icon: Clock, label: 'Time Window' },
-  { to: '/settings', icon: Settings, label: 'Settings' },
 ];
 
 export default function AppShell() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [activeSemester, setActiveSemester] = useState<Semester | null>(null);
   const location = useLocation();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const mainRef = useRef<HTMLElement>(null);
+  const { resolved, setTheme } = useTheme();
 
-  // Close sidebar on route change (mobile) & smoothly reset scroll
+  // Close sidebar on route change & smoothly reset scroll
   useEffect(() => {
     setSidebarOpen(false);
     mainRef.current?.scrollTo({ top: 0, behavior: 'instant' });
   }, [location.pathname]);
 
+  // Load active semester for sidebar & header pills
+  useEffect(() => {
+    api.semesters.getActive()
+      .then((sem) => setActiveSemester(sem))
+      .catch(() => {});
+  }, [location.pathname]);
+
   return (
-    <div className="flex h-[100dvh] lg:h-screen overflow-hidden bg-background p-0 lg:p-4">
-      {/* Sidebar */}
+    <div className="flex h-[100dvh] overflow-hidden bg-page text-text-primary font-sans">
+      {/* Sidebar - Desktop fixed & Mobile slide-over drawer */}
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-50 flex w-64 flex-col bg-card transition-transform duration-300 pt-[env(safe-area-inset-top,0px)] pb-[env(safe-area-inset-bottom,0px)] lg:pt-0 lg:pb-0 lg:relative lg:translate-x-0 lg:rounded-2xl lg:border lg:border-border lg:shadow-2xl',
-          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+          'fixed inset-y-0 left-0 z-50 flex w-[260px] flex-col bg-sidebar-bg text-sidebar-text transition-transform duration-300 ease-out',
+          'border-r border-sidebar-divider',
+          'pt-[env(safe-area-inset-top,0px)] pb-[env(safe-area-inset-bottom,0px)]',
+          'lg:static lg:translate-x-0 lg:shrink-0',
+          sidebarOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full'
         )}
       >
-        {/* Logo */}
-        <Link to="/" className="flex h-20 items-center gap-3 border-b border-border/50 px-6 hover:bg-secondary/50 transition-colors">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/20 glow-primary p-2">
-            <img src={Logo} alt="Atten-Dance Logo" className="h-full w-full object-contain" />
-          </div>
+        {/* Brand Header */}
+        <div className="flex h-20 items-center justify-between border-b border-sidebar-divider px-5">
+          <Link to="/" className="flex items-center gap-3 group">
+            {/* Logo Mark: pen/slash with orange dot */}
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-forest-700 text-text-on-dark relative">
+              <span className="font-serif text-lg font-bold">A</span>
+              <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-accent" />
+            </div>
+            <div>
+              <div className="text-lg font-semibold tracking-tight text-text-on-dark flex items-center">
+                Atten<span className="text-accent">-</span>Dance
+              </div>
+              <p className="text-[11px] leading-tight text-sidebar-text-muted">
+                Attendance Ledger
+              </p>
+            </div>
+          </Link>
+
+          {/* Close button on mobile drawer */}
+          <button
+            onClick={() => setSidebarOpen(false)}
+            className="p-1.5 text-sidebar-text-muted hover:text-text-on-dark rounded-md lg:hidden"
+            aria-label="Close navigation"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        {/* Navigation Content */}
+        <div className="flex-1 overflow-y-auto px-3 py-4 space-y-6 overscroll-contain">
+          {/* Section: WORKSPACE */}
           <div>
-            <h1 className="text-lg font-bold tracking-tight text-primary">
-              Atten-Dance
-            </h1>
-            <p className="text-[10px] leading-tight text-muted-foreground mt-0.5 opacity-80 max-w-[140px]">
-              Because colleges make you dance for attendance
-            </p>
+            <div className="px-3 pb-2 text-[11px] font-semibold tracking-[0.2em] text-sidebar-text-muted uppercase">
+              Workspace
+            </div>
+            <nav className="space-y-1">
+              {workspaceNavItems.map((item) => (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  end={item.to === '/'}
+                  className={({ isActive }) =>
+                    cn(
+                      'group relative flex items-center gap-3 rounded-lg px-3.5 py-2.5 text-sm font-medium transition-colors',
+                      isActive
+                        ? 'bg-nav-active-bg text-nav-active-text font-semibold before:absolute before:left-0 before:top-1.5 before:bottom-1.5 before:w-[3px] before:rounded-r before:bg-accent'
+                        : 'text-sidebar-text hover:bg-white/5 hover:text-text-on-dark'
+                    )
+                  }
+                >
+                  <item.icon className="h-4.5 w-4.5 shrink-0 opacity-80 group-hover:opacity-100" />
+                  <span className="truncate">{item.label}</span>
+                </NavLink>
+              ))}
+            </nav>
           </div>
-        </Link>
 
-        {/* Navigation */}
-        <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4 overscroll-contain">
-          {navItems.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.to === '/'}
-              className={({ isActive }) =>
-                cn(
-                  'flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all duration-200',
-                  isActive
-                    ? 'bg-primary/10 text-primary glow-primary border border-primary/20 shadow-sm'
-                    : 'text-muted-foreground border border-transparent hover:bg-secondary hover:text-foreground'
-                )
-              }
+          {/* Section: SEMESTER */}
+          <div>
+            <div className="px-3 pb-2 text-[11px] font-semibold tracking-[0.2em] text-sidebar-text-muted uppercase flex items-center justify-between">
+              <span>Semester</span>
+              {activeSemester && (
+                <span className="text-[9px] px-1.5 py-0.5 rounded bg-white/10 text-text-on-dark tracking-normal uppercase">
+                  Active
+                </span>
+              )}
+            </div>
+
+            {activeSemester && (
+              <div className="mx-3 mb-2 px-3 py-2 rounded-lg bg-white/5 border border-sidebar-divider text-xs">
+                <div className="font-medium text-text-on-dark truncate">{activeSemester.name}</div>
+                <div className="text-[11px] text-sidebar-text-muted flex items-center gap-1.5 mt-0.5">
+                  <span>Target: {activeSemester.threshold}%</span>
+                  <span>•</span>
+                  <span>{activeSemester.calculationMethod === 'total_sessions' ? 'Total' : '50/50'}</span>
+                </div>
+              </div>
+            )}
+
+            <nav className="space-y-1">
+              <NavLink
+                to="/semesters"
+                className={({ isActive }) =>
+                  cn(
+                    'group relative flex items-center gap-3 rounded-lg px-3.5 py-2.5 text-sm font-medium transition-colors',
+                    isActive
+                      ? 'bg-nav-active-bg text-nav-active-text font-semibold before:absolute before:left-0 before:top-1.5 before:bottom-1.5 before:w-[3px] before:rounded-r before:bg-accent'
+                      : 'text-sidebar-text hover:bg-white/5 hover:text-text-on-dark'
+                  )
+                }
+              >
+                <GraduationCap className="h-4.5 w-4.5 shrink-0 opacity-80 group-hover:opacity-100" />
+                <span className="truncate">Manage Semesters</span>
+              </NavLink>
+            </nav>
+          </div>
+        </div>
+
+        {/* Footer: User profile, Theme toggle & Sign out */}
+        <div className="border-t border-sidebar-divider p-3">
+          <div className="flex items-center justify-between mb-2 px-2 text-xs text-sidebar-text-muted">
+            <span className="uppercase text-[10px] tracking-wider font-semibold">Theme</span>
+            <button
+              onClick={() => setTheme(resolved === 'dark' ? 'light' : 'dark')}
+              className="flex items-center gap-1.5 px-2 py-1 rounded bg-white/5 hover:bg-white/10 text-sidebar-text transition-colors text-xs"
+              title="Toggle theme"
             >
-              <item.icon className="h-4.5 w-4.5" />
-              <span>{item.label}</span>
-            </NavLink>
-          ))}
-        </nav>
+              {resolved === 'dark' ? (
+                <>
+                  <Sun className="h-3.5 w-3.5 text-warn" />
+                  <span>Light</span>
+                </>
+              ) : (
+                <>
+                  <Moon className="h-3.5 w-3.5 text-sidebar-text" />
+                  <span>Dark</span>
+                </>
+              )}
+            </button>
+          </div>
 
-        {/* Semester selector link & GitHub link for mobile */}
-        <div className="border-t border-border/50 p-3 space-y-2">
-          <NavLink
-            to="/semesters"
-            className={({ isActive }) =>
-              cn(
-                'flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all duration-200',
-                isActive
-                  ? 'bg-primary/10 text-primary glow-primary border border-primary/20'
-                  : 'text-muted-foreground border border-transparent hover:bg-secondary hover:text-foreground'
-              )
-            }
-          >
-            <GraduationCap className="h-4.5 w-4.5" />
-            <span>Semesters</span>
-          </NavLink>
-
-          <a
-            href="https://github.com/imayushsawant/atten-dance"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex lg:hidden items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium text-muted-foreground border border-transparent hover:bg-secondary hover:text-foreground transition-all duration-200"
-          >
-            <Star className="h-4.5 w-4.5" />
-            <span>Star on GitHub</span>
-          </a>
-
-          {/* User profile & logout */}
           <UserFooter onLoggingOut={() => setIsLoggingOut(true)} />
         </div>
       </aside>
 
-      {/* Backdrop for mobile */}
+      {/* Backdrop for mobile drawer */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 z-40 bg-background/80 backdrop-blur-sm lg:hidden"
+          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-xs lg:hidden animate-fade-in"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
-      {/* Main Content */}
-      <div className="flex flex-1 flex-col overflow-hidden lg:pl-4">
-        {/* Top bar */}
-        <header className="flex h-[calc(4rem+env(safe-area-inset-top,0px))] pt-[env(safe-area-inset-top,0px)] shrink-0 items-center justify-between border-b border-border/50 px-4 lg:hidden">
+      {/* Main Content Area */}
+      <div className="flex flex-1 flex-col overflow-hidden min-w-0">
+        {/* Mobile Header */}
+        <header className="flex h-14 shrink-0 items-center justify-between border-b border-border-subtle bg-card px-4 lg:hidden pt-[env(safe-area-inset-top,0px)]">
           <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="rounded-xl p-2.5 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
-            aria-label={sidebarOpen ? 'Close menu' : 'Open menu'}
+            onClick={() => setSidebarOpen(true)}
+            className="rounded-lg p-2 text-text-secondary hover:bg-panel hover:text-text-primary transition-colors"
+            aria-label="Open navigation menu"
           >
-            {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            <Menu className="h-5 w-5" />
           </button>
-          
-          <Link to="/" className="flex items-center gap-2.5 hover:opacity-90 transition-opacity">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/20 glow-primary p-1.5">
-              <img src={Logo} alt="Atten-Dance Logo" className="h-full w-full object-contain" />
+
+          <Link to="/" className="flex items-center gap-2">
+            <div className="flex h-7 w-7 items-center justify-center rounded-md bg-forest-800 text-text-on-dark relative">
+              <span className="font-serif text-sm font-bold">A</span>
+              <span className="absolute top-1 right-1 h-1 w-1 rounded-full bg-accent" />
             </div>
-            <span className="text-base font-bold text-primary tracking-tight">Atten-Dance</span>
+            <span className="font-medium text-sm text-text-primary">Atten-Dance</span>
           </Link>
 
-          {/* Invisible spacer to balance the hamburger icon and keep center content aligned */}
-          <div className="w-10" aria-hidden="true" />
+          <div className="flex items-center gap-2">
+            {activeSemester && (
+              <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-chip text-text-secondary max-w-[120px] truncate">
+                {activeSemester.name}
+              </span>
+            )}
+            <button
+              onClick={() => setTheme(resolved === 'dark' ? 'light' : 'dark')}
+              className="p-2 text-text-secondary hover:text-text-primary rounded-lg transition-colors"
+              aria-label="Toggle theme"
+            >
+              {resolved === 'dark' ? <Sun className="h-4 w-4 text-warn" /> : <Moon className="h-4 w-4" />}
+            </button>
+          </div>
         </header>
 
-        {/* Page content with smooth route transition */}
-        <main ref={mainRef} className="flex-1 overflow-y-auto overscroll-contain">
-          <div key={location.pathname} className="animate-fade-in p-4 md:p-6 lg:p-8 pb-[calc(2rem+env(safe-area-inset-bottom,0px))]">
+        {/* Scrollable Page Body */}
+        <main ref={mainRef} className="flex-1 overflow-y-auto overscroll-contain bg-page">
+          <div key={location.pathname} className="animate-fade-in p-4 sm:p-6 md:p-8 lg:p-12 pb-[calc(5rem+env(safe-area-inset-bottom,0px))] lg:pb-12 max-w-[1600px] mx-auto w-full">
             <Outlet />
           </div>
         </main>
 
+        {/* Mobile & PWA Bottom Navigation Bar */}
+        <nav className="fixed bottom-0 inset-x-0 z-30 flex h-[calc(3.5rem+env(safe-area-inset-bottom,0px))] pb-[env(safe-area-inset-bottom,0px)] bg-card border-t border-border-subtle lg:hidden">
+          <div className="grid grid-cols-5 w-full items-center">
+            <NavLink
+              to="/"
+              end
+              className={({ isActive }) =>
+                cn(
+                  'flex flex-col items-center justify-center h-full gap-1 text-[11px] font-medium transition-colors',
+                  isActive ? 'text-forest-800 dark:text-accent font-semibold' : 'text-text-muted hover:text-text-primary'
+                )
+              }
+            >
+              <LayoutDashboard className="h-5 w-5" />
+              <span>Dashboard</span>
+            </NavLink>
+
+            <NavLink
+              to="/input"
+              className={({ isActive }) =>
+                cn(
+                  'flex flex-col items-center justify-center h-full gap-1 text-[11px] font-medium transition-colors',
+                  isActive ? 'text-forest-800 dark:text-accent font-semibold' : 'text-text-muted hover:text-text-primary'
+                )
+              }
+            >
+              <PenLine className="h-5 w-5" />
+              <span>Log</span>
+            </NavLink>
+
+            <NavLink
+              to="/calendar"
+              className={({ isActive }) =>
+                cn(
+                  'flex flex-col items-center justify-center h-full gap-1 text-[11px] font-medium transition-colors',
+                  isActive ? 'text-forest-800 dark:text-accent font-semibold' : 'text-text-muted hover:text-text-primary'
+                )
+              }
+            >
+              <CalendarDays className="h-5 w-5" />
+              <span>Calendar</span>
+            </NavLink>
+
+            <NavLink
+              to="/analytics"
+              className={({ isActive }) =>
+                cn(
+                  'flex flex-col items-center justify-center h-full gap-1 text-[11px] font-medium transition-colors',
+                  isActive ? 'text-forest-800 dark:text-accent font-semibold' : 'text-text-muted hover:text-text-primary'
+                )
+              }
+            >
+              <BarChart3 className="h-5 w-5" />
+              <span>Analytics</span>
+            </NavLink>
+
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="flex flex-col items-center justify-center h-full gap-1 text-[11px] font-medium text-text-muted hover:text-text-primary transition-colors"
+            >
+              <MoreHorizontal className="h-5 w-5" />
+              <span>More</span>
+            </button>
+          </div>
+        </nav>
+
+        {/* Logout Loading Overlay */}
         {isLoggingOut && (
-          <div className="absolute inset-0 z-[100] flex items-center justify-center bg-background/80 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="flex flex-col items-center gap-4 rounded-2xl bg-card p-8 shadow-2xl border border-border">
-              <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-              <p className="text-lg font-semibold tracking-tight">Logging out...</p>
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-xs animate-fade-in">
+            <div className="ledger-card p-8 flex flex-col items-center gap-4 max-w-xs text-center">
+              <div className="h-7 w-7 animate-spin rounded-full border-2 border-forest-800 dark:border-accent border-t-transparent" />
+              <p className="font-serif text-lg text-text-primary">Signing out...</p>
             </div>
           </div>
         )}
@@ -189,30 +340,40 @@ function UserFooter({ onLoggingOut }: { onLoggingOut: () => void }) {
     .slice(0, 2);
 
   return (
-    <div className="mt-2 border-t border-border/50 pt-3">
-      <div className="flex items-center gap-3 rounded-xl px-3 py-2">
+    <div className="pt-2 border-t border-sidebar-divider">
+      <div className="flex items-center gap-2.5 rounded-lg px-2 py-2">
         {user.image ? (
           <img
             src={user.image}
             alt={user.name || 'User'}
-            className="h-8 w-8 rounded-full border border-border object-cover"
+            className="h-8 w-8 rounded-full border border-sidebar-divider object-cover"
             referrerPolicy="no-referrer"
           />
         ) : (
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/20 text-xs font-semibold text-primary">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-nav-active-bg text-nav-active-text text-xs font-semibold">
             {initials}
           </div>
         )}
+
         <div className="flex-1 min-w-0">
-          <p className="truncate text-sm font-medium text-foreground">{user.name}</p>
-          <p className="truncate text-[11px] text-muted-foreground">{user.email}</p>
+          <p className="truncate text-xs font-medium text-text-on-dark">{user.name}</p>
+          <p className="truncate text-[10px] text-sidebar-text-muted">{user.email}</p>
         </div>
+
+        <Link
+          to="/settings"
+          className="p-1.5 text-sidebar-text-muted hover:text-text-on-dark rounded transition-colors"
+          title="Settings"
+        >
+          <Settings className="h-4 w-4" />
+        </Link>
+
         <button
           onClick={async () => {
             onLoggingOut();
             await signOut({ fetchOptions: { onSuccess: () => { window.location.href = '/login'; } } });
           }}
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+          className="p-1.5 text-sidebar-text-muted hover:text-risk rounded transition-colors"
           title="Sign out"
         >
           <LogOut className="h-4 w-4" />

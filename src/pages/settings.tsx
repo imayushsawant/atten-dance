@@ -1,13 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Settings as SettingsIcon, Save, RotateCcw, Download, Sun, Moon, Monitor } from 'lucide-react';
+import { Settings as SettingsIcon, RotateCcw, Download, Sun, Moon, Monitor } from 'lucide-react';
 import { api } from '@/lib/api';
 import { useTheme } from '@/lib/theme-provider';
 import { cn } from '@/lib/utils';
 
 export default function SettingsPage() {
   const [threshold, setThreshold] = useState(75);
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
   const [loading, setLoading] = useState(true);
   const { theme, setTheme } = useTheme();
 
@@ -28,8 +26,6 @@ export default function SettingsPage() {
     }
   }
 
-  // Settings no longer manages threshold, so handleSave is removed
-
   async function handleExport() {
     try {
       const [semesters, settings] = await Promise.all([
@@ -37,7 +33,6 @@ export default function SettingsPage() {
         api.settings.get(),
       ]);
 
-      // Get details for each semester
       const fullData = await Promise.all(
         semesters.map(async (sem) => {
           const [detail, attendance] = await Promise.all([
@@ -61,7 +56,7 @@ export default function SettingsPage() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `atten-dance-backup-${new Date().toISOString().slice(0, 10)}.json`;
+      a.download = `atten-dance-ledger-${new Date().toISOString().slice(0, 10)}.json`;
       a.click();
       URL.revokeObjectURL(url);
     } catch {
@@ -71,100 +66,114 @@ export default function SettingsPage() {
 
   if (loading) {
     return (
-      <div className="space-y-6 max-w-2xl mx-auto">
-        <div className="h-8 w-48 rounded shimmer" />
-        <div className="h-48 rounded-xl shimmer" />
+      <div className="space-y-6 max-w-2xl mx-auto animate-fade-in">
+        <div className="space-y-2">
+          <div className="h-4 w-32 rounded shimmer" />
+          <div className="h-9 w-48 rounded shimmer" />
+        </div>
+        <div className="h-44 rounded-xl shimmer" />
       </div>
     );
   }
 
   const themeOptions = [
-    { value: 'dark' as const, icon: Moon, label: 'Dark' },
-    { value: 'light' as const, icon: Sun, label: 'Light' },
-    { value: 'system' as const, icon: Monitor, label: 'System' },
+    { value: 'light' as const, icon: Sun, label: 'Paper Light', desc: 'Warm cream & forest ink' },
+    { value: 'dark' as const, icon: Moon, label: 'Night Notebook', desc: 'Deep green-black' },
+    { value: 'system' as const, icon: Monitor, label: 'System', desc: 'Match device setting' },
   ];
 
   return (
-    <div className="space-y-6 max-w-2xl mx-auto">
+    <div className="space-y-8 max-w-2xl mx-auto">
+      {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Settings</h1>
-        <p className="text-muted-foreground">Configure your attendance tracker</p>
+        <span className="eyebrow">Workspace / Settings</span>
+        <h1 className="font-serif text-3xl font-normal text-text-primary mt-1">
+          Tracker configuration
+        </h1>
+        <p className="text-xs text-text-secondary mt-1">
+          Customize themes, review threshold policies, and export your attendance ledger.
+        </p>
       </div>
 
       {/* Appearance */}
-      <div className="glass rounded-xl p-5">
-        <div className="flex items-center gap-2 mb-4">
-          <Sun className="h-5 w-5 text-muted-foreground" />
-          <h2 className="text-sm font-semibold">Appearance</h2>
-        </div>
-        <p className="text-xs text-muted-foreground mb-4">
-          Choose your preferred theme. System will follow your device settings.
+      <div className="ledger-card p-6">
+        <span className="eyebrow block mb-1">Appearance</span>
+        <h2 className="font-serif text-xl font-normal text-text-primary mb-1">
+          Color theme
+        </h2>
+        <p className="text-xs text-text-secondary mb-4">
+          Select your reading environment. Night notebook preserves a green paper undertone.
         </p>
-        <div className="grid grid-cols-3 gap-2">
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {themeOptions.map((opt) => (
             <button
               key={opt.value}
               onClick={() => setTheme(opt.value)}
               className={cn(
-                'flex flex-col items-center gap-2 rounded-lg border px-3 py-3 text-xs font-medium transition-all',
+                'flex flex-col items-center text-center p-4 rounded-lg border transition-colors',
                 theme === opt.value
-                  ? 'border-foreground/30 bg-foreground/5 text-foreground'
-                  : 'border-border text-muted-foreground hover:border-foreground/20 hover:text-foreground'
+                  ? 'bg-forest-800 dark:bg-cta-bg text-text-on-dark border-transparent font-medium shadow-xs'
+                  : 'bg-card text-text-secondary border-border-subtle hover:bg-panel hover:text-text-primary'
               )}
             >
-              <opt.icon className="h-5 w-5" />
-              {opt.label}
+              <opt.icon className="h-5 w-5 mb-2" />
+              <span className="text-xs font-semibold">{opt.label}</span>
+              <span className="text-[10px] opacity-75 mt-0.5">{opt.desc}</span>
             </button>
           ))}
         </div>
       </div>
 
       {/* Threshold Information */}
-      <div className="glass rounded-xl p-5 border border-border">
-        <div className="flex items-center gap-2 mb-2">
-          <SettingsIcon className="h-5 w-5 text-muted-foreground" />
-          <h2 className="text-sm font-semibold">Attendance Threshold</h2>
-        </div>
-        <p className="text-xs text-muted-foreground">
-          The attendance threshold is now securely managed on a per-semester basis. 
-          To view or change the required threshold for your current classes, please 
-          navigate to the <strong>Manage Semesters</strong> section in the sidebar.
+      <div className="ledger-card p-6">
+        <span className="eyebrow block mb-1">Semester Policies</span>
+        <h2 className="font-serif text-xl font-normal text-text-primary mb-1">
+          Target threshold: {threshold}%
+        </h2>
+        <p className="text-xs text-text-secondary leading-relaxed">
+          The minimum required attendance threshold is managed per semester. 
+          To adjust target percentages or switch calculation methods between <strong>Total Sessions</strong> and <strong>50/50 Split</strong>, visit the <strong>Manage Semesters</strong> section.
         </p>
       </div>
 
       {/* Data Management */}
-      <div className="glass rounded-xl p-5">
-        <div className="flex items-center gap-2 mb-4">
-          <RotateCcw className="h-5 w-5 text-muted-foreground" />
-          <h2 className="text-sm font-semibold">Data Management</h2>
-        </div>
+      <div className="ledger-card p-6">
+        <span className="eyebrow block mb-1">Ledger Backup</span>
+        <h2 className="font-serif text-xl font-normal text-text-primary mb-1">
+          Data management
+        </h2>
+        <p className="text-xs text-text-secondary mb-4">
+          Export a complete offline backup of all logged semesters, subjects, and sessions.
+        </p>
 
-        <div className="space-y-3">
-          <button
-            onClick={handleExport}
-            className="flex w-full items-center gap-3 rounded-lg border border-border px-4 py-3 text-sm font-medium text-foreground hover:bg-secondary transition-colors"
-          >
-            <Download className="h-4 w-4 text-muted-foreground" />
-            <div className="text-left">
-              <p className="font-medium">Export Data</p>
-              <p className="text-xs text-muted-foreground">
-                Download all your data as JSON
-              </p>
-            </div>
-          </button>
-        </div>
+        <button
+          onClick={handleExport}
+          className="flex items-center gap-3 w-full rounded-lg border border-border-strong bg-card p-4 text-xs font-medium text-text-primary hover:bg-panel transition-colors"
+        >
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-chip text-text-primary shrink-0">
+            <Download className="h-4 w-4" />
+          </div>
+          <div className="text-left">
+            <div className="font-semibold text-text-primary">Export Ledger Data (JSON)</div>
+            <div className="text-[11px] text-text-muted mt-0.5">Download full snapshot of your attendance database</div>
+          </div>
+        </button>
       </div>
 
-      {/* About */}
-      <div className="glass rounded-xl p-5">
-        <h2 className="text-sm font-semibold mb-3">About</h2>
-        <div className="space-y-2 text-xs text-muted-foreground">
+      {/* Colophon / About */}
+      <div className="ledger-panel p-6">
+        <span className="eyebrow block mb-1">Colophon</span>
+        <h2 className="font-serif text-lg font-normal text-text-primary mb-2">
+          Atten-Dance
+        </h2>
+        <div className="space-y-1.5 text-xs text-text-secondary leading-relaxed">
           <p>
-            <span className="font-bold text-sm text-foreground">Atten-Dance</span> — Because
-            college makes you dance for attendance 💃
+            An editorial attendance ledger crafted for students navigating mandatory attendance requirements.
           </p>
-          <p>Track your lectures, calculate safe bunks, and never get caught off-guard.</p>
-          <p className="text-[10px]">Data stored locally in SQLite. Your data never leaves your machine.</p>
+          <p className="text-[11px] text-text-muted pt-2 border-t border-border-subtle">
+            Database resides securely on your local machine.
+          </p>
         </div>
       </div>
     </div>

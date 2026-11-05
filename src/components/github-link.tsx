@@ -6,12 +6,12 @@ export function GitHubLink() {
       rel="noopener noreferrer"
       title="Star on GitHub"
       aria-label="Star on GitHub"
-      className="hidden lg:flex fixed top-6 right-6 z-30 h-9 w-9 items-center justify-center rounded-full border border-border/70 bg-background/80 text-muted-foreground backdrop-blur-md transition-all duration-200 hover:scale-105 hover:border-border hover:bg-secondary hover:text-foreground shadow-sm group"
+      className="hidden lg:flex fixed top-5 right-5 z-30 h-8 w-8 items-center justify-center rounded-lg border border-border-strong bg-card text-text-muted transition-colors hover:bg-panel hover:text-text-primary"
     >
       <svg
         viewBox="0 0 24 24"
         aria-hidden="true"
-        className="h-4.5 w-4.5 fill-current transition-transform duration-200 group-hover:scale-110"
+        className="h-4 w-4 fill-current transition-transform duration-200"
       >
         <path
           fillRule="evenodd"

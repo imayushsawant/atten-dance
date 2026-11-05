@@ -22,11 +22,12 @@ function applyTheme(resolved: 'dark' | 'light') {
   const root = document.documentElement;
   root.classList.remove('dark', 'light');
   root.classList.add(resolved);
+  root.setAttribute('data-theme', resolved);
 
   // Sync mobile status bar theme-color (Android Chrome & iOS Safari)
   const meta = document.querySelector('meta[name="theme-color"]');
   if (meta) {
-    meta.setAttribute('content', resolved === 'dark' ? '#000000' : '#F7F7F5');
+    meta.setAttribute('content', resolved === 'dark' ? '#0F1713' : '#F3F0E8');
   }
 }
 

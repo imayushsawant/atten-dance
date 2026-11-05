@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate, useParams } from 'react-router';
-import { Plus, Trash2, BookOpen, FlaskConical, GraduationCap, Settings as SettingsIcon, Check, ChevronDown, ChevronUp } from 'lucide-react';
+import { Plus, Trash2, BookOpen, FlaskConical, GraduationCap, Check, ChevronDown, ChevronUp, AlertCircle } from 'lucide-react';
 import type { CalculationMethod } from '@/lib/api';
 import { api } from '@/lib/api';
+import { cn } from '@/lib/utils';
 
 type SubjectInput = {
   id?: string;
@@ -24,6 +25,7 @@ export default function EditSemester() {
     e.stopPropagation();
     setExpandedMethod(expandedMethod === method ? null : method);
   }
+
   const [subjects, setSubjects] = useState<SubjectInput[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -62,7 +64,7 @@ export default function EditSemester() {
         stats[r.subjectId][r.type as 'lecture' | 'lab']++;
       });
       setUsage(stats);
-    } catch (err) {
+    } catch {
       setError('Failed to load semester data.');
     } finally {
       setLoading(false);
@@ -89,7 +91,6 @@ export default function EditSemester() {
     const subject = subjects[index];
     const isCurrentlyOn = type === 'lecture' ? subject.hasLecture : subject.hasLab;
     
-    // If trying to turn it OFF, check usage
     if (isCurrentlyOn && subject.id) {
       const stats = usage[subject.id];
       if (stats && stats[type] > 0) {
@@ -128,10 +129,8 @@ export default function EditSemester() {
     try {
       if (!id) throw new Error('No semester ID found');
 
-      // Update name and threshold
       await api.semesters.update(id, { name: name.trim(), threshold, calculationMethod });
       
-      // Sync subjects
       await api.semesters.updateSubjects(
         id,
         validSubjects.map((s) => ({
@@ -152,130 +151,132 @@ export default function EditSemester() {
 
   if (loading) {
     return (
-      <div className="max-w-2xl mx-auto space-y-6">
-        <div className="h-8 w-48 rounded shimmer" />
-        <div className="h-32 rounded-xl shimmer" />
-        <div className="h-64 rounded-xl shimmer" />
+      <div className="max-w-2xl mx-auto space-y-6 animate-fade-in">
+        <div className="space-y-2">
+          <div className="h-4 w-32 rounded shimmer" />
+          <div className="h-9 w-48 rounded shimmer" />
+        </div>
+        <div className="h-44 rounded-xl shimmer" />
       </div>
     );
   }
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold tracking-tight">Edit Semester</h1>
-        <p className="text-muted-foreground">
-          Modify your semester details and sync subjects safely
+    <div className="max-w-2xl mx-auto space-y-8">
+      {/* Header */}
+      <div>
+        <span className="eyebrow">Semester / Edit</span>
+        <h1 className="font-serif text-3xl font-normal text-text-primary mt-1">
+          Edit semester
+        </h1>
+        <p className="text-xs text-text-secondary mt-1">
+          Modify semester properties, threshold target, and active course list.
         </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Semester Name */}
-        <div className="glass rounded-xl p-5">
-          <label className="block text-sm font-medium mb-2">Semester Name</label>
+        <div className="ledger-card p-6">
+          <label className="eyebrow block mb-2">Semester Title</label>
           <div className="relative">
-            <GraduationCap className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <GraduationCap className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" />
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Semester 5"
-              className="w-full rounded-lg border border-border bg-background/50 py-2.5 pl-10 pr-4 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+              className="w-full rounded-lg border border-border-strong bg-card py-2.5 pl-10 pr-4 text-sm text-text-primary placeholder:text-text-muted outline-none focus:border-forest-800 dark:focus:border-accent transition-colors"
             />
           </div>
         </div>
 
         {/* Threshold */}
-        <div className="glass rounded-xl p-5">
-          <div className="flex items-center gap-2 mb-4">
-            <SettingsIcon className="h-5 w-5 text-muted-foreground" />
-            <h2 className="text-sm font-semibold">Attendance Threshold</h2>
-          </div>
-          <p className="text-xs text-muted-foreground mb-4">
-            Set the minimum attendance percentage required for this semester specifically.
+        <div className="ledger-card p-6">
+          <span className="eyebrow block mb-1">Target Threshold</span>
+          <h2 className="font-serif text-xl font-normal text-text-primary mb-1">
+            Minimum Attendance Required
+          </h2>
+          <p className="text-xs text-text-secondary mb-6">
+            Recalibrates safe skips and recovery targets across your classes.
           </p>
 
-          <div className="mb-4">
-            <div className="flex items-center justify-between mb-2">
-              <label className="text-xs font-medium text-muted-foreground">
-                Threshold
-              </label>
-              <span className="text-sm font-bold">{threshold}%</span>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-text-muted">Target</span>
+              <span className="font-serif text-2xl font-semibold text-text-primary tabular-nums">
+                {threshold}%
+              </span>
             </div>
             <input
               type="range"
               min="50"
-              max="100"
+              max="95"
+              step="1"
               value={threshold}
               onChange={(e) => setThreshold(Number(e.target.value))}
-              className="w-full h-1.5 rounded-full appearance-none bg-secondary cursor-pointer accent-foreground"
+              className="w-full accent-forest-800 dark:accent-accent cursor-pointer"
             />
-            <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
+            <div className="flex justify-between text-[10px] text-text-muted">
               <span>50%</span>
-              <span>75%</span>
-              <span>100%</span>
+              <span>75% (Standard)</span>
+              <span>95%</span>
             </div>
           </div>
         </div>
 
         {/* Calculation Method */}
-        <div className="glass rounded-xl p-5">
-          <div className="flex items-center justify-between mb-2">
-            <h2 className="text-sm font-semibold">
-              Attendance Calculation Method
-            </h2>
-          </div>
-          <p className="text-xs text-muted-foreground mb-4">
-            How your college computes attendance across lectures and labs.
+        <div className="ledger-card p-6">
+          <span className="eyebrow block mb-1">Calculation Policy</span>
+          <h2 className="font-serif text-xl font-normal text-text-primary mb-1">
+            Attendance calculation method
+          </h2>
+          <p className="text-xs text-text-secondary mb-4">
+            How your university calculates lab vs lecture weights.
           </p>
 
-          <div className="space-y-2.5">
+          <div className="space-y-3">
             {/* Total Sessions Option */}
             <div
               onClick={() => setCalculationMethod('total_sessions')}
-              className={`rounded-xl border transition-all cursor-pointer ${
+              className={cn(
+                'rounded-lg border p-4 transition-colors cursor-pointer',
                 calculationMethod === 'total_sessions'
-                  ? 'border-primary bg-primary/10 ring-1 ring-primary'
-                  : 'border-border bg-background/30 hover:border-border/80 hover:bg-background/50'
-              }`}
+                  ? 'border-forest-800 dark:border-accent bg-panel/60 shadow-xs'
+                  : 'border-border-subtle bg-card hover:bg-panel/30'
+              )}
             >
-              <div className="flex items-center justify-between p-3.5">
+              <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div
-                    className={`flex h-5 w-5 items-center justify-center rounded-full border transition-all ${
+                    className={cn(
+                      'flex h-5 w-5 items-center justify-center rounded-full border',
                       calculationMethod === 'total_sessions'
-                        ? 'border-primary bg-primary text-primary-foreground'
-                        : 'border-muted-foreground/40 bg-background/50'
-                    }`}
+                        ? 'border-forest-800 dark:border-accent bg-forest-800 dark:bg-cta-bg text-text-on-dark'
+                        : 'border-border-strong bg-card'
+                    )}
                   >
                     {calculationMethod === 'total_sessions' && <Check className="h-3 w-3" />}
                   </div>
-                  <span className="text-sm font-semibold text-foreground">
-                    Total Sessions (Combined)
+                  <span className="text-sm font-semibold text-text-primary">
+                    Total Sessions (Raw Combined)
                   </span>
                 </div>
 
                 <button
                   type="button"
                   onClick={(e) => toggleExpand('total_sessions', e)}
-                  className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground py-1 px-2.5 rounded-md hover:bg-secondary transition-colors"
+                  className="flex items-center gap-1 text-xs text-text-muted hover:text-text-primary py-1 px-2 rounded transition-colors"
                 >
-                  <span>{expandedMethod === 'total_sessions' ? 'Hide details' : 'View details'}</span>
-                  {expandedMethod === 'total_sessions' ? (
-                    <ChevronUp className="h-3.5 w-3.5" />
-                  ) : (
-                    <ChevronDown className="h-3.5 w-3.5" />
-                  )}
+                  <span>{expandedMethod === 'total_sessions' ? 'Hide details' : 'View formula'}</span>
+                  {expandedMethod === 'total_sessions' ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
                 </button>
               </div>
 
               {expandedMethod === 'total_sessions' && (
-                <div className="border-t border-border/50 px-4 py-3 bg-background/30 text-xs text-muted-foreground space-y-2">
-                  <p className="leading-relaxed">
-                    Every lecture and lab session carries identical weight. Missing 1 lab affects your attendance the exact same as missing 1 lecture.
-                  </p>
-                  <div className="rounded-md bg-secondary/70 p-2 font-mono text-[11px] text-foreground">
-                    Formula: (Total Attended Sessions / Total Conducted Sessions) × 100
+                <div className="mt-3 pt-3 border-t border-border-subtle text-xs text-text-secondary space-y-1.5">
+                  <p>Every lecture and lab carries equal weight. Missing 1 lab counts the same as missing 1 lecture.</p>
+                  <div className="rounded bg-panel p-2 font-mono text-[11px] text-text-primary">
+                    Formula: (Total Attended / Total Conducted) × 100
                   </div>
                 </div>
               )}
@@ -284,48 +285,44 @@ export default function EditSemester() {
             {/* Split Average Option */}
             <div
               onClick={() => setCalculationMethod('split_average')}
-              className={`rounded-xl border transition-all cursor-pointer ${
+              className={cn(
+                'rounded-lg border p-4 transition-colors cursor-pointer',
                 calculationMethod === 'split_average'
-                  ? 'border-primary bg-primary/10 ring-1 ring-primary'
-                  : 'border-border bg-background/30 hover:border-border/80 hover:bg-background/50'
-              }`}
+                  ? 'border-forest-800 dark:border-accent bg-panel/60 shadow-xs'
+                  : 'border-border-subtle bg-card hover:bg-panel/30'
+              )}
             >
-              <div className="flex items-center justify-between p-3.5">
+              <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div
-                    className={`flex h-5 w-5 items-center justify-center rounded-full border transition-all ${
+                    className={cn(
+                      'flex h-5 w-5 items-center justify-center rounded-full border',
                       calculationMethod === 'split_average'
-                        ? 'border-primary bg-primary text-primary-foreground'
-                        : 'border-muted-foreground/40 bg-background/50'
-                    }`}
+                        ? 'border-forest-800 dark:border-accent bg-forest-800 dark:bg-cta-bg text-text-on-dark'
+                        : 'border-border-strong bg-card'
+                    )}
                   >
                     {calculationMethod === 'split_average' && <Check className="h-3 w-3" />}
                   </div>
-                  <span className="text-sm font-semibold text-foreground">
-                    Component Average (50/50 Split)
+                  <span className="text-sm font-semibold text-text-primary">
+                    Component Average (50 / 50 Split)
                   </span>
                 </div>
 
                 <button
                   type="button"
                   onClick={(e) => toggleExpand('split_average', e)}
-                  className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground py-1 px-2.5 rounded-md hover:bg-secondary transition-colors"
+                  className="flex items-center gap-1 text-xs text-text-muted hover:text-text-primary py-1 px-2 rounded transition-colors"
                 >
-                  <span>{expandedMethod === 'split_average' ? 'Hide details' : 'View details'}</span>
-                  {expandedMethod === 'split_average' ? (
-                    <ChevronUp className="h-3.5 w-3.5" />
-                  ) : (
-                    <ChevronDown className="h-3.5 w-3.5" />
-                  )}
+                  <span>{expandedMethod === 'split_average' ? 'Hide details' : 'View formula'}</span>
+                  {expandedMethod === 'split_average' ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
                 </button>
               </div>
 
               {expandedMethod === 'split_average' && (
-                <div className="border-t border-border/50 px-4 py-3 bg-background/30 text-xs text-muted-foreground space-y-2">
-                  <p className="leading-relaxed">
-                    Lecture % and lab % are calculated independently and averaged equally. Because labs are held less often, missing 1 lab hurts your percentage significantly more than 1 lecture.
-                  </p>
-                  <div className="rounded-md bg-secondary/70 p-2 font-mono text-[11px] text-foreground">
+                <div className="mt-3 pt-3 border-t border-border-subtle text-xs text-text-secondary space-y-1.5">
+                  <p>Lectures and labs are averaged independently. Missing a lab hurts significantly more due to fewer total sessions.</p>
+                  <div className="rounded bg-panel p-2 font-mono text-[11px] text-text-primary">
                     Formula: (Lecture % + Lab %) / 2
                   </div>
                 </div>
@@ -335,66 +332,64 @@ export default function EditSemester() {
         </div>
 
         {/* Subjects */}
-        <div className="glass rounded-xl p-5">
+        <div className="ledger-card p-6">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <label className="text-sm font-medium">Subjects</label>
-              <p className="text-xs text-muted-foreground mt-1">
-                Editing a subject's name here safely syncs it without losing its attendance logs.
-              </p>
+              <span className="eyebrow">Curriculum</span>
+              <h2 className="font-serif text-xl font-normal text-text-primary mt-0.5">
+                Enrolled subjects
+              </h2>
             </div>
           </div>
 
           <div className="space-y-3">
             {subjects.map((subject, index) => (
               <div
-                key={subject.id || index}
-                className="flex items-start gap-3 rounded-lg border border-border bg-background/30 p-3"
+                key={index}
+                className="flex items-start gap-3 rounded-lg border border-border-subtle bg-panel/20 p-3.5"
               >
                 <div className="flex-1 space-y-3">
                   <input
                     type="text"
                     value={subject.name}
-                    onChange={(e) =>
-                      updateSubject(index, { name: e.target.value })
-                    }
-                    placeholder={`Subject ${index + 1}`}
-                    className="w-full rounded-md border border-border bg-background/50 px-3 py-2 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+                    onChange={(e) => updateSubject(index, { name: e.target.value })}
+                    placeholder={`Subject ${index + 1} Name`}
+                    className="w-full rounded-md border border-border-strong bg-card px-3 py-2 text-sm text-text-primary placeholder:text-text-muted outline-none focus:border-forest-800 dark:focus:border-accent transition-colors"
                   />
-                  <div className="flex items-center gap-4">
-                    <label className="flex items-center gap-2 cursor-pointer group">
-                      <div
-                        className={`flex h-8 items-center gap-1.5 rounded-md px-3 text-xs font-medium transition-all ${
-                          subject.hasLecture
-                            ? 'bg-primary/15 text-primary border border-primary/30'
-                            : 'bg-secondary text-muted-foreground border border-transparent hover:bg-secondary/80'
-                        }`}
-                        onClick={() => handleToggleType(index, 'lecture')}
-                      >
-                        <BookOpen className="h-3.5 w-3.5" />
-                        Lecture
-                      </div>
-                    </label>
-                    <label className="flex items-center gap-2 cursor-pointer group">
-                      <div
-                        className={`flex h-8 items-center gap-1.5 rounded-md px-3 text-xs font-medium transition-all ${
-                          subject.hasLab
-                            ? 'bg-success/15 text-success border border-success/30'
-                            : 'bg-secondary text-muted-foreground border border-transparent hover:bg-secondary/80'
-                        }`}
-                        onClick={() => handleToggleType(index, 'lab')}
-                      >
-                        <FlaskConical className="h-3.5 w-3.5" />
-                        Lab
-                      </div>
-                    </label>
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => handleToggleType(index, 'lecture')}
+                      className={cn(
+                        'flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium border transition-colors',
+                        subject.hasLecture
+                          ? 'border-forest-800 dark:border-accent bg-forest-800 dark:bg-cta-bg text-text-on-dark font-semibold'
+                          : 'border-border-strong bg-card text-text-muted hover:text-text-primary'
+                      )}
+                    >
+                      <BookOpen className="h-3.5 w-3.5" />
+                      Lectures
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleToggleType(index, 'lab')}
+                      className={cn(
+                        'flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium border transition-colors',
+                        subject.hasLab
+                          ? 'border-forest-800 dark:border-accent bg-forest-800 dark:bg-cta-bg text-text-on-dark font-semibold'
+                          : 'border-border-strong bg-card text-text-muted hover:text-text-primary'
+                      )}
+                    >
+                      <FlaskConical className="h-3.5 w-3.5" />
+                      Labs
+                    </button>
                   </div>
                 </div>
                 <button
                   type="button"
                   onClick={() => removeSubject(index)}
                   disabled={subjects.length <= 1}
-                  className="mt-1 flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-danger/15 hover:text-danger transition-colors disabled:opacity-30 disabled:cursor-not-allowed shrink-0"
+                  className="mt-1 flex h-8 w-8 items-center justify-center rounded-md text-text-muted hover:bg-risk-bg hover:text-risk transition-colors disabled:opacity-20"
                 >
                   <Trash2 className="h-4 w-4" />
                 </button>
@@ -405,53 +400,52 @@ export default function EditSemester() {
           <button
             type="button"
             onClick={addSubject}
-            className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg border-2 border-solid border-primary/30 bg-primary/5 px-4 py-3 text-sm font-medium text-primary hover:bg-primary/10 hover:border-primary/50 transition-colors"
+            className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-border-strong bg-card px-4 py-2.5 text-xs font-medium text-text-primary hover:bg-panel transition-colors"
           >
-            <Plus className="h-4 w-4" />
+            <Plus className="h-3.5 w-3.5" />
             Add Another Subject
           </button>
         </div>
 
-        {/* Error */}
         {error && (
-          <div className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
+          <div className="rounded-lg border border-risk/40 bg-risk-bg/20 p-3 text-xs text-risk">
             {error}
           </div>
         )}
 
-        {/* Submit */}
-        <div className="flex justify-end gap-3">
+        {/* Form Actions */}
+        <div className="flex items-center justify-end gap-3 pt-2">
           <button
             type="button"
-            onClick={() => navigate(-1)}
-            className="rounded-lg border border-border px-5 py-2.5 text-sm font-medium text-muted-foreground hover:bg-secondary transition-colors"
+            onClick={() => navigate('/semesters')}
+            className="rounded-lg border border-border-strong bg-card px-4 py-2 text-xs font-medium text-text-secondary hover:bg-panel transition-colors"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={saving}
-            className="rounded-lg bg-foreground px-6 py-2.5 text-sm font-semibold text-background transition-all hover:opacity-90 disabled:opacity-50"
+            className="rounded-lg bg-forest-800 dark:bg-cta-bg text-text-on-dark px-6 py-2 text-xs font-medium hover:opacity-95 transition-opacity disabled:opacity-50"
           >
             {saving ? 'Saving…' : 'Save Changes'}
           </button>
         </div>
       </form>
 
-      {/* Mid-screen Error Modal */}
+      {/* Modal Error */}
       {modalError && createPortal(
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background/80 backdrop-blur-sm p-4">
-          <div className="glass w-full max-w-sm rounded-2xl p-6 text-center shadow-2xl border border-danger/20 mt-4">
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-danger/10">
-              <SettingsIcon className="h-6 w-6 text-danger" />
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-fade-in">
+          <div className="ledger-card w-full max-w-sm p-6 text-center border-risk/40">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-risk-bg text-risk mx-auto mb-3">
+              <AlertCircle className="h-6 w-6" />
             </div>
-            <h2 className="text-lg font-bold text-danger mb-2">Action Prevented</h2>
-            <p className="text-sm text-muted-foreground mb-6">
+            <h2 className="font-serif text-xl font-normal text-text-primary mb-2">Cannot Disable Component</h2>
+            <p className="text-xs text-text-secondary mb-6 leading-relaxed">
               {modalError}
             </p>
             <button
               onClick={() => setModalError('')}
-              className="w-full rounded-lg bg-secondary py-2.5 text-sm font-medium hover:bg-secondary/80 transition-colors"
+              className="w-full rounded-md border border-border-strong bg-card py-2 text-xs font-medium text-text-primary hover:bg-panel transition-colors"
             >
               Understood
             </button>

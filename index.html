@@ -6,7 +6,7 @@
     <link rel="apple-touch-icon" href="/pwa-192x192.png" />
     <link rel="manifest" href="/manifest.webmanifest" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
-    <meta name="theme-color" content="#000000" />
+    <meta name="theme-color" content="#0F1713" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -14,7 +14,7 @@
     <meta name="description" content="Atten-Dance — Track your college attendance, calculate safe skips, and never get caught off-guard." />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&display=swap" rel="stylesheet" />
     <title>Atten-Dance</title>
     <script>
       // Prevent flash of wrong theme
@@ -29,14 +29,15 @@
           isDark = !window.matchMedia('(prefers-color-scheme: light)').matches;
         }
 
+        var meta = document.querySelector('meta[name="theme-color"]');
         if (isDark) {
           document.documentElement.classList.remove('light');
           document.documentElement.classList.add('dark');
+          if (meta) meta.setAttribute('content', '#0F1713');
         } else {
           document.documentElement.classList.remove('dark');
           document.documentElement.classList.add('light');
-          var meta = document.querySelector('meta[name="theme-color"]');
-          if (meta) meta.setAttribute('content', '#F7F7F5');
+          if (meta) meta.setAttribute('content', '#F3F0E8');
         }
       })();
     </script>

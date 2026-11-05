@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Wand2, Plus, Minus, RotateCcw, AlertTriangle, Check, X, BookOpen, FlaskConical, Filter } from 'lucide-react';
+import { Plus, Minus, RotateCcw, Check, X, BookOpen, FlaskConical } from 'lucide-react';
 import { api } from '@/lib/api';
-import type { Analytics, Subject } from '@/lib/api';
+import type { Analytics } from '@/lib/api';
 import { cn } from '@/lib/utils';
 
 type Modifier = { attend: number; skip: number };
@@ -27,13 +27,8 @@ export default function PredictorPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   
-  // 'overall' mode uses simple steppers. 'subject' mode uses EntryRow[].
   const [mode, setMode] = useState<'overall' | 'subject'>('overall');
-  
-  // State for overall mode
   const [modifiers, setModifiers] = useState<Modifiers>({});
-  
-  // State for subject mode
   const [entries, setEntries] = useState<EntryRow[]>([]);
 
   useEffect(() => {
@@ -74,30 +69,33 @@ export default function PredictorPage() {
 
   if (loading) {
     return (
-      <div className="space-y-6">
-        <div className="h-8 w-48 rounded shimmer" />
-        <div className="h-12 w-64 rounded-xl shimmer" />
-        <div className="h-64 rounded-xl shimmer" />
+      <div className="space-y-6 max-w-5xl mx-auto animate-fade-in">
+        <div className="space-y-2">
+          <div className="h-4 w-32 rounded shimmer" />
+          <div className="h-9 w-56 rounded shimmer" />
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="h-64 rounded-xl shimmer" />
+          <div className="h-64 rounded-xl shimmer lg:col-span-2" />
+        </div>
       </div>
     );
   }
 
   if (error || !analytics) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
-        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-destructive/10 mb-4">
-          <AlertTriangle className="h-8 w-8 text-destructive" />
-        </div>
-        <p className="text-muted-foreground">{error || 'Failed to load analytics.'}</p>
+      <div className="flex flex-col items-center justify-center min-h-[50vh] text-center max-w-md mx-auto py-12">
+        <span className="eyebrow mb-2">No Active Semester</span>
+        <h1 className="font-serif text-2xl font-normal text-text-primary mb-2">
+          Predictor Unavailable
+        </h1>
+        <p className="text-sm text-text-secondary">{error || 'Failed to load analytics.'}</p>
       </div>
     );
   }
 
-  const { stats, overall, threshold } = analytics;
+  const { stats, overall, threshold, semester } = analytics;
 
-  // --- CALCULATION LOGIC ---
-  
-  // Base overall totals from stats
   let newOverallLecAttended = stats.reduce((acc, s) => acc + s.lecture.attended, 0);
   let newOverallLecTotal = stats.reduce((acc, s) => acc + s.lecture.total, 0);
   let newOverallLabAttended = stats.reduce((acc, s) => acc + s.lab.attended, 0);
@@ -126,7 +124,7 @@ export default function PredictorPage() {
     const labPct = labTotal > 0 ? (labAttended / labTotal) * 100 : 100;
     
     let combinedPct = 100;
-    if (analytics.semester.calculationMethod === 'total_sessions') {
+    if (semester.calculationMethod === 'total_sessions') {
       const combinedTotal = lecTotal + labTotal;
       const combinedAttended = lecAttended + labAttended;
       combinedPct = combinedTotal > 0 ? (combinedAttended / combinedTotal) * 100 : 100;
@@ -153,27 +151,23 @@ export default function PredictorPage() {
   });
 
   if (mode === 'subject') {
-    // In subject mode, overall totals come from the updated subject totals
     newOverallLecAttended = predictedStats.reduce((acc, s) => acc + s.predicted.lecAttended, 0);
     newOverallLecTotal = predictedStats.reduce((acc, s) => acc + s.predicted.lecTotal, 0);
     newOverallLabAttended = predictedStats.reduce((acc, s) => acc + s.predicted.labAttended, 0);
     newOverallLabTotal = predictedStats.reduce((acc, s) => acc + s.predicted.labTotal, 0);
   } else {
-    // In overall mode, add generic modifiers directly to overall totals
     const overallMod = modifiers['overall'] || defaultSubjectMod();
     newOverallLecAttended += overallMod.lecture.attend;
     newOverallLecTotal += overallMod.lecture.attend + overallMod.lecture.skip;
-    
     newOverallLabAttended += overallMod.lab.attend;
     newOverallLabTotal += overallMod.lab.attend + overallMod.lab.skip;
   }
 
-  // Calculate predicted overall percentage according to semester's calculationMethod
   const overallLecPct = newOverallLecTotal > 0 ? (newOverallLecAttended / newOverallLecTotal) * 100 : 100;
   const overallLabPct = newOverallLabTotal > 0 ? (newOverallLabAttended / newOverallLabTotal) * 100 : 100;
   
   let predictedOverallPercentage = 100;
-  if (analytics.semester.calculationMethod === 'total_sessions') {
+  if (semester.calculationMethod === 'total_sessions') {
     const totalAttended = newOverallLecAttended + newOverallLabAttended;
     const totalSessions = newOverallLecTotal + newOverallLabTotal;
     predictedOverallPercentage = totalSessions > 0 ? (totalAttended / totalSessions) * 100 : 100;
@@ -189,8 +183,6 @@ export default function PredictorPage() {
 
   const newOverallAttendedSum = newOverallLecAttended + newOverallLabAttended;
   const newOverallTotalSum = newOverallLecTotal + newOverallLabTotal;
-
-  // --- ACTIONS ---
 
   const handleUpdateOverall = (type: 'lecture' | 'lab', action: 'attend' | 'skip', delta: number) => {
     setModifiers(prev => {
@@ -214,7 +206,6 @@ export default function PredictorPage() {
     initializeEntries(analytics);
   };
 
-  // Subject Mode Actions
   function setEntryStatus(instanceId: string, status: EntryStatus) {
     setEntries((prev) =>
       prev.map((e) =>
@@ -254,17 +245,14 @@ export default function PredictorPage() {
     return entry.type === 'lecture' ? `L${idx + 1}` : `Lab ${idx + 1}`;
   }
 
-  // --- RENDERING ---
-
-  const getColor = (val: number) => val >= threshold ? 'text-success' : val >= threshold - 10 ? 'text-warning' : 'text-danger';
-  const getBgColor = (val: number) => val >= threshold ? 'bg-success' : val >= threshold - 10 ? 'bg-warning' : 'bg-danger';
+  const getColor = (val: number) => val >= threshold ? 'text-ok' : val >= threshold - 5 ? 'text-warn' : 'text-risk';
+  const getBgColor = (val: number) => val >= threshold ? 'bg-ok' : val >= threshold - 5 ? 'bg-warn' : 'bg-risk';
 
   const overallDiff = predictedOverallPercentage - overall.percentage;
   const isOverallPositive = overallDiff >= 0;
   
   const currentOverallMod = modifiers['overall'] || defaultSubjectMod();
 
-  // Filter entries for Subject Mode
   const lectureEntries = entries.filter((e) => e.type === 'lecture');
   const labEntries = entries.filter((e) => e.type === 'lab');
 
@@ -272,22 +260,21 @@ export default function PredictorPage() {
     type: 'lecture' | 'lab',
     sectionEntries: EntryRow[],
     icon: React.ReactNode,
-    bgClass: string
   ) {
     if (sectionEntries.length === 0) return null;
 
     return (
       <div className="space-y-3">
         <div className="flex items-center gap-2.5">
-          <div className={cn('flex h-8 w-8 items-center justify-center rounded-lg', bgClass)}>
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-chip text-forest-700 dark:text-text-primary">
             {icon}
           </div>
-          <h2 className="text-sm font-semibold">
-            {type === 'lecture' ? 'Lectures' : 'Labs'}
+          <h2 className="font-serif text-base font-normal text-text-primary">
+            {type === 'lecture' ? 'Lectures Simulation' : 'Labs Simulation'}
           </h2>
         </div>
 
-        <div className="glass rounded-xl overflow-hidden divide-y divide-border">
+        <div className="ledger-card divide-y divide-border-subtle overflow-hidden">
           {sectionEntries.map((entry) => {
             const label = getEntryLabel(entry);
             const instancesOfKind = entries.filter(e => e.subjectId === entry.subjectId && e.type === entry.type);
@@ -297,17 +284,17 @@ export default function PredictorPage() {
               <div
                 key={entry.instanceId}
                 className={cn(
-                  'flex items-center gap-4 px-4 py-3.5 transition-colors',
-                  entry.status === 'attended' && 'bg-success/[0.04]',
-                  entry.status === 'skipped' && 'bg-danger/[0.04]'
+                  'flex items-center gap-3 px-4 py-3.5 transition-colors',
+                  entry.status === 'attended' && 'bg-ok-bg/30',
+                  entry.status === 'skipped' && 'bg-risk-bg/30'
                 )}
               >
                 <div className="flex-1 min-w-0 flex items-center gap-2">
-                  <p className="text-sm font-semibold text-foreground truncate">
+                  <p className="text-sm font-medium text-text-primary truncate">
                     {entry.subjectName}
                   </p>
                   {label && (
-                    <span className="shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-primary/10 text-primary">
+                    <span className="shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-chip text-text-secondary">
                       {label}
                     </span>
                   )}
@@ -317,15 +304,15 @@ export default function PredictorPage() {
                   {canRemove && (
                     <button
                       onClick={() => removeInstance(entry.instanceId)}
-                      className="flex h-9 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-danger/15 hover:text-danger transition-colors"
-                      title="Remove this instance"
+                      className="flex h-8 w-8 items-center justify-center rounded-md text-text-muted hover:bg-risk-bg hover:text-risk transition-colors"
+                      title="Remove instance"
                     >
                       <Minus className="h-3.5 w-3.5" />
                     </button>
                   )}
                   <button
                     onClick={() => addInstance(entry.subjectId, entry.subjectName, entry.type)}
-                    className="flex h-9 w-8 items-center justify-center rounded-lg bg-secondary text-muted-foreground hover:bg-primary/15 hover:text-primary transition-colors"
+                    className="flex h-8 w-8 items-center justify-center rounded-md bg-panel text-text-secondary hover:text-text-primary border border-border-subtle transition-colors"
                     title={`Add another ${type}`}
                   >
                     <Plus className="h-3.5 w-3.5" />
@@ -334,10 +321,10 @@ export default function PredictorPage() {
                   <button
                     onClick={() => setEntryStatus(entry.instanceId, 'attended')}
                     className={cn(
-                      'flex h-9 items-center gap-1.5 rounded-lg px-3.5 text-xs font-medium transition-all',
+                      'flex h-8 items-center gap-1.5 rounded-md px-3 text-xs font-medium border transition-colors',
                       entry.status === 'attended'
-                        ? 'bg-success text-success-foreground shadow-sm shadow-success/25'
-                        : 'bg-secondary text-muted-foreground hover:bg-success/15 hover:text-success'
+                        ? 'bg-ok-bg border-ok text-ok font-semibold'
+                        : 'border-border-subtle bg-card text-text-secondary hover:bg-ok-bg/50 hover:text-ok'
                     )}
                   >
                     <Check className="h-3.5 w-3.5" />
@@ -346,10 +333,10 @@ export default function PredictorPage() {
                   <button
                     onClick={() => setEntryStatus(entry.instanceId, 'skipped')}
                     className={cn(
-                      'flex h-9 items-center gap-1.5 rounded-lg px-3.5 text-xs font-medium transition-all',
+                      'flex h-8 items-center gap-1.5 rounded-md px-3 text-xs font-medium border transition-colors',
                       entry.status === 'skipped'
-                        ? 'bg-danger text-danger-foreground shadow-sm shadow-danger/25'
-                        : 'bg-secondary text-muted-foreground hover:bg-danger/15 hover:text-danger'
+                        ? 'bg-risk-bg border-risk text-risk font-semibold'
+                        : 'border-border-subtle bg-card text-text-secondary hover:bg-risk-bg/50 hover:text-risk'
                     )}
                   >
                     <X className="h-3.5 w-3.5" />
@@ -365,50 +352,45 @@ export default function PredictorPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto">
+    <div className="space-y-8 max-w-5xl mx-auto">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-            <Wand2 className="h-6 w-6 text-primary" />
-            Predictor
+          <span className="eyebrow">Workspace / Predictor</span>
+          <h1 className="font-serif text-3xl font-normal text-text-primary mt-1">
+            Scenario simulator
           </h1>
-          <p className="text-muted-foreground flex items-center gap-2">
-            <span>Test scenarios to see how they affect your percentages.</span>
-            {analytics && (
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-secondary text-muted-foreground font-semibold uppercase tracking-wider">
-                {analytics.semester.calculationMethod === 'total_sessions' ? 'Total Sessions' : '50/50 Split'}
-              </span>
-            )}
+          <p className="text-xs text-text-secondary mt-1">
+            Test hypothetical attendance scenarios to see their immediate impact on your standing.
           </p>
         </div>
         
         <div className="flex items-center gap-3">
           {/* Mode Toggle */}
-          <div className="flex items-center bg-secondary/50 rounded-lg p-1 border border-border">
+          <div className="flex items-center p-1 rounded-lg bg-chip border border-border-subtle text-xs">
             <button
               onClick={() => setMode('overall')}
               className={cn(
-                "px-3 py-1.5 text-xs font-semibold rounded-md transition-all",
-                mode === 'overall' ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                "px-3 py-1 text-[11px] font-semibold tracking-wider uppercase rounded-md transition-colors",
+                mode === 'overall' ? "bg-forest-800 dark:bg-cta-bg text-text-on-dark shadow-xs" : "text-text-muted hover:text-text-primary"
               )}
             >
-              Overall Mode
+              Overall
             </button>
             <button
               onClick={() => setMode('subject')}
               className={cn(
-                "px-3 py-1.5 text-xs font-semibold rounded-md transition-all",
-                mode === 'subject' ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                "px-3 py-1 text-[11px] font-semibold tracking-wider uppercase rounded-md transition-colors",
+                mode === 'subject' ? "bg-forest-800 dark:bg-cta-bg text-text-on-dark shadow-xs" : "text-text-muted hover:text-text-primary"
               )}
             >
-              Subject Mode
+              Subject
             </button>
           </div>
 
           <button 
             onClick={handleReset}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-secondary/50 hover:bg-secondary text-xs font-medium transition-colors border border-transparent hover:border-border"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border-strong bg-card text-xs font-medium text-text-secondary hover:bg-panel hover:text-text-primary transition-colors"
           >
             <RotateCcw className="h-3.5 w-3.5" />
             Reset
@@ -416,76 +398,78 @@ export default function PredictorPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
-        {/* Results Section (Now on the left, col-span-1) */}
-        <div className="lg:col-span-1 space-y-6">
-          {/* Overall Hero Card */}
-          <div className="glass rounded-3xl p-6 relative overflow-hidden group">
-            <div className="absolute inset-0 bg-primary/5 blur-3xl opacity-50 group-hover:opacity-70 transition-opacity" />
-            
-            <div className="relative z-10 flex flex-col items-center text-center gap-6">
-              <div className="space-y-1">
-                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Predicted Overall</span>
-                <div className="flex items-baseline justify-center gap-4">
-                  <span className={`text-5xl font-black tracking-tighter ${getColor(predictedOverallPercentage)}`}>
-                    {predictedOverallPercentage.toFixed(1)}%
-                  </span>
-                </div>
-                <div className="text-sm text-muted-foreground mt-2">
-                  <span className="line-through opacity-70 mr-2">{overall.percentage.toFixed(1)}%</span>
-                  <span className={`font-medium ${isOverallPositive ? 'text-success' : 'text-danger'}`}>
-                    {isOverallPositive ? '+' : ''}{overallDiff.toFixed(1)}%
-                  </span>
-                </div>
-              </div>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* Left Column: Predicted Outcome Cards (4 cols on desktop) */}
+        <div className="lg:col-span-5 space-y-6">
+          {/* Predicted Overall Card */}
+          <div className="ledger-card p-6 text-center">
+            <span className="eyebrow text-[10px]">Predicted Overall</span>
+            <div className="flex items-baseline justify-center gap-1 mt-2">
+              <span className={cn('font-serif text-5xl font-semibold tracking-tight', getColor(predictedOverallPercentage))}>
+                {predictedOverallPercentage.toFixed(1)}
+              </span>
+              <span className="font-serif text-2xl font-semibold text-text-secondary">%</span>
+            </div>
 
-              <div className="flex gap-4 w-full">
-                <div className="glass bg-background/50 rounded-2xl p-3 text-center flex-1">
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold mb-1">Attended</p>
-                  <p className="text-xl font-bold">{newOverallAttendedSum}</p>
-                </div>
-                <div className="glass bg-background/50 rounded-2xl p-3 text-center flex-1">
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold mb-1">Total</p>
-                  <p className="text-xl font-bold">{newOverallTotalSum}</p>
-                </div>
+            <div className="flex items-center justify-center gap-2 mt-2 text-xs">
+              <span className="text-text-muted line-through">
+                Current: {overall.percentage.toFixed(1)}%
+              </span>
+              <span className={cn('font-semibold', isOverallPositive ? 'text-ok' : 'text-risk')}>
+                ({isOverallPositive ? '+' : ''}{overallDiff.toFixed(1)}%)
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 mt-6 pt-4 border-t border-border-subtle text-xs">
+              <div className="rounded-lg bg-panel/40 p-2.5">
+                <span className="eyebrow text-[9px] block mb-1">Attended</span>
+                <span className="font-serif text-xl font-semibold text-text-primary">
+                  {newOverallAttendedSum}
+                </span>
+              </div>
+              <div className="rounded-lg bg-panel/40 p-2.5">
+                <span className="eyebrow text-[9px] block mb-1">Total Sessions</span>
+                <span className="font-serif text-xl font-semibold text-text-primary">
+                  {newOverallTotalSum}
+                </span>
               </div>
             </div>
           </div>
 
-          {/* Subject Breakdown */}
-          <div className="space-y-4">
-            <h2 className="text-lg font-semibold">
-              {mode === 'subject' ? 'Predicted Breakdown' : 'Current Subjects'}
-            </h2>
-            <div className="flex flex-col gap-3">
+          {/* Subject Breakdown in simulation */}
+          <div className="ledger-card p-6">
+            <span className="eyebrow text-[10px] block mb-1">Subject Impact</span>
+            <h3 className="font-serif text-lg font-normal text-text-primary mb-4">
+              Projected subject scores
+            </h3>
+
+            <div className="space-y-3">
               {predictedStats.map(s => {
                 const diff = s.predicted.combined - s.combined.percentage;
                 const isPositive = diff >= 0;
-                // Only consider it changed if in subject mode and we actually changed it
-                const hasChanged = mode === 'subject' && Math.abs(diff) > 0.01;
+                const hasChanged = Math.abs(diff) > 0.01;
 
                 return (
-                  <div key={s.subjectId} className={`glass rounded-2xl p-4 transition-all duration-300 ${hasChanged ? 'border-primary/30 shadow-[0_0_15px_rgba(var(--primary),0.1)]' : ''}`}>
-                    <div className="flex justify-between items-start mb-2">
-                      <h3 className="text-sm font-semibold truncate pr-2">{s.subjectName}</h3>
-                      <span className={`text-base font-bold tracking-tight ${getColor(s.predicted.combined)}`}>
+                  <div key={s.subjectId} className="p-3 rounded-lg border border-border-subtle bg-panel/20 text-xs">
+                    <div className="flex justify-between items-center mb-1.5">
+                      <span className="font-medium text-text-primary truncate pr-2">{s.subjectName}</span>
+                      <span className={cn('font-serif font-semibold text-sm tabular-nums', getColor(s.predicted.combined))}>
                         {s.predicted.combined.toFixed(1)}%
                       </span>
                     </div>
-                    
-                    <div className="flex items-center justify-between text-[11px] mb-2">
-                      <span className="text-muted-foreground">Original: {s.combined.percentage.toFixed(1)}%</span>
+
+                    <div className="flex items-center justify-between text-[11px] text-text-muted mb-2">
+                      <span>Base: {s.combined.percentage.toFixed(1)}%</span>
                       {hasChanged && (
-                        <span className={`font-medium ${isPositive ? 'text-success' : 'text-danger'}`}>
+                        <span className={cn('font-medium', isPositive ? 'text-ok' : 'text-risk')}>
                           {isPositive ? '+' : ''}{diff.toFixed(1)}%
                         </span>
                       )}
                     </div>
 
-                    <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
+                    <div className="h-1.5 rounded-full bg-track overflow-hidden">
                       <div
-                        className={`h-full rounded-full transition-all duration-500 ${getBgColor(s.predicted.combined)}`}
+                        className={cn('h-full transition-all duration-500', getBgColor(s.predicted.combined))}
                         style={{ width: `${Math.min(s.predicted.combined, 100)}%` }}
                       />
                     </div>
@@ -496,81 +480,76 @@ export default function PredictorPage() {
           </div>
         </div>
 
-        {/* Controls Section (Now on the right, col-span-2) */}
-        <div className="lg:col-span-2 space-y-6">
-          
+        {/* Right Column: Interactive Simulators (7 cols on desktop) */}
+        <div className="lg:col-span-7 space-y-6">
           {mode === 'overall' ? (
-            <div className="glass rounded-2xl p-6 space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-              <div className="flex items-center gap-2 mb-2">
-                <Filter className="h-5 w-5 text-primary" />
-                <h2 className="font-semibold text-lg">Global Simulators</h2>
+            <div className="ledger-card p-6 space-y-6">
+              <div>
+                <span className="eyebrow">Global Simulators</span>
+                <h2 className="font-serif text-xl font-normal text-text-primary mt-1">
+                  Adjust session counts
+                </h2>
+                <p className="text-xs text-text-secondary mt-1">
+                  Simulate attending or skipping upcoming classes across the semester without altering logged data.
+                </p>
               </div>
-              <p className="text-sm text-muted-foreground">
-                These adjustments apply to your overall attendance count equally. Use this for a quick estimation.
-              </p>
 
-              <div className="space-y-6 pt-4 border-t border-border/50">
-                <div className="space-y-4">
-                  <h3 className="text-base font-semibold text-foreground/80 flex items-center gap-2">
-                    <BookOpen className="h-5 w-5 text-primary" />
-                    Lectures
+              <div className="space-y-6 pt-2 border-t border-border-subtle">
+                <div className="space-y-3">
+                  <h3 className="text-sm font-semibold text-text-primary flex items-center gap-2">
+                    <BookOpen className="h-4 w-4 text-forest-800 dark:text-accent" />
+                    Lectures Simulation
                   </h3>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-3">
                     <Stepper 
                       label="Attend" 
                       value={currentOverallMod.lecture.attend} 
                       onChange={(d) => handleUpdateOverall('lecture', 'attend', d)} 
-                      color="text-success"
-                      bg="bg-success/10"
+                      color="text-ok"
                     />
                     <Stepper 
-                      label="Skip" 
+                      label="Bunk / Skip" 
                       value={currentOverallMod.lecture.skip} 
                       onChange={(d) => handleUpdateOverall('lecture', 'skip', d)} 
-                      color="text-danger"
-                      bg="bg-danger/10"
+                      color="text-risk"
                     />
                   </div>
                 </div>
                 
-                <div className="space-y-4">
-                  <h3 className="text-base font-semibold text-foreground/80 flex items-center gap-2">
-                    <FlaskConical className="h-5 w-5 text-chart-4" />
-                    Labs
+                <div className="space-y-3">
+                  <h3 className="text-sm font-semibold text-text-primary flex items-center gap-2">
+                    <FlaskConical className="h-4 w-4 text-forest-800 dark:text-accent" />
+                    Labs Simulation
                   </h3>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-3">
                     <Stepper 
                       label="Attend" 
                       value={currentOverallMod.lab.attend} 
                       onChange={(d) => handleUpdateOverall('lab', 'attend', d)} 
-                      color="text-success"
-                      bg="bg-success/10"
+                      color="text-ok"
                     />
                     <Stepper 
-                      label="Skip" 
+                      label="Bunk / Skip" 
                       value={currentOverallMod.lab.skip} 
                       onChange={(d) => handleUpdateOverall('lab', 'skip', d)} 
-                      color="text-danger"
-                      bg="bg-danger/10"
+                      color="text-risk"
                     />
                   </div>
                 </div>
               </div>
             </div>
           ) : (
-            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+            <div className="space-y-6">
               {renderSection(
                 'lecture',
                 lectureEntries,
-                <BookOpen className="h-5 w-5 text-primary" />,
-                'bg-primary/10'
+                <BookOpen className="h-4 w-4" />
               )}
 
               {renderSection(
                 'lab',
                 labEntries,
-                <FlaskConical className="h-5 w-5 text-chart-4" />,
-                'bg-chart-4/10'
+                <FlaskConical className="h-4 w-4" />
               )}
             </div>
           )}
@@ -584,32 +563,30 @@ function Stepper({
   label, 
   value, 
   onChange, 
-  color, 
-  bg 
+  color,
 }: { 
   label: string; 
   value: number; 
   onChange: (delta: number) => void;
   color: string;
-  bg: string;
 }) {
   return (
-    <div className="flex flex-col items-center p-3 rounded-xl bg-background border border-border/50">
-      <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">{label}</span>
+    <div className="flex flex-col items-center p-3 rounded-lg border border-border-subtle bg-panel/30">
+      <span className="eyebrow text-[10px] mb-2">{label}</span>
       <div className="flex items-center justify-between w-full">
         <button 
           onClick={() => onChange(-1)}
           disabled={value <= 0}
-          className="h-7 w-7 flex items-center justify-center rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="h-7 w-7 flex items-center justify-center rounded-md border border-border-strong bg-card text-text-secondary hover:bg-panel disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
         >
           <Minus className="h-3 w-3" />
         </button>
-        <span className={`text-lg font-bold ${value > 0 ? color : 'text-foreground'}`}>
+        <span className={cn('font-serif text-xl font-semibold', value > 0 ? color : 'text-text-primary')}>
           {value}
         </span>
         <button 
           onClick={() => onChange(1)}
-          className={`h-7 w-7 flex items-center justify-center rounded-md ${bg} ${color} hover:opacity-80 transition-colors`}
+          className="h-7 w-7 flex items-center justify-center rounded-md border border-border-strong bg-card text-text-secondary hover:bg-panel transition-colors"
         >
           <Plus className="h-3 w-3" />
         </button>

@@ -22,6 +22,7 @@ import {
   FlaskConical,
   Calendar as CalendarIcon,
   StickyNote,
+  PenLine,
 } from 'lucide-react';
 import { api } from '@/lib/api';
 import type { Subject, AttendanceRecord, Note } from '@/lib/api';
@@ -91,7 +92,6 @@ export default function CalendarPage() {
     }
   }
 
-  // Group records by date
   const recordsByDate = useMemo(() => {
     const map: Record<string, AttendanceRecord[]> = {};
     for (const r of records) {
@@ -101,7 +101,6 @@ export default function CalendarPage() {
     return map;
   }, [records]);
 
-  // Map notes across all days in their date range (supporting multi-day spans)
   const notesByDate = useMemo(() => {
     const map: Record<string, Note> = {};
     for (const n of notes) {
@@ -117,11 +116,10 @@ export default function CalendarPage() {
     return map;
   }, [notes]);
 
-  // Build calendar grid
   const calendarDays = useMemo(() => {
     const monthStart = startOfMonth(currentMonth);
     const monthEnd = endOfMonth(currentMonth);
-    const calStart = startOfWeek(monthStart, { weekStartsOn: 1 }); // Monday start
+    const calStart = startOfWeek(monthStart, { weekStartsOn: 1 });
     const calEnd = endOfWeek(monthEnd, { weekStartsOn: 1 });
 
     const days: Date[] = [];
@@ -133,7 +131,6 @@ export default function CalendarPage() {
     return days;
   }, [currentMonth]);
 
-  // Selected date records sorted by sequence order matching /input
   const selectedRecords = useMemo(() => {
     if (!selectedDate) return [];
     const list = recordsByDate[selectedDate] || [];
@@ -203,44 +200,55 @@ export default function CalendarPage() {
 
   if (loading) {
     return (
-      <div className="space-y-6">
-        <div className="h-8 w-48 rounded shimmer" />
+      <div className="space-y-6 max-w-5xl mx-auto animate-fade-in">
+        <div className="space-y-2">
+          <div className="h-4 w-32 rounded shimmer" />
+          <div className="h-9 w-56 rounded shimmer" />
+        </div>
         <div className="h-96 rounded-xl shimmer" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 max-w-6xl mx-auto">
+      {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Calendar</h1>
-        <p className="text-muted-foreground">View your attendance history and timeline</p>
+        <span className="eyebrow">Workspace / Calendar</span>
+        <h1 className="font-serif text-3xl font-normal text-text-primary mt-1">
+          Attendance timeline
+        </h1>
+        <p className="text-xs text-text-secondary mt-1">
+          Review daily attendance patterns, bunk history, and multi-day notes across the semester.
+        </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Calendar Grid */}
-        <div className="lg:col-span-2 glass rounded-xl p-5">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* Calendar Grid (8 cols on desktop) */}
+        <div className="ledger-card p-6 lg:col-span-8">
           {/* Month Navigation */}
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold">
+          <div className="flex items-center justify-between mb-6 pb-3 border-b border-border-subtle">
+            <h2 className="font-serif text-xl font-normal text-text-primary">
               {format(currentMonth, 'MMMM yyyy')}
             </h2>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1.5">
               <button
                 onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
-                className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-border-subtle text-text-muted hover:bg-panel hover:text-text-primary transition-colors"
+                title="Previous month"
               >
                 <ChevronLeft className="h-4 w-4" />
               </button>
               <button
                 onClick={() => setCurrentMonth(new Date())}
-                className="rounded-lg px-2.5 py-1 text-xs font-medium text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
+                className="rounded-lg border border-border-subtle px-3 py-1 text-xs font-medium text-text-secondary hover:bg-panel hover:text-text-primary transition-colors"
               >
-                Today
+                Current
               </button>
               <button
                 onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
-                className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-border-subtle text-text-muted hover:bg-panel hover:text-text-primary transition-colors"
+                title="Next month"
               >
                 <ChevronRight className="h-4 w-4" />
               </button>
@@ -252,15 +260,15 @@ export default function CalendarPage() {
             {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((d) => (
               <div
                 key={d}
-                className="text-center text-[10px] font-medium text-muted-foreground uppercase tracking-wider py-1"
+                className="text-center text-[10px] font-semibold text-text-muted uppercase tracking-wider py-1"
               >
                 {d}
               </div>
             ))}
           </div>
 
-          {/* Day Cells */}
-          <div className="grid grid-cols-7 gap-1">
+          {/* Day Cells Grid */}
+          <div className="grid grid-cols-7 gap-1.5">
             {calendarDays.map((day) => {
               const dateStr = format(day, 'yyyy-MM-dd');
               const dayRecords = recordsByDate[dateStr] || [];
@@ -274,35 +282,33 @@ export default function CalendarPage() {
               const dayNote = notesByDate[dateStr];
               const hasNote = !!dayNote;
               const isMultiDay = Boolean(dayNote && dayNote.endDate && dayNote.endDate > dayNote.date);
-              const isNoteStart = isMultiDay && dateStr === dayNote?.date;
-              const isNoteEnd = isMultiDay && dateStr === dayNote?.endDate;
 
               return (
                 <button
                   key={dateStr}
                   onClick={() => handleDateClick(day)}
                   disabled={future}
-                  title={dayNote ? `${dayNote.content}${isMultiDay ? ` (${dayNote.date} to ${dayNote.endDate})` : ''}` : undefined}
+                  title={dayNote ? `${dayNote.content}` : undefined}
                   className={cn(
-                    'relative flex flex-col items-center py-2 px-1 text-xs transition-all min-h-[52px]',
-                    isMultiDay ? (isNoteStart ? 'rounded-l-lg' : isNoteEnd ? 'rounded-r-lg' : 'rounded-none') : 'rounded-lg',
-                    !inMonth && 'opacity-30',
+                    'relative flex flex-col items-center py-2 px-1 text-xs transition-all min-h-[58px] rounded-lg border',
+                    !inMonth && 'opacity-25',
                     future && 'cursor-not-allowed opacity-20',
                     isSelected
-                      ? 'bg-primary/15 ring-2 ring-primary/60 font-semibold z-10'
-                      : 'hover:bg-secondary',
-                    today && !isSelected && 'ring-1 ring-primary/30',
-                    hasNote && !isSelected && (isMultiDay ? 'bg-amber-500/15 border-y border-amber-500/30' : 'bg-amber-500/10 border border-amber-500/25')
+                      ? 'border-forest-800 dark:border-accent bg-panel font-semibold shadow-xs'
+                      : 'border-transparent hover:bg-panel/60',
+                    today && !isSelected && 'border-forest-800/30 text-forest-800 dark:text-accent font-semibold',
+                    hasNote && !isSelected && 'bg-warn/10 border-warn/30'
                   )}
                 >
                   {hasNote && (
-                    <div className="absolute top-1 right-1 h-1.5 w-1.5 rounded-full bg-amber-500" />
+                    <div className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-warn" />
                   )}
+
                   <span
                     className={cn(
                       'font-medium mb-1',
-                      today && 'text-primary font-bold',
-                      isSelected && 'text-primary font-bold'
+                      today && 'text-forest-800 dark:text-accent font-bold',
+                      isSelected && 'text-text-primary'
                     )}
                   >
                     {format(day, 'd')}
@@ -310,20 +316,20 @@ export default function CalendarPage() {
 
                   {/* Attendance dots */}
                   {hasRecords && (
-                    <div className="flex items-center gap-0.5 mt-auto">
+                    <div className="flex items-center gap-1 mt-auto">
                       {attended > 0 && (
-                        <span className="flex items-center gap-px">
-                          <span className="h-1.5 w-1.5 rounded-full bg-success" />
+                        <span className="flex items-center gap-0.5">
+                          <span className="h-1.5 w-1.5 rounded-full bg-ok" />
                           {attended > 1 && (
-                            <span className="text-[8px] text-success font-bold">{attended}</span>
+                            <span className="text-[8px] text-ok font-semibold">{attended}</span>
                           )}
                         </span>
                       )}
                       {skipped > 0 && (
-                        <span className="flex items-center gap-px">
-                          <span className="h-1.5 w-1.5 rounded-full bg-danger" />
+                        <span className="flex items-center gap-0.5">
+                          <span className="h-1.5 w-1.5 rounded-full bg-risk" />
                           {skipped > 1 && (
-                            <span className="text-[8px] text-danger font-bold">{skipped}</span>
+                            <span className="text-[8px] text-risk font-semibold">{skipped}</span>
                           )}
                         </span>
                       )}
@@ -335,82 +341,82 @@ export default function CalendarPage() {
           </div>
 
           {/* Legend */}
-          <div className="flex items-center justify-center gap-4 mt-4 text-[10px] text-muted-foreground">
+          <div className="flex items-center justify-center gap-6 mt-6 pt-4 border-t border-border-subtle text-xs text-text-secondary">
             <span className="flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full bg-success" /> Attended
+              <span className="h-2 w-2 rounded-full bg-ok" /> Attended
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full bg-danger" /> Skipped
+              <span className="h-2 w-2 rounded-full bg-risk" /> Skipped
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full bg-amber-500" /> Note / Holiday
+              <span className="h-2 w-2 rounded-full bg-warn" /> Note / Holiday
             </span>
           </div>
         </div>
 
-        {/* Day Detail Panel */}
-        <div className="space-y-4">
+        {/* Day Detail Inspection Panel (4 cols on desktop) */}
+        <div className="space-y-4 lg:col-span-4">
           {selectedDate ? (
             <>
-              <div className="glass rounded-xl p-4">
-                <div className="flex items-center justify-between mb-1">
-                  <div className="flex items-center gap-2">
-                    <CalendarIcon className="h-4 w-4 text-primary" />
-                    <h3 className="text-sm font-semibold">
+              <div className="ledger-card p-6">
+                <div className="flex items-start justify-between mb-3">
+                  <div>
+                    <span className="eyebrow text-[10px]">Day Details</span>
+                    <h3 className="font-serif text-xl font-normal text-text-primary mt-0.5">
                       {format(new Date(selectedDate + 'T00:00:00'), 'EEEE')}
                     </h3>
+                    <p className="text-xs text-text-muted">
+                      {format(new Date(selectedDate + 'T00:00:00'), 'MMMM d, yyyy')}
+                    </p>
                   </div>
-                  {/* Note Icon Button */}
+
+                  {/* Note Button */}
                   <button
                     onClick={(e) => { e.stopPropagation(); setShowNoteModal(true); }}
                     className={cn(
-                      'flex h-7 w-7 items-center justify-center rounded-md transition-all relative',
+                      'flex h-8 w-8 items-center justify-center rounded-lg border transition-all',
                       selectedNote
-                        ? 'text-amber-500 bg-amber-500/10 hover:bg-amber-500/20'
-                        : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
+                        ? 'text-warn bg-warn/15 border-warn/30'
+                        : 'text-text-muted border-border-subtle hover:bg-panel hover:text-text-primary'
                     )}
-                    title={selectedNote ? 'View/edit note' : 'Add a note'}
+                    title={selectedNote ? 'Edit note' : 'Add note'}
                   >
-                    <StickyNote className="h-3.5 w-3.5" />
-                    {selectedNote && (
-                      <span className="absolute -top-0.5 -right-0.5 h-1.5 w-1.5 rounded-full bg-amber-500" />
-                    )}
+                    <StickyNote className="h-4 w-4" />
                   </button>
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  {format(new Date(selectedDate + 'T00:00:00'), 'MMMM d, yyyy')}
-                </p>
 
                 {selectedRecords.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-6">
-                    <p className="text-xs text-muted-foreground mb-4">
-                      No entries for this day
+                  <div className="py-8 text-center">
+                    <p className="text-xs text-text-muted mb-4">
+                      No records logged for this date.
                     </p>
                     <button
                       onClick={() => navigate(`/input?date=${selectedDate}`)}
-                      className="rounded-md bg-primary px-4 py-2 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+                      className="inline-flex items-center gap-1.5 rounded-lg bg-forest-800 dark:bg-cta-bg px-4 py-2 text-xs font-medium text-text-on-dark hover:opacity-95 transition-opacity"
                     >
+                      <PenLine className="h-3.5 w-3.5" />
                       Log Attendance
                     </button>
                   </div>
                 ) : (
-                  <div className="mt-3 space-y-1">
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
-                      <span className="flex items-center gap-1">
-                        <Check className="h-3 w-3 text-success" />
+                  <div className="space-y-4 pt-2">
+                    {/* Summary Counters */}
+                    <div className="flex items-center gap-4 text-xs">
+                      <span className="flex items-center gap-1.5 font-medium text-ok">
+                        <Check className="h-3.5 w-3.5" />
                         {selectedAttended.length} attended
                       </span>
-                      <span className="flex items-center gap-1">
-                        <X className="h-3 w-3 text-danger" />
+                      <span className="flex items-center gap-1.5 font-medium text-risk">
+                        <X className="h-3.5 w-3.5" />
                         {selectedSkipped.length} skipped
                       </span>
                     </div>
-                    
+
                     <button
                       onClick={() => navigate(`/input?date=${selectedDate}`)}
-                      className="mt-3 w-full rounded-md border border-border bg-background/50 px-3 py-1.5 text-xs font-medium hover:bg-secondary transition-colors"
+                      className="w-full rounded-md border border-border-strong bg-card py-2 text-xs font-medium text-text-primary hover:bg-panel transition-colors"
                     >
-                      Edit Attendance
+                      Edit or Add to this Day
                     </button>
                   </div>
                 )}
@@ -420,101 +426,62 @@ export default function CalendarPage() {
               {selectedNote && (
                 <button
                   onClick={() => setShowNoteModal(true)}
-                  className="w-full rounded-xl border border-amber-500/20 bg-amber-500/5 px-4 py-3 text-left transition-colors hover:bg-amber-500/10 group"
+                  className="w-full ledger-card border-warn/40 bg-warn/10 p-4 text-left transition-colors hover:bg-warn/15 group"
                 >
                   <div className="flex items-start gap-2.5">
-                    <StickyNote className="h-3.5 w-3.5 text-amber-500 mt-0.5 shrink-0" />
+                    <StickyNote className="h-4 w-4 text-warn mt-0.5 shrink-0" />
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-0.5">
-                        <p className="text-xs font-semibold text-amber-400/90">
-                          {selectedNote.endDate && selectedNote.endDate > selectedNote.date
-                            ? 'Holiday / Multi-day Note'
-                            : 'Day Note'}
-                        </p>
-                        {selectedNote.endDate && selectedNote.endDate > selectedNote.date && (
-                          <span className="text-[10px] font-medium px-1.5 py-0.2 rounded bg-amber-500/15 text-amber-400">
-                            {format(new Date(selectedNote.date + 'T00:00:00'), 'MMM d')} – {format(new Date(selectedNote.endDate + 'T00:00:00'), 'MMM d')}
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-xs text-foreground/80 leading-relaxed font-medium">
+                      <p className="text-xs font-semibold text-text-primary">
+                        {selectedNote.endDate && selectedNote.endDate > selectedNote.date
+                          ? 'Multi-day Holiday'
+                          : 'Day Note'}
+                      </p>
+                      <p className="text-xs text-text-secondary leading-relaxed mt-0.5">
                         {selectedNote.content}
                       </p>
                     </div>
-                    <span className="text-[10px] text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0 mt-0.5">
+                    <span className="text-[11px] text-text-muted opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
                       Edit
                     </span>
                   </div>
                 </button>
               )}
 
-              {/* Logged lectures & labs in exact sequence as /input */}
+              {/* Detailed Session List for Day */}
               {selectedRecords.length > 0 && (
-                <div className="glass rounded-xl overflow-hidden">
-                  <div className="px-4 py-2.5 border-b border-border flex items-center justify-between">
-                    <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                      Sequence of Lectures ({selectedRecords.length})
-                    </p>
-                  </div>
-                  <div className="divide-y divide-border">
+                <div className="ledger-card p-4 space-y-2">
+                  <span className="eyebrow text-[10px] block mb-2">Sessions Order</span>
+                  <div className="space-y-1.5 divide-y divide-border-subtle">
                     {selectedRecords.map((record, index) => {
                       const label = getRecordLabel(record);
+                      const isAttended = record.status === 'attended';
+
                       return (
                         <div
                           key={record.id}
-                          className="flex items-center gap-3 px-4 py-3"
+                          className="flex items-center justify-between pt-2 first:pt-0 text-xs"
                         >
-                          {/* Sequence badge */}
-                          <span className="shrink-0 text-[11px] font-bold text-muted-foreground w-5 text-center">
-                            #{index + 1}
-                          </span>
-
-                          {/* Status icon */}
-                          <div
-                            className={cn(
-                              'flex h-7 w-7 items-center justify-center rounded-md shrink-0',
-                              record.status === 'attended' ? 'bg-success/15' : 'bg-danger/15'
-                            )}
-                          >
-                            {record.status === 'attended' ? (
-                              <Check className="h-3.5 w-3.5 text-success" />
-                            ) : (
-                              <X className="h-3.5 w-3.5 text-danger" />
-                            )}
-                          </div>
-
-                          {/* Subject and Details */}
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2">
-                              <p className="text-sm font-medium truncate">
-                                {getSubjectName(record.subjectId)}
-                              </p>
-                              {label && (
-                                <span className="shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-primary/10 text-primary">
-                                  {label}
-                                </span>
-                              )}
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className="text-text-muted font-mono text-[10px] w-4">
+                              #{index + 1}
+                            </span>
+                            <div className={cn(
+                              'h-5 w-5 rounded flex items-center justify-center shrink-0',
+                              isAttended ? 'bg-ok-bg text-ok' : 'bg-risk-bg text-risk'
+                            )}>
+                              {isAttended ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
                             </div>
-                            <p className="text-[10px] text-muted-foreground flex items-center gap-1.5 mt-0.5">
-                              {record.type === 'lecture' ? (
-                                <BookOpen className="h-2.5 w-2.5" />
-                              ) : (
-                                <FlaskConical className="h-2.5 w-2.5" />
-                              )}
-                              {record.type === 'lecture' ? 'Lecture' : 'Lab'}
-                            </p>
-                          </div>
-
-                          {/* Status Badge */}
-                          <span
-                            className={cn(
-                              'shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-md',
-                              record.status === 'attended'
-                                ? 'bg-success/10 text-success'
-                                : 'bg-danger/10 text-danger'
+                            <span className="font-medium text-text-primary truncate">
+                              {getSubjectName(record.subjectId)}
+                            </span>
+                            {label && (
+                              <span className="text-[9px] px-1.5 py-0.2 rounded bg-chip text-text-secondary">
+                                {label}
+                              </span>
                             )}
-                          >
-                            {record.status === 'attended' ? 'Attended' : 'Skipped'}
+                          </div>
+                          <span className="text-[11px] text-text-muted capitalize shrink-0 ml-2">
+                            {record.type}
                           </span>
                         </div>
                       );
@@ -524,27 +491,24 @@ export default function CalendarPage() {
               )}
             </>
           ) : (
-            <div className="glass rounded-xl p-8 text-center">
-              <CalendarIcon className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
-              <p className="text-sm text-muted-foreground">Select a date to view details</p>
+            <div className="ledger-card p-6 text-center text-text-muted text-xs">
+              Select any date on the calendar to inspect attendance sessions.
             </div>
           )}
         </div>
       </div>
 
-      {/* Note Modal — defaults to selectedDate */}
-      {selectedDate && (
-        <NoteModal
-          isOpen={showNoteModal}
-          onClose={() => setShowNoteModal(false)}
-          date={selectedNote?.date || selectedDate}
-          initialEndDate={selectedNote?.endDate || selectedDate}
-          initialContent={selectedNote?.content || ''}
-          noteId={selectedNote?.id}
-          onSave={handleNoteSave}
-          onDelete={handleNoteDelete}
-        />
-      )}
+      {/* Note Modal */}
+      <NoteModal
+        isOpen={showNoteModal}
+        onClose={() => setShowNoteModal(false)}
+        date={selectedNote?.date || selectedDate || format(new Date(), 'yyyy-MM-dd')}
+        initialEndDate={selectedNote?.endDate || selectedDate}
+        initialContent={selectedNote?.content || ''}
+        noteId={selectedNote?.id}
+        onSave={handleNoteSave}
+        onDelete={handleNoteDelete}
+      />
     </div>
   );
 }
