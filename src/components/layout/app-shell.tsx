@@ -57,7 +57,7 @@ export default function AppShell() {
   useEffect(() => {
     api.semesters.getActive()
       .then((sem) => setActiveSemester(sem))
-      .catch(() => {});
+      .catch(() => { });
   }, [location.pathname]);
 
   return (
