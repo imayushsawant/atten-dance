@@ -6,9 +6,8 @@ import {
   TrashIcon,
   StickyNoteIcon,
   CalendarIcon,
-  ClockIcon,
 } from '@/components/icons';
-import { format, addDays, differenceInCalendarDays } from 'date-fns';
+import { format, differenceInCalendarDays } from 'date-fns';
 import { cn } from '@/lib/utils';
 
 const MAX_NOTE_LENGTH = 200;
@@ -72,29 +71,11 @@ export default function NoteModal({
       if (startDate === endDate) {
         return `${format(start, 'EEE, MMMM d, yyyy')} • 1 day`;
       }
-      return `${format(start, 'MMM d, yyyy')} – ${format(end, 'MMM d, yyyy')} • ${durationDays} days`;
+      return `${format(start, 'MMM d, yyyy')} – ${format(end, 'MMM d, yyyy')} • ${durationDays} ${durationDays === 1 ? 'day' : 'days'}`;
     } catch {
       return '';
     }
   }, [startDate, endDate, durationDays]);
-
-  const presets = [
-    { label: '1 Day', days: 1 },
-    { label: '2 Days', days: 2 },
-    { label: '3 Days (Weekend)', days: 3 },
-    { label: '4 Days', days: 4 },
-    { label: '1 Week', days: 7 },
-  ];
-
-  function applyPreset(days: number) {
-    try {
-      const start = new Date(startDate + 'T00:00:00');
-      const nextEnd = format(addDays(start, days - 1), 'yyyy-MM-dd');
-      setEndDate(nextEnd);
-    } catch {
-      // ignore
-    }
-  }
 
   function handleStartDateChange(newStart: string) {
     setStartDate(newStart);
@@ -173,10 +154,10 @@ export default function NoteModal({
             </div>
             <div>
               <span className="eyebrow text-[10px]">
-                {durationDays > 1 ? 'Multi-day Event / Holiday' : 'Day Note'}
+                {durationDays > 1 ? `Multi-day Note (${durationDays} days)` : 'Day Note'}
               </span>
               <h3 className="font-serif text-lg font-normal text-text-primary">
-                {durationDays > 1 ? 'Event details' : 'Record a note'}
+                Record a note
               </h3>
               <p className="text-xs text-text-muted mt-0.5">{dateRangeSummary}</p>
             </div>
@@ -189,38 +170,9 @@ export default function NoteModal({
           </button>
         </div>
 
-        {/* Date & Duration Controls */}
-        <div className="px-6 py-4 bg-panel/40 border-b border-border-subtle space-y-4">
-          {/* Preset Duration Chips */}
-          <div>
-            <label className="eyebrow text-[10px] block mb-2 flex items-center gap-1.5">
-              <ClockIcon className="h-3 w-3" />
-              Duration Preset
-            </label>
-            <div className="flex flex-wrap gap-1.5">
-              {presets.map((preset) => {
-                const isSelected = durationDays === preset.days;
-                return (
-                  <button
-                    key={preset.days}
-                    type="button"
-                    onClick={() => applyPreset(preset.days)}
-                    className={cn(
-                      'text-xs font-medium px-3 py-1 rounded-md transition-colors border',
-                      isSelected
-                        ? 'bg-forest-800 dark:bg-cta-bg text-text-on-dark border-transparent font-semibold'
-                        : 'bg-card text-text-secondary border-border-subtle hover:bg-panel hover:text-text-primary'
-                    )}
-                  >
-                    {preset.label}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Date Range Inputs */}
-          <div className="grid grid-cols-2 gap-3 pt-1">
+        {/* Date Range Inputs */}
+        <div className="px-6 py-4 bg-panel/40 border-b border-border-subtle">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="eyebrow text-[10px] block mb-1.5 flex items-center gap-1.5">
                 <CalendarIcon className="h-3 w-3 text-forest-800 dark:text-accent" />
@@ -230,20 +182,25 @@ export default function NoteModal({
                 type="date"
                 value={startDate}
                 onChange={(e) => handleStartDateChange(e.target.value)}
-                className="w-full rounded-md border border-border-strong bg-card px-3 py-1.5 text-xs text-text-primary focus:outline-none focus:border-forest-800 dark:focus:border-accent transition-colors"
+                className="w-full rounded-md border border-border-strong bg-card px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-forest-800 dark:focus:border-accent transition-colors"
               />
             </div>
             <div>
-              <label className="eyebrow text-[10px] block mb-1.5 flex items-center gap-1.5">
-                <CalendarIcon className="h-3 w-3 text-forest-800 dark:text-accent" />
-                To Date ({durationDays} {durationDays === 1 ? 'day' : 'days'})
-              </label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="eyebrow text-[10px] flex items-center gap-1.5">
+                  <CalendarIcon className="h-3 w-3 text-forest-800 dark:text-accent" />
+                  To Date
+                </label>
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-chip text-[10px] font-semibold text-text-primary">
+                  {durationDays} {durationDays === 1 ? 'day' : 'days'}
+                </span>
+              </div>
               <input
                 type="date"
                 min={startDate}
                 value={endDate}
                 onChange={(e) => handleEndDateChange(e.target.value)}
-                className="w-full rounded-md border border-border-strong bg-card px-3 py-1.5 text-xs text-text-primary focus:outline-none focus:border-forest-800 dark:focus:border-accent transition-colors"
+                className="w-full rounded-md border border-border-strong bg-card px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-forest-800 dark:focus:border-accent transition-colors"
               />
             </div>
           </div>
@@ -255,7 +212,7 @@ export default function NoteModal({
             ref={textareaRef}
             value={text}
             onChange={(e) => setText(e.target.value)}
-            placeholder="Add note or holiday details... (e.g. Mid-term break, Fest rehearsal, Sick leave, College holiday)"
+            placeholder="Add note details for this day..."
             maxLength={MAX_NOTE_LENGTH + 10}
             className={cn(
               'w-full h-28 resize-none rounded-lg border bg-card p-3 text-sm text-text-primary placeholder:text-text-muted focus:outline-none transition-colors',

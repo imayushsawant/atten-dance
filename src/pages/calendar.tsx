@@ -346,7 +346,7 @@ export default function CalendarPage() {
               <span className="h-2 w-2 rounded-full bg-risk" /> Skipped
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full bg-warn" /> Note / Holiday
+              <span className="h-2 w-2 rounded-full bg-warn" /> Note
             </span>
           </div>
         </div>
@@ -430,7 +430,7 @@ export default function CalendarPage() {
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-semibold text-text-primary">
                         {selectedNote.endDate && selectedNote.endDate > selectedNote.date
-                          ? 'Multi-day Holiday'
+                          ? 'Multi-day Note'
                           : 'Day Note'}
                       </p>
                       <p className="text-xs text-text-secondary leading-relaxed mt-0.5">
