@@ -516,8 +516,8 @@ export default function PredictorPage() {
             </div>
           </div>
 
-          {/* Subject Breakdown in simulation */}
-          <div className="ledger-card p-6">
+          {/* Subject Breakdown in simulation (hidden on mobile to keep interactive simulators immediately reachable) */}
+          <div className="hidden lg:block ledger-card p-6">
             <span className="eyebrow text-[10px] block mb-1">Subject Impact</span>
             <h3 className="font-serif text-lg font-normal text-text-primary mb-4">
               Projected subject scores
