@@ -148,22 +148,16 @@ export default function AnalyticsPage() {
         <h1 className="font-serif text-3xl font-normal text-text-primary mt-1">
           Performance breakdown
         </h1>
-        <div className="flex flex-wrap items-center gap-3 mt-2 text-xs text-text-secondary">
-          <span>{semester.name}</span>
-          <span className="h-1 w-1 rounded-full bg-border-strong" />
-          <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-chip text-[10px] font-semibold tracking-wider uppercase text-forest-700 dark:text-text-primary">
-            {semester.calculationMethod === 'total_sessions' ? 'Total Sessions' : '50 / 50 Split'}
-          </span>
-          <span className="h-1 w-1 rounded-full bg-border-strong" />
-          <span>Target: {threshold}%</span>
-        </div>
+        <p className="text-xs text-text-secondary mt-1">
+          Review subject comparisons, lecture vs lab ratios, and cumulative attendance trends.
+        </p>
       </div>
 
       {/* KPI Cards Row */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div className="ledger-card p-6 text-center">
           <span className="eyebrow text-[10px]">
-            Overall {semester.calculationMethod === 'total_sessions' ? '(Combined)' : '(50/50)'}
+            Overall Standing
           </span>
           <div className="flex items-baseline justify-center gap-1 mt-2">
             <span className={cn(

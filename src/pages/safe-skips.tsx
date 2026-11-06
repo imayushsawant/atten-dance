@@ -75,15 +75,9 @@ export default function SafeSkipsPage() {
         <h1 className="font-serif text-3xl font-normal text-text-primary mt-1">
           Safe skips calculator
         </h1>
-        <div className="flex flex-wrap items-center gap-3 mt-2 text-xs text-text-secondary">
-          <span>Skips remaining before hitting target</span>
-          <span className="h-1 w-1 rounded-full bg-border-strong" />
-          <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-chip text-[10px] font-semibold tracking-wider uppercase text-forest-700 dark:text-text-primary">
-            {semester.calculationMethod === 'total_sessions' ? 'Total Sessions' : '50 / 50 Split'}
-          </span>
-          <span className="h-1 w-1 rounded-full bg-border-strong" />
-          <span>Target: {threshold}%</span>
-        </div>
+        <p className="text-xs text-text-secondary mt-1">
+          Calculate how many sessions you can safely miss while remaining above your required threshold.
+        </p>
       </div>
 
       {/* Overall Safe Skips Card */}
