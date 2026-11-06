@@ -13,21 +13,47 @@ import {
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 
-export default function HistoryPage() {
-  const [subjects, setSubjects] = useState<Subject[]>([]);
-  const [records, setRecords] = useState<AttendanceRecord[]>([]);
-  const [loading, setLoading] = useState(true);
+export interface HistoryPageProps {
+  injectedSubjects?: Subject[];
+  injectedRecords?: AttendanceRecord[];
+  onDeleteRecord?: (id: string) => void;
+  isDemo?: boolean;
+  hideHeader?: boolean;
+}
+
+export default function HistoryPage({
+  injectedSubjects,
+  injectedRecords,
+  onDeleteRecord,
+  isDemo,
+  hideHeader,
+}: HistoryPageProps = {}) {
+  const [subjects, setSubjects] = useState<Subject[]>(injectedSubjects || []);
+  const [records, setRecords] = useState<AttendanceRecord[]>(injectedRecords || []);
+  const [loading, setLoading] = useState(!injectedSubjects);
   const [noSemester, setNoSemester] = useState(false);
   const [semesterId, setSemesterId] = useState<string | null>(null);
   const [searchParams] = useSearchParams();
   const initSubjectId = searchParams.get('subjectId');
 
-  const [selectedSubjectId, setSelectedSubjectId] = useState<string | null>(null);
+  const [selectedSubjectId, setSelectedSubjectId] = useState<string | null>(
+    injectedSubjects && injectedSubjects.length > 0 ? injectedSubjects[0].id : null
+  );
   const [selectedType, setSelectedType] = useState<'lecture' | 'lab'>('lecture');
 
   useEffect(() => {
+    if (injectedSubjects && injectedRecords) {
+      setSubjects(injectedSubjects);
+      setRecords(injectedRecords);
+      if (!selectedSubjectId && injectedSubjects.length > 0) {
+        setSelectedSubjectId(injectedSubjects[0].id);
+        setSelectedType(injectedSubjects[0].hasLecture ? 'lecture' : 'lab');
+      }
+      setLoading(false);
+      return;
+    }
     loadData();
-  }, []);
+  }, [injectedSubjects, injectedRecords]);
 
   async function loadData() {
     try {
@@ -60,6 +86,11 @@ export default function HistoryPage() {
   }
 
   async function handleDelete(id: string) {
+    if (isDemo && onDeleteRecord) {
+      onDeleteRecord(id);
+      setRecords(prev => prev.filter(r => r.id !== id));
+      return;
+    }
     if (!confirm('Are you sure you want to delete this attendance record?')) return;
     try {
       await api.attendance.delete(id);
@@ -108,17 +139,19 @@ export default function HistoryPage() {
   }
 
   return (
-    <div className="space-y-8 max-w-4xl mx-auto">
+    <div className={cn("space-y-8 max-w-4xl mx-auto", hideHeader && "space-y-6 max-w-none")}>
       {/* Header */}
-      <div>
-        <span className="eyebrow">Workspace / History</span>
-        <h1 className="font-serif text-3xl font-normal text-text-primary mt-1">
-          Attendance log verification
-        </h1>
-        <p className="text-xs text-text-secondary mt-1">
-          Inspect individual logged sessions, cross-check class dates, and remove mistaken entries.
-        </p>
-      </div>
+      {!hideHeader && (
+        <div>
+          <span className="eyebrow">Workspace / History</span>
+          <h1 className="font-serif text-3xl font-normal text-text-primary mt-1">
+            Attendance log verification
+          </h1>
+          <p className="text-xs text-text-secondary mt-1">
+            Inspect individual logged sessions, cross-check class dates, and remove mistaken entries.
+          </p>
+        </div>
+      )}
 
       {/* Subject Filter Tabs */}
       <div className="flex overflow-x-auto pb-2 gap-2 hide-scrollbar">

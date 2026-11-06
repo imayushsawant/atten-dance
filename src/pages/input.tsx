@@ -46,16 +46,30 @@ type EntryRow = {
   instanceId: string;
 };
 
-export default function InputPage() {
+export interface InputPageProps {
+  injectedSubjects?: Subject[];
+  injectedRecords?: AttendanceRecord[];
+  onDemoAction?: (subjectId: string, type: 'lecture' | 'lab', status: 'attended' | 'skipped') => void;
+  isDemo?: boolean;
+  hideHeader?: boolean;
+}
+
+export default function InputPage({
+  injectedSubjects,
+  injectedRecords,
+  onDemoAction,
+  isDemo,
+  hideHeader,
+}: InputPageProps = {}) {
   const [searchParams] = useSearchParams();
-  const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [subjects, setSubjects] = useState<Subject[]>(injectedSubjects || []);
   const [semesterId, setSemesterId] = useState<string | null>(null);
   const [date, setDate] = useState(searchParams.get('date') || format(new Date(), 'yyyy-MM-dd'));
   const [entries, setEntries] = useState<EntryRow[]>([]);
-  const [dayRecords, setDayRecords] = useState<AttendanceRecord[]>([]);
+  const [dayRecords, setDayRecords] = useState<AttendanceRecord[]>(injectedRecords || []);
   const [markedOrder, setMarkedOrder] = useState<string[]>([]);
   const [loggedDates, setLoggedDates] = useState<Set<string>>(new Set());
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!injectedSubjects);
   const [saving, setSaving] = useState(false);
   const [noSemester, setNoSemester] = useState(false);
   const [justSaved, setJustSaved] = useState(false);
@@ -87,18 +101,27 @@ export default function InputPage() {
   }, [calendarMonth]);
 
   useEffect(() => {
+    if (injectedSubjects) {
+      setSubjects(injectedSubjects);
+      setNoSemester(false);
+      setLoading(false);
+      setEntries(buildEntries(injectedSubjects, injectedRecords || []));
+      return;
+    }
     loadActiveSemester();
-  }, []);
+  }, [injectedSubjects, injectedRecords]);
 
   useEffect(() => {
+    if (isDemo) return;
     if (semesterId) {
       loadDayRecords();
     }
-  }, [semesterId, date]);
+  }, [semesterId, date, isDemo]);
 
   useEffect(() => {
+    if (isDemo) return;
     loadNote();
-  }, [date]);
+  }, [date, isDemo]);
 
   async function loadNote() {
     try {
@@ -233,6 +256,10 @@ export default function InputPage() {
       )
     );
 
+    if (!isTogglingOff && status !== null && isDemo && onDemoAction && currentEntry) {
+      onDemoAction(currentEntry.subjectId, currentEntry.type, status);
+    }
+
     setMarkedOrder((prev) => {
       if (isTogglingOff) {
         return prev.filter(id => id !== instanceId);
@@ -359,6 +386,15 @@ export default function InputPage() {
   }, [entries, markedOrder]);
 
   async function handleSubmit() {
+    if (isDemo) {
+      setSaving(true);
+      setTimeout(() => {
+        setSaving(false);
+        setJustSaved(true);
+        setTimeout(() => setJustSaved(false), 2500);
+      }, 300);
+      return;
+    }
     if (!semesterId || orderedMarkedEntries.length === 0) return;
     setSaving(true);
     setJustSaved(false);
@@ -627,7 +663,7 @@ export default function InputPage() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
+    <div className={cn("max-w-3xl mx-auto space-y-6", hideHeader && "max-w-none")}>
       {/* Full screen click-away overlay for calendar */}
       {showCalendar && (
         <div
@@ -637,15 +673,17 @@ export default function InputPage() {
       )}
 
       {/* Header */}
-      <div>
-        <span className="eyebrow">Workspace / Log Attendance</span>
-        <h1 className="font-serif text-3xl font-normal text-text-primary mt-1">
-          Record daily sessions
-        </h1>
-        <p className="text-xs text-text-secondary mt-1">
-          Mark the classes you attended or skipped in the order they took place today.
-        </p>
-      </div>
+      {!hideHeader && (
+        <div>
+          <span className="eyebrow">Workspace / Log Attendance</span>
+          <h1 className="font-serif text-3xl font-normal text-text-primary mt-1">
+            Record daily sessions
+          </h1>
+          <p className="text-xs text-text-secondary mt-1">
+            Mark the classes you attended or skipped in the order they took place today.
+          </p>
+        </div>
+      )}
 
       {/* Date Navigator Card */}
       <div className="ledger-card p-3 sm:p-4 flex items-center justify-between relative z-50">

@@ -12,15 +12,58 @@ import { api } from '@/lib/api';
 import type { Analytics, TargetResult } from '@/lib/api';
 import { cn } from '@/lib/utils';
 
-export default function RecoveryPage() {
-  const [analytics, setAnalytics] = useState<Analytics | null>(null);
-  const [targetPct, setTargetPct] = useState(75);
-  const [targetResult, setTargetResult] = useState<TargetResult | null>(null);
-  const [loading, setLoading] = useState(true);
+export interface RecoveryPageProps {
+  injectedAnalytics?: Analytics | null;
+  isDemo?: boolean;
+  hideHeader?: boolean;
+}
+
+function calculateDemoTarget(data: Analytics, target: number): TargetResult {
+  const thresholdRatio = target / 100;
+  const results = data.stats.map((s) => {
+    const lectureNeeded =
+      s.lecture.percentage < target && s.lecture.total > 0
+        ? Math.ceil((thresholdRatio * s.lecture.total - s.lecture.attended) / (1 - thresholdRatio))
+        : 0;
+    const labNeeded =
+      s.lab.percentage < target && s.lab.total > 0
+        ? Math.ceil((thresholdRatio * s.lab.total - s.lab.attended) / (1 - thresholdRatio))
+        : 0;
+    return {
+      subjectId: s.subjectId,
+      subjectName: s.subjectName,
+      lecture: { current: s.lecture.percentage, sessionsNeeded: lectureNeeded },
+      lab: { current: s.lab.percentage, sessionsNeeded: labNeeded },
+    };
+  });
+  return {
+    target,
+    overall: {
+      current: data.overall.percentage,
+      sessionsNeeded: { combined: 0, lecture: 0, lab: 0, combinations: [] },
+    },
+    results,
+  };
+}
+
+export default function RecoveryPage({ injectedAnalytics, isDemo, hideHeader }: RecoveryPageProps = {}) {
+  const [analytics, setAnalytics] = useState<Analytics | null>(injectedAnalytics || null);
+  const [targetPct, setTargetPct] = useState(injectedAnalytics?.threshold || 75);
+  const [targetResult, setTargetResult] = useState<TargetResult | null>(
+    injectedAnalytics ? calculateDemoTarget(injectedAnalytics, injectedAnalytics.threshold) : null
+  );
+  const [loading, setLoading] = useState(!injectedAnalytics);
 
   useEffect(() => {
+    if (injectedAnalytics) {
+      setAnalytics(injectedAnalytics);
+      setTargetPct(injectedAnalytics.threshold);
+      setTargetResult(calculateDemoTarget(injectedAnalytics, injectedAnalytics.threshold));
+      setLoading(false);
+      return;
+    }
     loadData();
-  }, []);
+  }, [injectedAnalytics]);
 
   async function loadData() {
     try {
@@ -44,6 +87,10 @@ export default function RecoveryPage() {
   async function handleTargetChange(newTarget: number) {
     setTargetPct(newTarget);
     if (!analytics) return;
+    if (isDemo) {
+      setTargetResult(calculateDemoTarget(analytics, newTarget));
+      return;
+    }
     try {
       const result = await api.analytics.getTarget(analytics.semester.id, newTarget);
       setTargetResult(result);
@@ -102,27 +149,29 @@ export default function RecoveryPage() {
   });
 
   return (
-    <div className="space-y-8 max-w-4xl mx-auto">
+    <div className={cn("space-y-8 max-w-4xl mx-auto", hideHeader && "space-y-6 max-w-none")}>
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-        <div>
-          <span className="eyebrow">Workspace / Recovery</span>
-          <h1 className="font-serif text-3xl font-normal text-text-primary mt-1">
-            Recovery planner
-          </h1>
-          <p className="text-xs text-text-secondary mt-1">
-            Calculate consecutive sessions needed to recover your attendance standing above threshold.
-          </p>
-        </div>
+      {!hideHeader && (
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+          <div>
+            <span className="eyebrow">Workspace / Recovery</span>
+            <h1 className="font-serif text-3xl font-normal text-text-primary mt-1">
+              Recovery planner
+            </h1>
+            <p className="text-xs text-text-secondary mt-1">
+              Calculate consecutive sessions needed to recover your attendance standing above threshold.
+            </p>
+          </div>
 
-        <button
-          onClick={() => document.getElementById('custom-target-calc')?.scrollIntoView({ behavior: 'smooth' })}
-          className="self-start sm:self-auto flex items-center gap-2 rounded-lg border border-border-strong bg-card px-3.5 py-2 text-xs font-medium text-text-secondary hover:bg-panel hover:text-text-primary transition-colors"
-        >
-          <TargetIcon className="h-3.5 w-3.5 text-forest-800 dark:text-accent" />
-          Goal Simulator
-        </button>
-      </div>
+          <button
+            onClick={() => document.getElementById('custom-target-calc')?.scrollIntoView({ behavior: 'smooth' })}
+            className="self-start sm:self-auto flex items-center gap-2 rounded-lg border border-border-strong bg-card px-3.5 py-2 text-xs font-medium text-text-secondary hover:bg-panel hover:text-text-primary transition-colors"
+          >
+            <TargetIcon className="h-3.5 w-3.5 text-forest-800 dark:text-accent" />
+            Goal Simulator
+          </button>
+        </div>
+      )}
 
       {/* Recovery Status Card */}
       {analytics.overall.percentage >= threshold ? (

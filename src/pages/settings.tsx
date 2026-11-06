@@ -170,7 +170,7 @@ export default function SettingsPage() {
             <Logo className="h-full w-full object-contain" />
           </div>
           <h2 className="font-serif text-lg font-normal text-text-primary">
-            Atten<span className="text-accent">-</span>Dance
+            Atten<span className="text-text-primary dark:text-white">-</span>Dance
           </h2>
         </div>
         <div className="space-y-1.5 text-xs text-text-secondary leading-relaxed">

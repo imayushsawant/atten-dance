@@ -27,7 +27,7 @@ import type { Semester } from '@/lib/api';
 import { Logo } from '@/components/logo';
 
 const workspaceNavItems = [
-  { to: '/', icon: DashboardIcon, label: 'Dashboard' },
+  { to: '/dashboard', icon: DashboardIcon, label: 'Dashboard' },
   { to: '/input', icon: PenLineIcon, label: 'Log Attendance' },
   { to: '/calendar', icon: CalendarIcon, label: 'Calendar' },
   { to: '/analytics', icon: AnalyticsIcon, label: 'Analytics' },
@@ -74,17 +74,17 @@ export default function AppShell() {
       >
         {/* Brand Header */}
         <div className="flex h-20 items-center justify-between border-b border-sidebar-divider px-5">
-          <Link to="/" className="flex items-center gap-3 group">
+          <Link to="/dashboard" className="flex items-center gap-3 group">
             {/* SVG Brand Logo Mark */}
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/10 border border-white/10 text-accent p-1.5 shadow-xs transition-colors group-hover:bg-white/15">
               <Logo className="h-full w-full object-contain" />
             </div>
             <div>
               <div className="text-lg font-semibold tracking-tight text-text-on-dark flex items-center">
-                Atten<span className="text-accent">-</span>Dance
+                Atten<span className="text-white">-</span>Dance
               </div>
-              <p className="text-[11px] leading-tight text-sidebar-text-muted">
-                Attendance Tracker
+              <p className="text-xs text-sidebar-text-muted mt-1 leading-snug">
+                Because colleges make you dance for attendance.
               </p>
             </div>
           </Link>
@@ -111,7 +111,7 @@ export default function AppShell() {
                 <NavLink
                   key={item.to}
                   to={item.to}
-                  end={item.to === '/'}
+                  end={item.to === '/dashboard'}
                   className={({ isActive }) =>
                     cn(
                       'group relative flex items-center gap-3 rounded-lg px-3.5 py-2.5 text-sm font-medium transition-colors',
@@ -182,12 +182,12 @@ export default function AppShell() {
             <MenuIcon className="h-5 w-5" />
           </button>
 
-          <Link to="/" className="flex items-center gap-2.5">
+          <Link to="/dashboard" className="flex items-center gap-2.5">
             <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-panel border border-border-subtle text-accent p-1">
               <Logo className="h-full w-full object-contain" />
             </div>
             <span className="font-semibold text-sm text-text-primary tracking-tight">
-              Atten<span className="text-accent">-</span>Dance
+              Atten<span className="text-text-primary dark:text-white">-</span>Dance
             </span>
           </Link>
 
@@ -218,7 +218,7 @@ export default function AppShell() {
         <nav className="fixed bottom-0 inset-x-0 z-30 flex h-[calc(3.5rem+env(safe-area-inset-bottom,0px))] pb-[env(safe-area-inset-bottom,0px)] bg-card border-t border-border-subtle lg:hidden">
           <div className="grid grid-cols-5 w-full items-center">
             <NavLink
-              to="/"
+              to="/dashboard"
               end
               className={({ isActive }) =>
                 cn(

@@ -1,5 +1,7 @@
 import { useState } from 'react';
+import { Navigate, useSearchParams } from 'react-router';
 import { useSession, signIn, signUp } from '@/lib/auth-client';
+import LoadingScreen from '@/components/loading-screen';
 import {
   ShieldCheckIcon,
   AnalyticsIcon,
@@ -10,17 +12,22 @@ import { Logo } from '@/components/logo';
 
 export default function LoginPage() {
   const { data: session, isPending: sessionPending } = useSession();
+  const [searchParams] = useSearchParams();
+  const mode = searchParams.get('mode');
 
-  const [isSignUp, setIsSignUp] = useState(true);
+  const [isSignUp, setIsSignUp] = useState(mode ? mode === 'signup' : true);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
-  if (session && !sessionPending) {
-    window.location.href = '/';
-    return null;
+  if (sessionPending) {
+    return <LoadingScreen />;
+  }
+
+  if (session) {
+    return <Navigate to="/dashboard" replace />;
   }
 
   const handleEmailAuth = async (e: React.FormEvent) => {
@@ -36,14 +43,14 @@ export default function LoginPage() {
           name,
         });
         if (signUpError) throw new Error(signUpError.message || 'Failed to sign up');
-        window.location.href = '/';
+        window.location.href = '/dashboard';
       } else {
         const { error: signInError } = await signIn.email({
           email,
           password,
         });
         if (signInError) throw new Error(signInError.message || 'Invalid email or password');
-        window.location.href = '/';
+        window.location.href = '/dashboard';
       }
     } catch (err: any) {
       setError(err.message);
@@ -64,9 +71,9 @@ export default function LoginPage() {
             </div>
             <div>
               <div className="text-xl font-semibold tracking-tight text-text-primary">
-                Atten<span className="text-accent">-</span>Dance
+                Atten<span className="text-text-primary dark:text-white">-</span>Dance
               </div>
-              <p className="text-xs text-text-muted">Attendance Tracker</p>
+              <p className="text-sm text-text-muted mt-1 leading-relaxed">Because colleges make you dance for attendance.</p>
             </div>
           </div>
 
@@ -136,7 +143,7 @@ export default function LoginPage() {
               <Logo className="h-full w-full object-contain" />
             </div>
             <span className="font-semibold text-base text-text-primary tracking-tight">
-              Atten<span className="text-accent">-</span>Dance
+              Atten<span className="text-text-primary dark:text-white">-</span>Dance
             </span>
           </div>
 
@@ -226,7 +233,7 @@ export default function LoginPage() {
           <button
             id="login-google"
             type="button"
-            onClick={() => signIn.social({ provider: 'google', callbackURL: '/' })}
+            onClick={() => signIn.social({ provider: 'google', callbackURL: '/dashboard' })}
             disabled={sessionPending}
             className="flex w-full items-center justify-center gap-2.5 rounded-md border border-border-strong bg-card px-4 py-2.5 text-xs font-medium text-text-primary hover:bg-panel transition-colors disabled:opacity-50"
           >

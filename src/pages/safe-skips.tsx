@@ -10,13 +10,24 @@ import { api } from '@/lib/api';
 import type { Analytics } from '@/lib/api';
 import { cn } from '@/lib/utils';
 
-export default function SafeSkipsPage() {
-  const [analytics, setAnalytics] = useState<Analytics | null>(null);
-  const [loading, setLoading] = useState(true);
+export interface SafeSkipsPageProps {
+  injectedAnalytics?: Analytics | null;
+  isDemo?: boolean;
+  hideHeader?: boolean;
+}
+
+export default function SafeSkipsPage({ injectedAnalytics, isDemo, hideHeader }: SafeSkipsPageProps = {}) {
+  const [analytics, setAnalytics] = useState<Analytics | null>(injectedAnalytics || null);
+  const [loading, setLoading] = useState(!injectedAnalytics);
 
   useEffect(() => {
+    if (injectedAnalytics) {
+      setAnalytics(injectedAnalytics);
+      setLoading(false);
+      return;
+    }
     loadData();
-  }, []);
+  }, [injectedAnalytics]);
 
   async function loadData() {
     try {
@@ -68,17 +79,19 @@ export default function SafeSkipsPage() {
   const { stats, threshold, semester } = analytics;
 
   return (
-    <div className="space-y-8 max-w-4xl mx-auto">
+    <div className={cn("space-y-8 max-w-4xl mx-auto", hideHeader && "space-y-6 max-w-none")}>
       {/* Header */}
-      <div>
-        <span className="eyebrow">Workspace / Safe Skips</span>
-        <h1 className="font-serif text-3xl font-normal text-text-primary mt-1">
-          Safe skips calculator
-        </h1>
-        <p className="text-xs text-text-secondary mt-1">
-          Calculate how many sessions you can safely miss while remaining above your required threshold.
-        </p>
-      </div>
+      {!hideHeader && (
+        <div>
+          <span className="eyebrow">Workspace / Safe Skips</span>
+          <h1 className="font-serif text-3xl font-normal text-text-primary mt-1">
+            Safe skips calculator
+          </h1>
+          <p className="text-xs text-text-secondary mt-1">
+            Calculate how many sessions you can safely miss while remaining above your required threshold.
+          </p>
+        </div>
+      )}
 
       {/* Overall Safe Skips Card */}
       {analytics.overall.percentage >= threshold ? (

@@ -32,9 +32,15 @@ const defaultSubjectMod = (): SubjectModifiers => ({
   lab: { attend: 0, skip: 0 },
 });
 
-export default function PredictorPage() {
-  const [analytics, setAnalytics] = useState<Analytics | null>(null);
-  const [loading, setLoading] = useState(true);
+export interface PredictorPageProps {
+  injectedAnalytics?: Analytics | null;
+  isDemo?: boolean;
+  hideHeader?: boolean;
+}
+
+export default function PredictorPage({ injectedAnalytics, isDemo, hideHeader }: PredictorPageProps = {}) {
+  const [analytics, setAnalytics] = useState<Analytics | null>(injectedAnalytics || null);
+  const [loading, setLoading] = useState(!injectedAnalytics);
   const [error, setError] = useState('');
   
   const [mode, setMode] = useState<'overall' | 'subject'>('overall');
@@ -42,8 +48,15 @@ export default function PredictorPage() {
   const [entries, setEntries] = useState<EntryRow[]>([]);
 
   useEffect(() => {
+    if (injectedAnalytics) {
+      setAnalytics(injectedAnalytics);
+      initializeEntries(injectedAnalytics);
+      setLoading(false);
+      setError('');
+      return;
+    }
     loadData();
-  }, []);
+  }, [injectedAnalytics]);
 
   async function loadData() {
     try {
@@ -381,18 +394,25 @@ export default function PredictorPage() {
   }
 
   return (
-    <div className="space-y-8 max-w-5xl mx-auto">
+    <div className={cn("space-y-8 max-w-5xl mx-auto", hideHeader && "space-y-6 max-w-none")}>
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-        <div>
-          <span className="eyebrow">Workspace / Predictor</span>
-          <h1 className="font-serif text-3xl font-normal text-text-primary mt-1">
-            Scenario simulator
-          </h1>
-          <p className="text-xs text-text-secondary mt-1">
-            Test hypothetical attendance scenarios to see their immediate impact on your standing.
-          </p>
-        </div>
+      <div className={cn("flex flex-col sm:flex-row sm:items-end justify-between gap-4", hideHeader && "sm:items-center")}>
+        {!hideHeader ? (
+          <div>
+            <span className="eyebrow">Workspace / Predictor</span>
+            <h1 className="font-serif text-3xl font-normal text-text-primary mt-1">
+              Scenario simulator
+            </h1>
+            <p className="text-xs text-text-secondary mt-1">
+              Test hypothetical attendance scenarios to see their immediate impact on your standing.
+            </p>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2">
+            <span className="eyebrow">Interactive Simulator</span>
+            <span className="text-xs text-text-muted">• Live Projection</span>
+          </div>
+        )}
         
         <div className="flex items-center gap-3">
           {/* Mode Toggle */}
