@@ -344,7 +344,7 @@ export default function AnalyticsPage() {
       {/* Detailed Subject Breakdown Cards */}
       <div>
         <div className="mb-4">
-          <span className="eyebrow">Detailed Ledger</span>
+          <span className="eyebrow">Detailed Breakdown</span>
           <h2 className="font-serif text-xl sm:text-2xl font-normal text-text-primary mt-1">
             Subject-wise attendance breakdown
           </h2>

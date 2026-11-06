@@ -118,7 +118,7 @@ export default function Dashboard() {
           </div>
           <span className="eyebrow mb-2">Welcome to Atten-Dance</span>
           <h1 className="font-serif text-3xl font-normal text-text-primary mb-3">
-            Your Attendance Ledger
+            Your Attendance Tracker
           </h1>
           <p className="text-sm text-text-secondary mb-8 leading-relaxed">
             Because colleges make you dance for attendance. Set up your first semester to track sessions, forecast safe bunks, and preserve your attendance margin.
@@ -541,13 +541,13 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* ──────────────── Row 3: Subject Ledger Table ──────────────── */}
+      {/* ──────────────── Row 3: Subject Breakdown Table ──────────────── */}
       <div className="ledger-card p-6">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <span className="eyebrow">Subject Ledger</span>
+            <span className="eyebrow">Subject Breakdown</span>
             <h2 className="font-serif text-xl sm:text-2xl font-normal text-text-primary mt-1">
-              Detailed breakdown
+              Detailed metrics
             </h2>
           </div>
           <Link

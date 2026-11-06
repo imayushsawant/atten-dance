@@ -66,11 +66,11 @@ export default function LoginPage() {
               <div className="text-xl font-semibold tracking-tight text-text-primary">
                 Atten<span className="text-accent">-</span>Dance
               </div>
-              <p className="text-xs text-text-muted">Attendance Ledger</p>
+              <p className="text-xs text-text-muted">Attendance Tracker</p>
             </div>
           </div>
 
-          <span className="eyebrow block mb-3">Academic Ledger</span>
+          <span className="eyebrow block mb-3">Attendance Tracker</span>
           <h1 className="font-serif text-4xl lg:text-5xl font-normal tracking-tight text-text-primary max-w-xl leading-tight mb-4">
             Stop guessing. Start strategizing your attendance.
           </h1>
@@ -143,7 +143,7 @@ export default function LoginPage() {
           <div className="mb-6">
             <span className="eyebrow block mb-1">Access Account</span>
             <h2 className="font-serif text-2xl font-normal text-text-primary">
-              {isSignUp ? 'Create your ledger' : 'Welcome back'}
+              {isSignUp ? 'Create an account' : 'Welcome back'}
             </h2>
             <p className="text-xs text-text-secondary mt-1">
               {isSignUp
@@ -201,7 +201,7 @@ export default function LoginPage() {
               disabled={isLoading || sessionPending}
               className="w-full rounded-md bg-forest-800 dark:bg-cta-bg text-text-on-dark py-2.5 text-xs font-medium hover:opacity-95 transition-opacity disabled:opacity-50 mt-2"
             >
-              {isLoading ? 'Processing…' : (isSignUp ? 'Create Ledger Account' : 'Sign In')}
+              {isLoading ? 'Processing…' : (isSignUp ? 'Create an account' : 'Sign In')}
             </button>
 
             <div className="text-center pt-2">

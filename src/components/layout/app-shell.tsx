@@ -84,7 +84,7 @@ export default function AppShell() {
                 Atten<span className="text-accent">-</span>Dance
               </div>
               <p className="text-[11px] leading-tight text-sidebar-text-muted">
-                Attendance Ledger
+                Attendance Tracker
               </p>
             </div>
           </Link>

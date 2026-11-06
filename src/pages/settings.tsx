@@ -175,7 +175,7 @@ export default function SettingsPage() {
         </div>
         <div className="space-y-1.5 text-xs text-text-secondary leading-relaxed">
           <p>
-            An editorial attendance ledger crafted for students navigating mandatory attendance requirements.
+            An editorial attendance tracker crafted for students navigating mandatory attendance requirements.
           </p>
           <p className="text-[11px] text-text-muted pt-2 border-t border-border-subtle">
             Database resides securely on your local machine.
