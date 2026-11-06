@@ -127,51 +127,38 @@ export default function AppShell() {
               ))}
             </nav>
           </div>
-
-          {/* Section: SEMESTER */}
-          <div>
-            <div className="px-3 pb-2 text-[11px] font-semibold tracking-[0.2em] text-sidebar-text-muted uppercase flex items-center justify-between">
-              <span>Semester</span>
-              {activeSemester && (
-                <span className="text-[9px] px-1.5 py-0.5 rounded bg-white/10 text-text-on-dark tracking-normal uppercase">
-                  Active
-                </span>
-              )}
-            </div>
-
-            {activeSemester && (
-              <div className="mx-3 mb-2 px-3 py-2 rounded-lg bg-white/5 border border-sidebar-divider text-xs">
-                <div className="font-medium text-text-on-dark truncate">{activeSemester.name}</div>
-                <div className="text-[11px] text-sidebar-text-muted flex items-center gap-1.5 mt-0.5">
-                  <span>Target: {activeSemester.threshold}%</span>
-                  <span>•</span>
-                  <span>{activeSemester.calculationMethod === 'total_sessions' ? 'Total' : '50/50'}</span>
-                </div>
-              </div>
-            )}
-
-            <nav className="space-y-1">
-              <NavLink
-                to="/semesters"
-                className={({ isActive }) =>
-                  cn(
-                    'group relative flex items-center gap-3 rounded-lg px-3.5 py-2.5 text-sm font-medium transition-colors',
-                    isActive
-                      ? 'bg-nav-active-bg text-nav-active-text font-semibold before:absolute before:left-0 before:top-1.5 before:bottom-1.5 before:w-[3px] before:rounded-r before:bg-accent'
-                      : 'text-sidebar-text hover:bg-white/5 hover:text-text-on-dark'
-                  )
-                }
-              >
-                <SemestersIcon className="h-4.5 w-4.5 shrink-0 opacity-80 group-hover:opacity-100" />
-                <span className="truncate">Manage Semesters</span>
-              </NavLink>
-            </nav>
-          </div>
         </div>
 
-        {/* Footer: User profile & Sign out */}
-        <div className="border-t border-sidebar-divider p-3">
-          <UserFooter onLoggingOut={() => setIsLoggingOut(true)} />
+        {/* Lower section: Semester tab & User profile */}
+        <div className="border-t border-sidebar-divider p-3 space-y-1.5">
+          <NavLink
+            to="/semesters"
+            className={({ isActive }) =>
+              cn(
+                'group relative flex items-center justify-between rounded-lg px-3.5 py-2.5 text-sm font-medium transition-colors',
+                isActive
+                  ? 'bg-nav-active-bg text-nav-active-text font-semibold before:absolute before:left-0 before:top-1.5 before:bottom-1.5 before:w-[3px] before:rounded-r before:bg-accent'
+                  : 'text-sidebar-text hover:bg-white/5 hover:text-text-on-dark'
+              )
+            }
+          >
+            <div className="flex items-center gap-3 min-w-0">
+              <SemestersIcon className="h-4.5 w-4.5 shrink-0 opacity-80 group-hover:opacity-100" />
+              <span className="truncate">Semester</span>
+            </div>
+            {activeSemester && (
+              <span
+                className="text-[10px] font-medium px-2 py-0.5 rounded bg-white/10 text-sidebar-text-muted group-hover:text-text-on-dark truncate max-w-[100px]"
+                title={`${activeSemester.name} (Target: ${activeSemester.threshold}%)`}
+              >
+                {activeSemester.name}
+              </span>
+            )}
+          </NavLink>
+
+          <div className="pt-1.5 border-t border-sidebar-divider">
+            <UserFooter onLoggingOut={() => setIsLoggingOut(true)} />
+          </div>
         </div>
       </aside>
 

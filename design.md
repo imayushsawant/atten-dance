@@ -153,9 +153,8 @@ Dark mode feels like the same paper ledger under ambient night lighting — deep
   - Attendance Predictor (`/predictor`)
   - Time Window (`/time-window`)
   - Settings (`/settings`)
-- **`SEMESTER` Section:**
-  - Current Active Semester indicator pill.
-  - Manage Semesters (`/semesters`).
+- **Lower Section:**
+  - Compact Semester tab (`/semesters`) with active semester indicator badge, located directly above the user profile block.
 - **Footer Block:**
   - User avatar with initials (`--bg-chip` fill).
   - User name & email.
