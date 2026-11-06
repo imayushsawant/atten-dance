@@ -240,7 +240,7 @@ export async function getAnalytics(semesterId: string, threshold?: number) {
     const lecturePct = lectureTotal > 0 ? (lectureAttended / lectureTotal) * 100 : 100;
     const labPct = labTotal > 0 ? (labAttended / labTotal) * 100 : 100;
     
-    let combinedPct: number;
+    let combinedPct: number = 100;
     let lectureSafeSkips: number;
     let labSafeSkips: number;
     let combinedSafeSkips: number;
@@ -337,7 +337,7 @@ export async function getAnalytics(semesterId: string, threshold?: number) {
   let overallRecovery = 0;
   let overallLectureRecovery = 0;
   let overallLabRecovery = 0;
-  let recoveryCombos: { lecture: number; lab: number; resultingPercentage: number }[];
+  let recoveryCombos: { lecture: number; lab: number; resultingPercentage: number }[] = [];
   let safeSkipCombos: { lecture: number; lab: number; resultingPercentage: number }[];
 
   if (isTotalSessions) {
@@ -519,7 +519,7 @@ export async function getAnalyticsForDateRange(
     const lecturePct = lectureTotal > 0 ? (lectureAttended / lectureTotal) * 100 : 100;
     const labPct = labTotal > 0 ? (labAttended / labTotal) * 100 : 100;
     
-    let combinedPct: number;
+    let combinedPct: number = 100;
     let lectureSafeSkips: number;
     let labSafeSkips: number;
     let combinedSafeSkips: number;

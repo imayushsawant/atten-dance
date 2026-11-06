@@ -9,6 +9,7 @@ import attendanceRoutes from './routes/attendance.js';
 import analyticsRoutes from './routes/analytics.js';
 import settingsRoutes from './routes/settings.js';
 import notesRoutes from './routes/notes.js';
+import authLinkingRoutes from './routes/auth-linking.js';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -19,6 +20,9 @@ app.use(cors({
   credentials: true,
 }));
 app.use(express.json());
+
+// Account collision & linking endpoints (must be before BetterAuth catch-all handler)
+app.use('/api/auth-linking', authLinkingRoutes);
 
 // BetterAuth handler — must be before other /api routes
 app.all(/^\/api\/auth\/.*/, async (req, res) => {
