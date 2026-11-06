@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { DownloadIcon } from '@/components/icons';
+import { DownloadIcon, SunIcon, MoonIcon, MonitorIcon } from '@/components/icons';
 import { Logo } from '@/components/logo';
 import { api } from '@/lib/api';
 import { useTheme } from '@/lib/theme-provider';
@@ -78,9 +78,9 @@ export default function SettingsPage() {
   }
 
   const themeOptions = [
-    { value: 'light' as const, icon: Sun, label: 'Paper Light', desc: 'Warm cream & forest ink' },
-    { value: 'dark' as const, icon: Moon, label: 'Night Notebook', desc: 'Deep green-black' },
-    { value: 'system' as const, icon: Monitor, label: 'System', desc: 'Match device setting' },
+    { value: 'light' as const, icon: SunIcon, label: 'Paper Light', desc: 'Warm cream & forest ink' },
+    { value: 'dark' as const, icon: MoonIcon, label: 'Night Notebook', desc: 'Deep green-black' },
+    { value: 'system' as const, icon: MonitorIcon, label: 'System', desc: 'Match device setting' },
   ];
 
   return (

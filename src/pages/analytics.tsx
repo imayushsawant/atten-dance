@@ -10,6 +10,7 @@ import {
 import { api } from '@/lib/api';
 import type { Analytics } from '@/lib/api';
 import { useTheme } from '@/lib/theme-provider';
+import { cn } from '@/lib/utils';
 import {
   BarChart,
   Bar,

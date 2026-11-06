@@ -391,25 +391,38 @@ export default function RecoveryPage() {
           <div className="space-y-3 pt-4 border-t border-border-subtle">
             <span className="eyebrow text-[10px] block mb-2">Subject Targets for {targetPct}%</span>
             <div className="divide-y divide-border-subtle border border-border-subtle rounded-lg overflow-hidden bg-panel/20">
-              {targetResult.subjects.map((sub) => (
-                <div key={sub.subjectId} className="flex items-center justify-between px-4 py-3 text-xs">
-                  <div>
-                    <p className="font-medium text-text-primary">{sub.subjectName}</p>
-                    <p className="text-[11px] text-text-muted mt-0.5">
-                      Current: {sub.currentPercentage.toFixed(1)}%
-                    </p>
+              {targetResult.results.map((r) => {
+                const needsLecture = r.lecture.sessionsNeeded > 0;
+                const needsLab = r.lab.sessionsNeeded > 0;
+                return (
+                  <div key={r.subjectId} className="flex items-center justify-between px-4 py-3 text-xs">
+                    <div>
+                      <p className="font-medium text-text-primary">{r.subjectName}</p>
+                      <p className="text-[11px] text-text-muted mt-0.5">
+                        Lectures: {r.lecture.current.toFixed(1)}% • Labs: {r.lab.current.toFixed(1)}%
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      {!needsLecture && !needsLab ? (
+                        <span className="font-semibold text-ok">Goal Achieved ✓</span>
+                      ) : (
+                        <div className="space-y-0.5">
+                          {needsLecture && (
+                            <span className="block font-semibold text-text-primary">
+                              +{r.lecture.sessionsNeeded} lecture{r.lecture.sessionsNeeded !== 1 ? 's' : ''} needed
+                            </span>
+                          )}
+                          {needsLab && (
+                            <span className="block font-semibold text-text-primary">
+                              +{r.lab.sessionsNeeded} lab{r.lab.sessionsNeeded !== 1 ? 's' : ''} needed
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  <div className="text-right">
-                    {sub.currentPercentage >= targetPct ? (
-                      <span className="font-semibold text-ok">Goal Achieved ✓</span>
-                    ) : (
-                      <span className="font-semibold text-text-primary">
-                        +{sub.sessionsNeeded} session{sub.sessionsNeeded !== 1 ? 's' : ''} needed
-                      </span>
-                    )}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
