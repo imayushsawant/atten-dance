@@ -18,6 +18,7 @@ import {
   SunIcon,
   MoonIcon,
   MoreHorizontalIcon,
+  GithubIcon,
 } from '@/components/icons';
 import { cn } from '@/lib/utils';
 import { useSession, signOut } from '@/lib/auth-client';
@@ -360,6 +361,17 @@ function UserFooter({ onLoggingOut }: { onLoggingOut: () => void }) {
           <p className="truncate text-xs font-medium text-text-on-dark">{user.name}</p>
           <p className="truncate text-[10px] text-sidebar-text-muted">{user.email}</p>
         </div>
+
+        <a
+          href="https://github.com/imayushsawant/atten-dance"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="p-1.5 text-sidebar-text-muted hover:text-text-on-dark rounded transition-colors"
+          title="Star on GitHub"
+          aria-label="Star on GitHub"
+        >
+          <GithubIcon className="h-4 w-4" />
+        </a>
 
         <Link
           to="/settings"

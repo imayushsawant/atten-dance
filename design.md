@@ -141,7 +141,7 @@ Dark mode feels like the same paper ledger under ambient night lighting — deep
 ```
 
 #### Sidebar Architecture
-- **Logo Area:** Custom SVG brand mark in `--accent` terracotta tile + wordmark **Atten-Dance** (hyphen highlighted in `--accent`), subtitle *"Attendance Ledger"* below.
+- **Logo Area:** Custom SVG brand mark in `--accent` terracotta tile + wordmark **Atten-Dance** (hyphen highlighted in `--accent`), tagline below.
 - **`WORKSPACE` Section:**
   - Dashboard (`/`)
   - Log Attendance (`/input`)
@@ -185,10 +185,9 @@ Dark mode feels like the same paper ledger under ambient night lighting — deep
 ### 6.1 Dashboard (`/`)
 
 #### Header Area
-- **Eyebrow:** `ATTENDANCE LEDGER / [ACTIVE SEMESTER NAME]`
-- **H1:** Editorial statement (e.g. *"Know where you stand."*)
-- **Subtitle & Mode Pill:** Current total sessions logged across subjects + calculation method chip (e.g. `50 / 50 SPLIT` or `TOTAL SESSIONS`).
-- **Target Indicator:** Target threshold percentage indicator.
+- **H1:** Editorial statement (*"Know where you stand."*)
+- **Subtitle:** Current total sessions logged across subjects (`[X] sessions logged across [Y] subjects`).
+- **Action:** GitHub repository button aligned in the header row inside the page container.
 
 #### Dashboard Layout
 - **Row 1 (KPI Strip):** Completely fills the 12-column grid. Overall Attendance card spans 5 columns; remaining 7 columns host a 3-column subgrid for Safe Skips, At Risk, and Total Subjects.
@@ -199,7 +198,6 @@ Dark mode feels like the same paper ledger under ambient night lighting — deep
 1. **Overall Attendance Card (`lg:col-span-5`):**
    - Eyebrow: `OVERALL ATTENDANCE`
    - Big serif percentage (e.g., `77.7%`).
-   - Caption: Clarifies calculation method (e.g., *"Weighted: 50% lectures + 50% labs"* or *"Raw attendance across all sessions"*).
    - Sub-metrics row: `LECTURES [attended]/[total]   LABS [attended]/[total]`.
    - Right visual: Circular Ring Chart (106px diameter, 12px stroke) with center percentage and `CURRENT POSITION` label.
 2. **Secondary Subgrid (`lg:col-span-7`, 3 equal columns `grid-cols-1 sm:grid-cols-3`):**

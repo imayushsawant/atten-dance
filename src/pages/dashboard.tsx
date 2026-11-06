@@ -26,6 +26,7 @@ import type { Analytics } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/lib/theme-provider';
 import { Logo } from '@/components/logo';
+import { GitHubLink } from '@/components/github-link';
 
 function getChartStyles(resolved: 'dark' | 'light') {
   const isDark = resolved === 'dark';
@@ -233,25 +234,18 @@ export default function Dashboard() {
   return (
     <div className="space-y-8">
       {/* ──────────────── Page Header ──────────────── */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between border-b border-border-subtle pb-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-border-subtle pb-6">
         <div>
-          <div className="eyebrow mb-1">
-            Attendance Ledger / {semester.name}
-          </div>
           <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-normal tracking-tight text-text-primary">
             Know where you stand.
           </h1>
-          <div className="flex flex-wrap items-center gap-3 mt-2 text-xs text-text-secondary">
-            <span>
-              {overall.total} sessions logged across {stats.length} subjects
-            </span>
-            <span className="h-1 w-1 rounded-full bg-border-strong" />
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-chip text-[10px] font-semibold tracking-wider uppercase text-forest-700 dark:text-text-primary">
-              {semester.calculationMethod === 'total_sessions' ? 'Total Sessions' : '50 / 50 Split'}
-            </span>
-            <span className="h-1 w-1 rounded-full bg-border-strong" />
-            <span>Target: {threshold}%</span>
-          </div>
+          <p className="mt-2 text-xs text-text-secondary">
+            {overall.total} sessions logged across {stats.length} subjects
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2 self-start sm:self-center">
+          <GitHubLink />
         </div>
       </div>
 
@@ -268,11 +262,6 @@ export default function Dashboard() {
                 </span>
                 <span className="font-serif text-2xl font-semibold text-text-primary">%</span>
               </div>
-              <p className="text-xs text-text-secondary mt-1">
-                {semester.calculationMethod === 'total_sessions'
-                  ? 'Raw attendance across all sessions'
-                  : 'Weighted: 50% lectures + 50% labs'}
-              </p>
             </div>
 
             {/* Circular Ring Chart */}

@@ -1,6 +1,6 @@
 import { GithubIcon } from '@/components/icons';
 
-export function GitHubLink() {
+export function GitHubLink({ className }: { className?: string }) {
   return (
     <a
       href="https://github.com/imayushsawant/atten-dance"
@@ -8,9 +8,13 @@ export function GitHubLink() {
       rel="noopener noreferrer"
       title="Star on GitHub"
       aria-label="Star on GitHub"
-      className="hidden lg:flex fixed top-5 right-5 z-30 h-8 w-8 items-center justify-center rounded-lg border border-border-strong bg-card text-text-muted transition-colors hover:bg-panel hover:text-text-primary"
+      className={
+        className ||
+        'inline-flex items-center gap-2 rounded-lg border border-border-strong bg-card px-3.5 py-2 text-xs font-medium text-text-secondary hover:bg-panel hover:text-text-primary transition-colors shadow-xs'
+      }
     >
       <GithubIcon className="h-4 w-4" />
+      <span>Star on GitHub</span>
     </a>
   );
 }
