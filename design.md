@@ -152,6 +152,7 @@ Dark mode feels like the same paper ledger under ambient night lighting — deep
   - History (`/history`)
   - Attendance Predictor (`/predictor`)
   - Time Window (`/time-window`)
+  - Settings (`/settings`)
 - **`SEMESTER` Section:**
   - Current Active Semester indicator pill.
   - Manage Semesters (`/semesters`).

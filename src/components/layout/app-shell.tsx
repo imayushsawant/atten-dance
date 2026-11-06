@@ -18,7 +18,6 @@ import {
   SunIcon,
   MoonIcon,
   MoreHorizontalIcon,
-  GithubIcon,
 } from '@/components/icons';
 import { cn } from '@/lib/utils';
 import { useSession, signOut } from '@/lib/auth-client';
@@ -37,6 +36,7 @@ const workspaceNavItems = [
   { to: '/history', icon: HistoryIcon, label: 'History' },
   { to: '/predictor', icon: CalculatorIcon, label: 'Predictor' },
   { to: '/time-window', icon: TimeWindowIcon, label: 'Time Window' },
+  { to: '/settings', icon: SettingsIcon, label: 'Settings' },
 ];
 
 export default function AppShell() {
@@ -169,29 +169,8 @@ export default function AppShell() {
           </div>
         </div>
 
-        {/* Footer: User profile, Theme toggle & Sign out */}
+        {/* Footer: User profile & Sign out */}
         <div className="border-t border-sidebar-divider p-3">
-          <div className="flex items-center justify-between mb-2 px-2 text-xs text-sidebar-text-muted">
-            <span className="uppercase text-[10px] tracking-wider font-semibold">Theme</span>
-            <button
-              onClick={() => setTheme(resolved === 'dark' ? 'light' : 'dark')}
-              className="flex items-center gap-1.5 px-2 py-1 rounded bg-white/5 hover:bg-white/10 text-sidebar-text transition-colors text-xs"
-              title="Toggle theme"
-            >
-              {resolved === 'dark' ? (
-                <>
-                  <SunIcon className="h-3.5 w-3.5 text-warn" />
-                  <span>Light</span>
-                </>
-              ) : (
-                <>
-                  <MoonIcon className="h-3.5 w-3.5 text-sidebar-text" />
-                  <span>Dark</span>
-                </>
-              )}
-            </button>
-          </div>
-
           <UserFooter onLoggingOut={() => setIsLoggingOut(true)} />
         </div>
       </aside>
@@ -342,56 +321,43 @@ function UserFooter({ onLoggingOut }: { onLoggingOut: () => void }) {
     .slice(0, 2);
 
   return (
-    <div className="pt-2 border-t border-sidebar-divider">
-      <div className="flex items-center gap-2.5 rounded-lg px-2 py-2">
-        {user.image ? (
-          <img
-            src={user.image}
-            alt={user.name || 'User'}
-            className="h-8 w-8 rounded-full border border-sidebar-divider object-cover"
-            referrerPolicy="no-referrer"
-          />
-        ) : (
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-nav-active-bg text-nav-active-text text-xs font-semibold">
-            {initials}
-          </div>
-        )}
-
-        <div className="flex-1 min-w-0">
-          <p className="truncate text-xs font-medium text-text-on-dark">{user.name}</p>
-          <p className="truncate text-[10px] text-sidebar-text-muted">{user.email}</p>
+    <div className="flex items-center gap-2.5 rounded-lg px-2 py-1">
+      {user.image ? (
+        <img
+          src={user.image}
+          alt={user.name || 'User'}
+          className="h-8 w-8 rounded-full border border-sidebar-divider object-cover"
+          referrerPolicy="no-referrer"
+        />
+      ) : (
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-nav-active-bg text-nav-active-text text-xs font-semibold">
+          {initials}
         </div>
+      )}
 
-        <a
-          href="https://github.com/imayushsawant/atten-dance"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="p-1.5 text-sidebar-text-muted hover:text-text-on-dark rounded transition-colors"
-          title="Star on GitHub"
-          aria-label="Star on GitHub"
-        >
-          <GithubIcon className="h-4 w-4" />
-        </a>
-
-        <Link
-          to="/settings"
-          className="p-1.5 text-sidebar-text-muted hover:text-text-on-dark rounded transition-colors"
-          title="Settings"
-        >
-          <SettingsIcon className="h-4 w-4" />
-        </Link>
-
-        <button
-          onClick={async () => {
-            onLoggingOut();
-            await signOut({ fetchOptions: { onSuccess: () => { window.location.href = '/login'; } } });
-          }}
-          className="p-1.5 text-sidebar-text-muted hover:text-risk rounded transition-colors"
-          title="Sign out"
-        >
-          <LogoutIcon className="h-4 w-4" />
-        </button>
+      <div className="flex-1 min-w-0">
+        <p className="truncate text-xs font-medium text-text-on-dark">{user.name}</p>
+        <p className="truncate text-[10px] text-sidebar-text-muted">{user.email}</p>
       </div>
+
+      <Link
+        to="/settings"
+        className="p-1.5 text-sidebar-text-muted hover:text-text-on-dark rounded transition-colors"
+        title="Settings"
+      >
+        <SettingsIcon className="h-4 w-4" />
+      </Link>
+
+      <button
+        onClick={async () => {
+          onLoggingOut();
+          await signOut({ fetchOptions: { onSuccess: () => { window.location.href = '/login'; } } });
+        }}
+        className="p-1.5 text-sidebar-text-muted hover:text-risk rounded transition-colors"
+        title="Sign out"
+      >
+        <LogoutIcon className="h-4 w-4" />
+      </button>
     </div>
   );
 }
