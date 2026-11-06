@@ -256,10 +256,29 @@ export default function PredictorPage() {
   const getColor = (val: number) => val >= threshold ? 'text-ok' : val >= threshold - 5 ? 'text-warn' : 'text-risk';
   const getBgColor = (val: number) => val >= threshold ? 'bg-ok' : val >= threshold - 5 ? 'bg-warn' : 'bg-risk';
 
-  const overallDiff = predictedOverallPercentage - overall.percentage;
-  const isOverallPositive = overallDiff >= 0;
-  
   const currentOverallMod = modifiers['overall'] || defaultSubjectMod();
+  const hasOverallModifications =
+    currentOverallMod.lecture.attend > 0 ||
+    currentOverallMod.lecture.skip > 0 ||
+    currentOverallMod.lab.attend > 0 ||
+    currentOverallMod.lab.skip > 0;
+
+  const defaultEntriesCount = analytics.subjects.reduce(
+    (acc, s) => acc + (s.hasLecture ? 1 : 0) + (s.hasLab ? 1 : 0),
+    0
+  );
+  const hasSubjectModifications =
+    entries.some((e) => e.status !== null) || entries.length !== defaultEntriesCount;
+
+  const hasModifications = mode === 'overall' ? hasOverallModifications : hasSubjectModifications;
+
+  const rawOverallDiff = predictedOverallPercentage - overall.percentage;
+  const diffAbs = Math.abs(rawOverallDiff);
+  const hasDiff = diffAbs >= 0.05;
+  const isOverallPositive = rawOverallDiff > 0;
+  const formattedDiff = hasDiff
+    ? `${isOverallPositive ? '+' : '-'}${diffAbs.toFixed(1)}%`
+    : '0.0%';
 
   const lectureEntries = entries.filter((e) => e.type === 'lecture');
   const labEntries = entries.filter((e) => e.type === 'lab');
@@ -398,7 +417,13 @@ export default function PredictorPage() {
 
           <button 
             onClick={handleReset}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border-strong bg-card text-xs font-medium text-text-secondary hover:bg-panel hover:text-text-primary transition-colors"
+            disabled={!hasModifications}
+            className={cn(
+              "flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border-strong bg-card text-xs font-medium transition-colors",
+              hasModifications
+                ? "text-text-secondary hover:bg-panel hover:text-text-primary cursor-pointer"
+                : "opacity-40 cursor-not-allowed text-text-muted"
+            )}
           >
             <RotateCcwIcon className="h-3.5 w-3.5" />
             Reset
@@ -411,35 +436,68 @@ export default function PredictorPage() {
         <div className="lg:col-span-5 space-y-6">
           {/* Predicted Overall Card */}
           <div className="ledger-card p-6 text-center">
-            <span className="eyebrow text-[10px]">Predicted Overall</span>
+            <span className="eyebrow text-[10px]">
+              {hasModifications ? 'Predicted Overall' : 'Current Overall Attendance'}
+            </span>
             <div className="flex items-baseline justify-center gap-1 mt-2">
-              <span className={cn('font-serif text-5xl font-semibold tracking-tight', getColor(predictedOverallPercentage))}>
-                {predictedOverallPercentage.toFixed(1)}
+              <span
+                className={cn(
+                  'font-serif text-5xl font-semibold tracking-tight',
+                  getColor(hasModifications ? predictedOverallPercentage : overall.percentage)
+                )}
+              >
+                {(hasModifications ? predictedOverallPercentage : overall.percentage).toFixed(1)}
               </span>
               <span className="font-serif text-2xl font-semibold text-text-secondary">%</span>
             </div>
 
-            <div className="flex items-center justify-center gap-2 mt-2 text-xs">
-              <span className="text-text-muted line-through">
-                Current: {overall.percentage.toFixed(1)}%
-              </span>
-              <span className={cn('font-semibold', isOverallPositive ? 'text-ok' : 'text-risk')}>
-                ({isOverallPositive ? '+' : ''}{overallDiff.toFixed(1)}%)
-              </span>
-            </div>
+            {hasModifications ? (
+              <div className="flex items-center justify-center gap-2 mt-2 text-xs">
+                <span className="text-text-muted line-through">
+                  Current: {overall.percentage.toFixed(1)}%
+                </span>
+                {hasDiff && (
+                  <span className={cn('font-semibold', isOverallPositive ? 'text-ok' : 'text-risk')}>
+                    ({formattedDiff})
+                  </span>
+                )}
+              </div>
+            ) : (
+              <p className="text-xs text-text-muted mt-2">
+                Recorded standing • Adjust sessions below to predict
+              </p>
+            )}
 
             <div className="grid grid-cols-2 gap-3 mt-6 pt-4 border-t border-border-subtle text-xs">
               <div className="rounded-lg bg-panel/40 p-2.5">
-                <span className="eyebrow text-[9px] block mb-1">Attended</span>
-                <span className="font-serif text-xl font-semibold text-text-primary">
-                  {newOverallAttendedSum}
+                <span className="eyebrow text-[9px] block mb-1">
+                  {hasModifications ? 'Projected Attended' : 'Attended'}
                 </span>
+                <div className="flex items-baseline justify-center gap-1">
+                  <span className="font-serif text-xl font-semibold text-text-primary">
+                    {hasModifications ? newOverallAttendedSum : overall.attended}
+                  </span>
+                  {hasModifications && newOverallAttendedSum !== overall.attended && (
+                    <span className="text-[10px] text-ok font-semibold">
+                      (+{newOverallAttendedSum - overall.attended})
+                    </span>
+                  )}
+                </div>
               </div>
               <div className="rounded-lg bg-panel/40 p-2.5">
-                <span className="eyebrow text-[9px] block mb-1">Total Sessions</span>
-                <span className="font-serif text-xl font-semibold text-text-primary">
-                  {newOverallTotalSum}
+                <span className="eyebrow text-[9px] block mb-1">
+                  {hasModifications ? 'Projected Total' : 'Total Sessions'}
                 </span>
+                <div className="flex items-baseline justify-center gap-1">
+                  <span className="font-serif text-xl font-semibold text-text-primary">
+                    {hasModifications ? newOverallTotalSum : overall.total}
+                  </span>
+                  {hasModifications && newOverallTotalSum !== overall.total && (
+                    <span className="text-[10px] text-text-secondary font-semibold">
+                      (+{newOverallTotalSum - overall.total})
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -454,31 +512,37 @@ export default function PredictorPage() {
             <div className="space-y-3">
               {predictedStats.map(s => {
                 const diff = s.predicted.combined - s.combined.percentage;
-                const isPositive = diff >= 0;
-                const hasChanged = Math.abs(diff) > 0.01;
+                const absDiff = Math.abs(diff);
+                const isPositive = diff > 0;
+                const hasChanged = absDiff >= 0.05 && hasModifications;
+                const displayPercentage = hasModifications ? s.predicted.combined : s.combined.percentage;
 
                 return (
                   <div key={s.subjectId} className="p-3 rounded-lg border border-border-subtle bg-panel/20 text-xs">
                     <div className="flex justify-between items-center mb-1.5">
                       <span className="font-medium text-text-primary truncate pr-2">{s.subjectName}</span>
-                      <span className={cn('font-serif font-semibold text-sm tabular-nums', getColor(s.predicted.combined))}>
-                        {s.predicted.combined.toFixed(1)}%
+                      <span className={cn('font-serif font-semibold text-sm tabular-nums', getColor(displayPercentage))}>
+                        {displayPercentage.toFixed(1)}%
                       </span>
                     </div>
 
                     <div className="flex items-center justify-between text-[11px] text-text-muted mb-2">
-                      <span>Base: {s.combined.percentage.toFixed(1)}%</span>
-                      {hasChanged && (
-                        <span className={cn('font-medium', isPositive ? 'text-ok' : 'text-risk')}>
-                          {isPositive ? '+' : ''}{diff.toFixed(1)}%
-                        </span>
+                      {hasChanged ? (
+                        <>
+                          <span className="line-through">Base: {s.combined.percentage.toFixed(1)}%</span>
+                          <span className={cn('font-medium', isPositive ? 'text-ok' : 'text-risk')}>
+                            {isPositive ? '+' : '-'}{absDiff.toFixed(1)}%
+                          </span>
+                        </>
+                      ) : (
+                        <span>{s.lecture.attended + s.lab.attended} / {s.lecture.total + s.lab.total} sessions logged</span>
                       )}
                     </div>
 
                     <div className="h-1.5 rounded-full bg-track overflow-hidden">
                       <div
-                        className={cn('h-full transition-all duration-500', getBgColor(s.predicted.combined))}
-                        style={{ width: `${Math.min(s.predicted.combined, 100)}%` }}
+                        className={cn('h-full transition-all duration-500', getBgColor(displayPercentage))}
+                        style={{ width: `${Math.min(displayPercentage, 100)}%` }}
                       />
                     </div>
                   </div>
