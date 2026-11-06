@@ -7,6 +7,8 @@ import {
   CloseIcon,
   BookOpenIcon,
   FlaskConicalIcon,
+  ArrowUpIcon,
+  ArrowDownIcon,
 } from '@/components/icons';
 import { api } from '@/lib/api';
 import type { Analytics } from '@/lib/api';
@@ -452,13 +454,25 @@ export default function PredictorPage() {
             </div>
 
             {hasModifications ? (
-              <div className="flex items-center justify-center gap-2 mt-2 text-xs">
+              <div className="flex items-center justify-center gap-2.5 mt-2.5 text-xs">
                 <span className="text-text-muted line-through">
                   Current: {overall.percentage.toFixed(1)}%
                 </span>
                 {hasDiff && (
-                  <span className={cn('font-semibold', isOverallPositive ? 'text-ok' : 'text-risk')}>
-                    ({formattedDiff})
+                  <span
+                    className={cn(
+                      'inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold border shadow-2xs',
+                      isOverallPositive
+                        ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30'
+                        : 'bg-rose-500/15 text-rose-700 dark:text-rose-400 border-rose-500/30'
+                    )}
+                  >
+                    {isOverallPositive ? (
+                      <ArrowUpIcon className="h-3 w-3 stroke-[2.5]" />
+                    ) : (
+                      <ArrowDownIcon className="h-3 w-3 stroke-[2.5]" />
+                    )}
+                    <span>{formattedDiff}</span>
                   </span>
                 )}
               </div>
@@ -530,8 +544,20 @@ export default function PredictorPage() {
                       {hasChanged ? (
                         <>
                           <span className="line-through">Base: {s.combined.percentage.toFixed(1)}%</span>
-                          <span className={cn('font-medium', isPositive ? 'text-ok' : 'text-risk')}>
-                            {isPositive ? '+' : '-'}{absDiff.toFixed(1)}%
+                          <span
+                            className={cn(
+                              'inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-semibold border',
+                              isPositive
+                                ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30'
+                                : 'bg-rose-500/15 text-rose-700 dark:text-rose-400 border-rose-500/30'
+                            )}
+                          >
+                            {isPositive ? (
+                              <ArrowUpIcon className="h-2.5 w-2.5 stroke-[2.5]" />
+                            ) : (
+                              <ArrowDownIcon className="h-2.5 w-2.5 stroke-[2.5]" />
+                            )}
+                            <span>{isPositive ? '+' : '-'}{absDiff.toFixed(1)}%</span>
                           </span>
                         </>
                       ) : (

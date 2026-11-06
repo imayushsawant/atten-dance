@@ -56,6 +56,7 @@ export const ChevronLeftIcon = createIcon(H.ChevronLeftIcon, 'ChevronLeftIcon');
 export const ChevronDownIcon = createIcon(H.ChevronDownIcon, 'ChevronDownIcon');
 export const ChevronUpIcon = createIcon(H.ChevronUpIcon, 'ChevronUpIcon');
 export const ArrowUpIcon = createIcon(H.ArrowUp01Icon, 'ArrowUpIcon');
+export const ArrowDownIcon = createIcon(H.ArrowDown01Icon, 'ArrowDownIcon');
 export const CheckCircleIcon = createIcon(H.CheckmarkCircle01Icon, 'CheckCircleIcon');
 
 // ──────────────── Actions & Editing ────────────────
