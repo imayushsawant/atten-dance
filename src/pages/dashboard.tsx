@@ -472,74 +472,74 @@ export default function Dashboard() {
           </div>
         </div>
 
-          {/* "Next Move" Panel (4 cols on desktop) */}
-          <div className="ledger-panel p-6 lg:col-span-4 flex flex-col justify-between">
-            <div>
-              <span className="eyebrow">Next Move</span>
-              <h2 className="font-serif text-xl sm:text-2xl font-normal text-text-primary mt-1 mb-4">
-                Recommended actions
-              </h2>
+        {/* "Next Move" Panel (4 cols on desktop) */}
+        <div className="ledger-panel p-6 lg:col-span-4 flex flex-col justify-between">
+          <div>
+            <span className="eyebrow">Next Move</span>
+            <h2 className="font-serif text-xl sm:text-2xl font-normal text-text-primary mt-1 mb-4">
+              Recommended actions
+            </h2>
 
-              <div className="space-y-3">
-                {/* 1. Primary CTA: Log Attendance */}
-                <Link
-                  to="/input"
-                  className="flex items-center gap-3.5 p-3.5 rounded-lg bg-cta-bg text-cta-text hover:opacity-95 transition-all group"
-                >
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-cta-tile text-cta-text">
-                    <PenLineIcon className="h-5 w-5" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-semibold truncate">Log Attendance</div>
-                    <div className="text-xs text-sidebar-text-muted truncate">Record today's sessions</div>
-                  </div>
-                  <ChevronRightIcon className="h-4 w-4 text-cta-text/70 group-hover:translate-x-0.5 transition-transform" />
-                </Link>
+            <div className="space-y-3">
+              {/* 1. Primary CTA: Log Attendance */}
+              <Link
+                to="/input"
+                className="flex items-center gap-3.5 p-3.5 rounded-lg bg-cta-bg text-cta-text hover:opacity-95 transition-all group"
+              >
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-cta-tile text-cta-text">
+                  <PenLineIcon className="h-5 w-5" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-semibold truncate">Log Attendance</div>
+                  <div className="text-xs text-sidebar-text-muted truncate">Record today's sessions</div>
+                </div>
+                <ChevronRightIcon className="h-4 w-4 text-cta-text/70 group-hover:translate-x-0.5 transition-transform" />
+              </Link>
 
-                {/* 2. Secondary CTA: Safe Skips */}
-                <Link
-                  to="/safe-skips"
-                  className="flex items-center gap-3.5 p-3.5 rounded-lg bg-card border border-border-subtle text-text-primary hover:border-border-strong transition-all group"
-                >
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-ok-bg text-ok">
-                    <ShieldCheckIcon className="h-5 w-5" />
+              {/* 2. Secondary CTA: Safe Skips */}
+              <Link
+                to="/safe-skips"
+                className="flex items-center gap-3.5 p-3.5 rounded-lg bg-card border border-border-subtle text-text-primary hover:border-border-strong transition-all group"
+              >
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-ok-bg text-ok">
+                  <ShieldCheckIcon className="h-5 w-5" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-semibold truncate">Safe Skips</div>
+                  <div className="text-xs text-text-secondary truncate">
+                    {totalSafeSkips > 0 ? `${totalSafeSkips} sessions safe to miss` : 'Calculate bunk buffers'}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-semibold truncate">Safe Skips</div>
-                    <div className="text-xs text-text-secondary truncate">
-                      {totalSafeSkips > 0 ? `${totalSafeSkips} sessions safe to miss` : 'Calculate bunk buffers'}
-                    </div>
-                  </div>
-                  <ChevronRightIcon className="h-4 w-4 text-text-muted group-hover:translate-x-0.5 transition-transform" />
-                </Link>
+                </div>
+                <ChevronRightIcon className="h-4 w-4 text-text-muted group-hover:translate-x-0.5 transition-transform" />
+              </Link>
 
-                {/* 3. Secondary CTA: Recovery Plan */}
-                <Link
-                  to="/recovery"
-                  className="flex items-center gap-3.5 p-3.5 rounded-lg bg-card border border-border-subtle text-text-primary hover:border-border-strong transition-all group"
-                >
-                  <div className={cn(
-                    'flex h-11 w-11 shrink-0 items-center justify-center rounded-lg',
-                    subjectsBelow > 0 ? 'bg-risk-bg text-risk' : 'bg-ok-bg text-ok'
-                  )}>
-                    <AlertTriangleIcon className="h-5 w-5" />
+              {/* 3. Secondary CTA: Recovery Plan */}
+              <Link
+                to="/recovery"
+                className="flex items-center gap-3.5 p-3.5 rounded-lg bg-card border border-border-subtle text-text-primary hover:border-border-strong transition-all group"
+              >
+                <div className={cn(
+                  'flex h-11 w-11 shrink-0 items-center justify-center rounded-lg',
+                  subjectsBelow > 0 ? 'bg-risk-bg text-risk' : 'bg-ok-bg text-ok'
+                )}>
+                  <AlertTriangleIcon className="h-5 w-5" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-semibold truncate">Recovery Plan</div>
+                  <div className="text-xs text-text-secondary truncate">
+                    {subjectsBelow > 0 ? `${subjectsBelow} subject${subjectsBelow > 1 ? 's' : ''} below threshold` : 'All subjects above target'}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-semibold truncate">Recovery Plan</div>
-                    <div className="text-xs text-text-secondary truncate">
-                      {subjectsBelow > 0 ? `${subjectsBelow} subject${subjectsBelow > 1 ? 's' : ''} below threshold` : 'All subjects above target'}
-                    </div>
-                  </div>
-                  <ChevronRightIcon className="h-4 w-4 text-text-muted group-hover:translate-x-0.5 transition-transform" />
-                </Link>
-              </div>
+                </div>
+                <ChevronRightIcon className="h-4 w-4 text-text-muted group-hover:translate-x-0.5 transition-transform" />
+              </Link>
             </div>
-
-            <p className="text-[11px] text-text-muted mt-6">
-              Keep records synced daily to ensure accurate calculation of attendance thresholds.
-            </p>
           </div>
+
+          <p className="text-[11px] text-text-muted mt-6">
+            Keep records synced daily to ensure accurate calculation of attendance thresholds.
+          </p>
         </div>
+      </div>
 
       {/* ──────────────── Row 3: Subject Ledger Table ──────────────── */}
       <div className="ledger-card p-6">
