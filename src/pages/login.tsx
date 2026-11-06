@@ -59,7 +59,7 @@ export default function LoginPage() {
         <div>
           {/* Brand Mark */}
           <div className="flex items-center gap-3.5 mb-12">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-panel border border-border-subtle text-accent p-2 shadow-xs">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-panel border border-border-subtle text-accent p-2 shadow-xs">
               <Logo className="h-full w-full object-contain" />
             </div>
             <div>
@@ -131,11 +131,11 @@ export default function LoginPage() {
       <div className="col-span-12 lg:col-span-5 flex flex-col justify-center p-6 sm:p-10 lg:p-12 min-h-[100dvh] lg:h-screen bg-card">
         <div className="w-full max-w-sm mx-auto">
           {/* Mobile Brand Mark */}
-          <div className="flex lg:hidden items-center gap-3 mb-8">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-panel border border-border-subtle text-accent p-1.5 shadow-xs">
+          <div className="flex lg:hidden items-center gap-2.5 mb-8">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-panel border border-border-subtle text-accent p-1.5 shadow-xs">
               <Logo className="h-full w-full object-contain" />
             </div>
-            <span className="font-semibold text-lg text-text-primary tracking-tight">
+            <span className="font-semibold text-base text-text-primary tracking-tight">
               Atten<span className="text-accent">-</span>Dance
             </span>
           </div>
