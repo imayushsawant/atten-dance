@@ -1,6 +1,6 @@
 import { Logo } from '@/components/logo';
 
-export default function LoadingScreen() {
+export default function LoadingScreen({ message = 'Loading' }: { message?: string } = {}) {
   return (
     <div className="min-h-[100dvh] h-screen w-full flex flex-col items-center justify-center bg-page text-text-primary select-none">
       <div className="flex flex-col items-center gap-5">
@@ -13,7 +13,7 @@ export default function LoadingScreen() {
           </div>
           <div className="flex items-center gap-2 text-xs text-text-muted">
             <span className="h-1.5 w-1.5 rounded-full bg-accent animate-ping" />
-            <span>Checking session…</span>
+            <span>{message}</span>
           </div>
         </div>
       </div>
