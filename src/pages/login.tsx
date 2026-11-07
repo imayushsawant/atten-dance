@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Navigate, useSearchParams } from 'react-router';
-import { useSession, signIn, signUp } from '@/lib/auth-client';
+import { useSession, signIn, signUp, requestPasswordReset } from '@/lib/auth-client';
 import LoadingScreen from '@/components/loading-screen';
 import {
   ShieldCheckIcon,
@@ -21,6 +21,20 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // Forgot password state
+  const [showForgotPassword, setShowForgotPassword] = useState(mode === 'forgot');
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const [forgotSuccess, setForgotSuccess] = useState(false);
+  const [forgotError, setForgotError] = useState('');
+
+  // Sync mode query parameter changes if user navigates with ?mode=forgot
+  useEffect(() => {
+    if (mode === 'forgot') {
+      setShowForgotPassword(true);
+    }
+  }, [mode]);
 
   // Account collision & linking state
   const [showLinkPrompt, setShowLinkPrompt] = useState(false);
@@ -171,6 +185,37 @@ export default function LoginPage() {
       setLinkError(err.message);
     } finally {
       setLinkLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setForgotLoading(true);
+    setForgotError('');
+    setForgotSuccess(false);
+
+    const targetEmail = (forgotEmail || email).toLowerCase().trim();
+    if (!targetEmail) {
+      setForgotError('Please enter your email address');
+      setForgotLoading(false);
+      return;
+    }
+
+    try {
+      const { error: resetError } = await requestPasswordReset({
+        email: targetEmail,
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+
+      if (resetError) {
+        throw new Error(resetError.message || 'Failed to send reset email. Please try again.');
+      }
+
+      setForgotSuccess(true);
+    } catch (err: any) {
+      setForgotError(err.message || 'Something went wrong. Please try again.');
+    } finally {
+      setForgotLoading(false);
     }
   };
 
@@ -356,6 +401,99 @@ export default function LoginPage() {
                 </button>
               </div>
             </div>
+          ) : showForgotPassword ? (
+            /* Forgot Password Form */
+            <div>
+              <div className="mb-6">
+                <span className="eyebrow block mb-1">Account Recovery</span>
+                <h2 className="font-serif text-2xl font-normal text-text-primary">
+                  Reset password
+                </h2>
+                <p className="text-xs text-text-secondary mt-1 leading-relaxed">
+                  Enter your email address and we&apos;ll send you a link to reset your password.
+                </p>
+              </div>
+
+              {forgotSuccess ? (
+                <div className="space-y-4">
+                  <div className="p-4 rounded-md bg-ok-bg border border-ok/30 text-xs text-text-primary leading-relaxed">
+                    <div className="flex items-center gap-2 text-ok font-semibold mb-1">
+                      <span className="h-2 w-2 rounded-full bg-ok" />
+                      Check your inbox
+                    </div>
+                    <p className="text-text-secondary">
+                      We sent a password reset link to <strong className="text-text-primary">{forgotEmail || email}</strong>. The link is valid for 1 hour.
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowForgotPassword(false);
+                      setForgotSuccess(false);
+                      setForgotError('');
+                    }}
+                    className="w-full rounded-md bg-forest-800 dark:bg-cta-bg text-text-on-dark py-2.5 text-xs font-medium hover:opacity-95 transition-opacity cursor-pointer"
+                  >
+                    Return to Sign In
+                  </button>
+
+                  <div className="text-center pt-1">
+                    <button
+                      type="button"
+                      disabled={forgotLoading}
+                      onClick={handleForgotPassword}
+                      className="text-xs text-text-secondary hover:text-text-primary underline transition-colors cursor-pointer disabled:opacity-50"
+                    >
+                      {forgotLoading ? 'Resending…' : "Didn't receive it? Resend email"}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <form onSubmit={handleForgotPassword} className="space-y-3.5 mb-6">
+                  <div>
+                    <label className="eyebrow text-[10px] block mb-1">Email Address</label>
+                    <input
+                      type="email"
+                      placeholder="you@example.com"
+                      required
+                      value={forgotEmail || email}
+                      onChange={(e) => {
+                        setForgotEmail(e.target.value);
+                        setEmail(e.target.value);
+                      }}
+                      className="w-full rounded-md border border-border-strong bg-card px-3.5 py-2.5 text-xs text-text-primary placeholder:text-text-muted outline-none focus:border-forest-800 dark:focus:border-accent transition-colors"
+                    />
+                  </div>
+
+                  {forgotError && (
+                    <p className="text-xs text-risk font-medium pt-1">{forgotError}</p>
+                  )}
+
+                  <button
+                    type="submit"
+                    disabled={forgotLoading}
+                    className="w-full rounded-md bg-forest-800 dark:bg-cta-bg text-text-on-dark py-2.5 text-xs font-medium hover:opacity-95 transition-opacity disabled:opacity-50 mt-2 cursor-pointer"
+                  >
+                    {forgotLoading ? 'Sending Reset Link…' : 'Send Reset Link'}
+                  </button>
+
+                  <div className="text-center pt-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowForgotPassword(false);
+                        setForgotError('');
+                        setForgotSuccess(false);
+                      }}
+                      className="text-xs text-text-secondary hover:text-text-primary underline transition-colors cursor-pointer"
+                    >
+                      Back to Sign In
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
           ) : (
             /* Normal Sign-In / Sign-Up Form */
             <div>
@@ -391,7 +529,7 @@ export default function LoginPage() {
                   <label className="eyebrow text-[10px] block mb-1">Email Address</label>
                   <input
                     type="email"
-                    placeholder="name@university.edu"
+                    placeholder="you@example.com"
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -400,7 +538,22 @@ export default function LoginPage() {
                 </div>
 
                 <div>
-                  <label className="eyebrow text-[10px] block mb-1">Password</label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="eyebrow text-[10px]">Password</label>
+                    {!isSignUp && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setForgotEmail(email);
+                          setShowForgotPassword(true);
+                          setError('');
+                        }}
+                        className="text-[11px] text-text-secondary hover:text-text-primary underline cursor-pointer"
+                      >
+                        Forgot password?
+                      </button>
+                    )}
+                  </div>
                   <input
                     type="password"
                     placeholder="••••••••"

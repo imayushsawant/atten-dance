@@ -7,6 +7,7 @@ import LoadingScreen from '@/components/loading-screen';
 
 const LandingPage = lazy(() => import('@/pages/landing'));
 const LoginPage = lazy(() => import('@/pages/login'));
+const ResetPasswordPage = lazy(() => import('@/pages/reset-password'));
 const Dashboard = lazy(() => import('@/pages/dashboard'));
 const InputPage = lazy(() => import('@/pages/input'));
 const CalendarPage = lazy(() => import('@/pages/calendar'));
@@ -81,6 +82,16 @@ export default function App() {
             <PublicRoute>
               <Suspense fallback={<LoadingScreen />}>
                 <LoginPage />
+              </Suspense>
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="reset-password"
+          element={
+            <PublicRoute>
+              <Suspense fallback={<LoadingScreen />}>
+                <ResetPasswordPage />
               </Suspense>
             </PublicRoute>
           }

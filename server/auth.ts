@@ -2,6 +2,7 @@ import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { db } from './db/index.js';
 import * as schema from './db/schema.js';
+import { sendPasswordResetEmail } from './lib/email.js';
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
@@ -10,6 +11,15 @@ export const auth = betterAuth({
   }),
   emailAndPassword: {
     enabled: true,
+    resetPasswordTokenExpiresIn: 3600, // 1 hour
+    sendResetPassword: async ({ user, url, token }) => {
+      await sendPasswordResetEmail({
+        to: user.email,
+        name: user.name || undefined,
+        url,
+        expiresInMinutes: 60,
+      });
+    },
   },
   socialProviders: {
     google: {
