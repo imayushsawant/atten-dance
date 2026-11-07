@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router';
 import {
   ShieldCheckIcon,
@@ -6,12 +6,11 @@ import {
   CalculatorIcon,
   HistoryIcon,
   ChevronRightIcon,
-  MenuIcon,
-  CloseIcon,
   SunIcon,
   MoonIcon,
   TargetIcon,
   CheckCircleIcon,
+  GithubIcon,
 } from '@/components/icons';
 import { Logo } from '@/components/logo';
 import { useTheme } from '@/lib/theme-provider';
@@ -19,10 +18,20 @@ import { InteractiveDemo } from './landing/interactive-demo';
 
 export default function LandingPage() {
   const { resolved, setTheme } = useTheme();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrolled = window.scrollY > 30;
+      setIsScrolled(scrolled);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const scrollToSection = (id: string) => {
-    setMobileMenuOpen(false);
     const element = document.getElementById(id);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
@@ -31,172 +40,119 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-page text-text-primary font-sans antialiased selection:bg-accent/20 selection:text-text-primary">
-      {/* ──────────────── Sticky Header ──────────────── */}
-      <header className="sticky top-0 z-50 w-full border-b border-border-subtle bg-page/90 backdrop-blur-md transition-colors">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          {/* Brand Logo & Name */}
-          <Link
-            to="/"
-            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            className="flex items-center gap-3 group focus-visible:outline-2 focus-visible:outline-accent rounded-lg"
-            aria-label="Atten-Dance Home"
+      {/* ──────────────── Animated Floating Dynamic Navbar ──────────────── */}
+      <header
+        className={`fixed top-0 left-0 right-0 z-50 pointer-events-none transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+          isScrolled ? 'pt-3 sm:pt-4' : 'pt-4 sm:pt-6'
+        }`}
+      >
+        <div
+          className={`mx-auto transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+            isScrolled
+              ? 'w-full max-w-full px-4 sm:px-6 lg:px-8'
+              : 'w-full max-w-4xl px-4 sm:px-6'
+          }`}
+        >
+          <div
+            className={`flex items-center justify-between transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+              isScrolled
+                ? 'bg-transparent border-transparent shadow-none p-0'
+                : 'bg-card/85 dark:bg-panel/85 backdrop-blur-md border border-border-subtle shadow-sm rounded-full p-2 sm:px-4 sm:py-2'
+            }`}
           >
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-panel border border-border-subtle text-accent p-1.5 shadow-2xs group-hover:border-border-strong transition-colors">
-              <Logo className="h-full w-full object-contain" />
-            </div>
-            <div>
-              <div className="text-base font-semibold tracking-tight text-text-primary flex items-center leading-none">
-                Atten<span className="text-text-primary dark:text-white">-</span>Dance
-              </div>
-              <span className="text-xs text-text-muted hidden sm:block mt-1 font-normal">
-                Because colleges make you dance for attendance.
-              </span>
-            </div>
-          </Link>
-
-          {/* Desktop Navigation Links */}
-          <nav className="hidden md:flex items-center gap-7 text-xs font-medium text-text-secondary" aria-label="Main Navigation">
-            <button
-              onClick={() => scrollToSection('demo')}
-              className="hover:text-text-primary transition-colors cursor-pointer py-1"
+            {/* Left Section: Logo & Brand Name */}
+            <div
+              className={`pointer-events-auto transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                isScrolled
+                  ? 'bg-card/90 dark:bg-panel/90 backdrop-blur-md border border-border-subtle shadow-md rounded-full px-3.5 py-1.5'
+                  : 'bg-transparent border-transparent shadow-none p-0'
+              }`}
             >
-              Live Demo
-            </button>
-            <button
-              onClick={() => scrollToSection('features')}
-              className="hover:text-text-primary transition-colors cursor-pointer py-1"
-            >
-              Features
-            </button>
-            <button
-              onClick={() => scrollToSection('how-it-works')}
-              className="hover:text-text-primary transition-colors cursor-pointer py-1"
-            >
-              How It Works
-            </button>
-          </nav>
-
-          {/* Right Header Actions */}
-          <div className="hidden md:flex items-center gap-3">
-            {/* Theme Toggle */}
-            <button
-              onClick={() => setTheme(resolved === 'dark' ? 'light' : 'dark')}
-              className="p-2 text-text-secondary hover:text-text-primary hover:bg-panel rounded-lg transition-colors border border-transparent hover:border-border-subtle"
-              aria-label="Toggle visual theme"
-            >
-              {resolved === 'dark' ? (
-                <SunIcon className="h-4 w-4 text-warn" />
-              ) : (
-                <MoonIcon className="h-4 w-4" />
-              )}
-            </button>
-
-            {/* Secondary CTA: Log in */}
-            <Link
-              to="/login?mode=login"
-              className="px-3.5 py-2 rounded-lg text-xs font-medium text-text-secondary hover:text-text-primary hover:bg-panel border border-border-subtle hover:border-border-strong transition-colors"
-            >
-              Log in
-            </Link>
-
-            {/* Primary CTA: Sign up */}
-            <Link
-              to="/login?mode=signup"
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-forest-800 dark:bg-cta-bg text-text-on-dark text-xs font-medium hover:opacity-95 transition-opacity shadow-xs focus-visible:outline-2 focus-visible:outline-accent"
-            >
-              <span>Sign up</span>
-              <ChevronRightIcon className="h-3.5 w-3.5" />
-            </Link>
-          </div>
-
-          {/* Mobile Actions: Theme + Hamburger */}
-          <div className="flex md:hidden items-center gap-2">
-            <button
-              onClick={() => setTheme(resolved === 'dark' ? 'light' : 'dark')}
-              className="p-2 text-text-secondary hover:text-text-primary rounded-lg transition-colors"
-              aria-label="Toggle theme"
-            >
-              {resolved === 'dark' ? (
-                <SunIcon className="h-4 w-4 text-warn" />
-              ) : (
-                <MoonIcon className="h-4 w-4" />
-              )}
-            </button>
-
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 text-text-secondary hover:text-text-primary rounded-lg hover:bg-panel transition-colors border border-border-subtle"
-              aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
-              aria-expanded={mobileMenuOpen}
-            >
-              {mobileMenuOpen ? (
-                <CloseIcon className="h-5 w-5" />
-              ) : (
-                <MenuIcon className="h-5 w-5" />
-              )}
-            </button>
-          </div>
-        </div>
-
-        {/* Mobile Dropdown Menu */}
-        {mobileMenuOpen && (
-          <div className="md:hidden border-b border-border-subtle bg-card px-4 pt-3 pb-5 space-y-3 animate-fade-in shadow-sm">
-            <nav className="flex flex-col space-y-2 text-sm font-medium text-text-secondary">
-              <button
-                onClick={() => scrollToSection('demo')}
-                className="flex items-center justify-between py-2.5 px-3 rounded-lg hover:bg-panel text-left cursor-pointer"
-              >
-                <span>Live Interactive Demo</span>
-                <ChevronRightIcon className="h-4 w-4 text-text-muted" />
-              </button>
-              <button
-                onClick={() => scrollToSection('features')}
-                className="flex items-center justify-between py-2.5 px-3 rounded-lg hover:bg-panel text-left cursor-pointer"
-              >
-                <span>Product Features</span>
-                <ChevronRightIcon className="h-4 w-4 text-text-muted" />
-              </button>
-              <button
-                onClick={() => scrollToSection('how-it-works')}
-                className="flex items-center justify-between py-2.5 px-3 rounded-lg hover:bg-panel text-left cursor-pointer"
-              >
-                <span>How It Works</span>
-                <ChevronRightIcon className="h-4 w-4 text-text-muted" />
-              </button>
-            </nav>
-
-            <div className="pt-3 border-t border-border-subtle flex flex-col gap-2">
               <Link
-                to="/login?mode=signup"
-                className="w-full flex items-center justify-center gap-2 rounded-lg bg-forest-800 dark:bg-cta-bg text-text-on-dark py-3 text-xs font-semibold shadow-xs"
+                to="/"
+                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                className="flex items-center gap-2.5 sm:gap-3 group focus-visible:outline-2 focus-visible:outline-accent rounded-full"
+                aria-label="Atten-Dance Home"
               >
-                <span>Sign up for free</span>
-                <ChevronRightIcon className="h-3.5 w-3.5" />
+                <div className="flex h-8 w-8 sm:h-8.5 sm:w-8.5 items-center justify-center rounded-full bg-panel border border-border-subtle text-accent p-1.5 shadow-2xs group-hover:border-border-strong transition-colors shrink-0">
+                  <Logo className="h-full w-full object-contain" />
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm sm:text-base font-semibold tracking-tight text-text-primary leading-none">
+                    Atten<span className="text-text-primary dark:text-white">-</span>Dance
+                  </span>
+                  {!isScrolled && (
+                    <span className="text-[11px] text-text-muted hidden md:inline font-normal pl-2 border-l border-border-subtle leading-none">
+                      Because colleges make you dance for attendance.
+                    </span>
+                  )}
+                </div>
               </Link>
+            </div>
+
+            {/* Right Section: GitHub, Theme Toggle, Login, Signup */}
+            <div
+              className={`pointer-events-auto flex items-center gap-1.5 sm:gap-2.5 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                isScrolled
+                  ? 'bg-card/90 dark:bg-panel/90 backdrop-blur-md border border-border-subtle shadow-md rounded-full px-3 py-1.5'
+                  : 'bg-transparent border-transparent shadow-none p-0'
+              }`}
+            >
+              {/* GitHub Link */}
+              <a
+                href="https://github.com/imayushsawant/atten-dance"
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Star Atten-Dance on GitHub"
+                className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-medium text-text-secondary hover:text-text-primary hover:bg-panel transition-colors"
+              >
+                <GithubIcon className="h-3.5 w-3.5" />
+                <span className="hidden md:inline text-[11px]">GitHub</span>
+              </a>
+
+              {/* Theme Toggle */}
+              <button
+                onClick={() => setTheme(resolved === 'dark' ? 'light' : 'dark')}
+                className="p-1.5 text-text-secondary hover:text-text-primary hover:bg-panel rounded-full transition-colors"
+                aria-label="Toggle visual theme"
+              >
+                {resolved === 'dark' ? (
+                  <SunIcon className="h-4 w-4 text-warn" />
+                ) : (
+                  <MoonIcon className="h-4 w-4" />
+                )}
+              </button>
+
+              {/* Secondary CTA: Log in */}
               <Link
                 to="/login?mode=login"
-                className="w-full flex items-center justify-center rounded-lg border border-border-strong py-2.5 text-xs font-medium text-text-secondary hover:bg-panel"
+                className="px-3 py-1.5 rounded-full text-xs font-medium text-text-secondary hover:text-text-primary hover:bg-panel transition-colors"
               >
-                Log in to existing account
+                Log in
+              </Link>
+
+              {/* Primary CTA: Sign up */}
+              <Link
+                to="/login?mode=signup"
+                className="inline-flex items-center gap-1 px-3 sm:px-3.5 py-1.5 rounded-full bg-forest-800 dark:bg-cta-bg text-text-on-dark text-xs font-medium hover:opacity-95 transition-opacity shadow-xs focus-visible:outline-2 focus-visible:outline-accent"
+              >
+                <span>Sign up</span>
+                <ChevronRightIcon className="h-3 w-3 hidden sm:inline" />
               </Link>
             </div>
           </div>
-        )}
+        </div>
       </header>
 
       <main>
         {/* ──────────────── Hero Section ──────────────── */}
-        <section className="pt-12 sm:pt-16 lg:pt-20 pb-10 sm:pb-14 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        <section className="pt-24 sm:pt-28 lg:pt-36 pb-10 sm:pb-14 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
           <div className="max-w-3xl mx-auto text-center space-y-5">
-            {/* Editorial Eyebrow */}
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-chip border border-border-subtle text-[11px] font-semibold text-text-secondary">
-              <span className="h-1.5 w-1.5 rounded-full bg-accent" />
-              <span className="tracking-[0.18em] uppercase">Attendance Intelligence For College</span>
-            </div>
-
             {/* H1 Display Headline */}
-            <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-normal tracking-tight text-text-primary leading-[1.12]">
-              Stop guessing. Know your attendance margin before you skip.
+            <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-normal tracking-tight text-text-primary leading-[1.15]">
+              Stop guessing,<br />
+              know exactly how many<br />
+              lectures you can skip.
             </h1>
 
             {/* Benefit-Driven One-Sentence Subheadline */}
@@ -246,13 +202,12 @@ export default function LandingPage() {
 
           {/* ──────────────── Interactive Demo (Visual Centerpiece) ──────────────── */}
           <div id="demo" className="mt-12 sm:mt-16 scroll-mt-24">
-            <div className="mb-6 text-center max-w-2xl mx-auto space-y-1.5">
-              <span className="eyebrow">Interactive Live Demo</span>
+            <div className="mb-6 text-center max-w-2xl mx-auto space-y-2">
               <h2 className="font-serif text-2xl sm:text-3xl font-normal text-text-primary">
-                Experience Atten-Dance with real components
+                Experience attendance
               </h2>
-              <p className="text-xs sm:text-sm text-text-secondary">
-                This is the actual production app running completely in-memory. Test actions, inspect safe bunks, and watch your percentage adapt.
+              <p className="text-xs sm:text-sm text-text-secondary leading-relaxed">
+                See how it works in real time: select subjects, mark sessions, and watch your safe skips and recovery targets calculate dynamically below.
               </p>
             </div>
 
@@ -264,12 +219,11 @@ export default function LandingPage() {
         <section id="features" className="py-16 sm:py-24 bg-panel/30 border-y border-border-subtle scroll-mt-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="max-w-2xl mx-auto text-center mb-12 sm:mb-16 space-y-2">
-              <span className="eyebrow">Engineered For College Realities</span>
               <h2 className="font-serif text-3xl sm:text-4xl font-normal text-text-primary">
-                Every calculation your college makes, solved for you
+                Know if you can safely sleep in tomorrow.
               </h2>
               <p className="text-xs sm:text-sm text-text-secondary leading-relaxed">
-                Colleges enforce rigid 75% or 80% attendance thresholds with debarment consequences. Atten-Dance gives you complete mathematical foresight.
+                Stop guessing on back-of-the-napkin math. Atten-Dance calculates your real-time safe skips, recovery streaks, and exam buffers for every course.
               </p>
             </div>
 

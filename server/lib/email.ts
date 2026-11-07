@@ -35,25 +35,38 @@ export function generateResetPasswordEmailHtml({
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Reset Your Atten-Dance Password</title>
 </head>
-<body style="margin: 0; padding: 0; background-color: #f6f5f1; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #1c1917;">
-  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f6f5f1; padding: 40px 16px;">
+<body style="margin: 0; padding: 0; background-color: #f6f5f1; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #1c1917; -webkit-font-smoothing: antialiased;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f6f5f1; padding: 48px 16px;">
     <tr>
       <td align="center">
-        <!-- Main Card -->
-        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width: 520px; background-color: #ffffff; border: 1px solid #e7e5e4; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);">
+        <!-- Main Card Container -->
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width: 540px; background-color: #ffffff; border: 1px solid #e7e5e4; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);">
           
-          <!-- Header Banner -->
+          <!-- Editorial Brand Header -->
           <tr>
-            <td style="padding: 32px 36px 24px; border-bottom: 1px solid #f0ede9;">
+            <td style="padding: 32px 40px 24px; border-bottom: 1px solid #f0ede9; background-color: #fcfbf9;">
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
                 <tr>
                   <td>
-                    <div style="font-size: 20px; font-weight: 700; letter-spacing: -0.5px; color: #1c1917; font-family: Georgia, serif;">
-                      Atten<span style="color: #2d6a4f;">-</span>Dance
-                    </div>
-                    <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1.2px; color: #78716c; margin-top: 4px; font-weight: 600;">
-                      Attendance Strategizer
-                    </div>
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                      <tr>
+                        <!-- Brand Icon Box -->
+                        <td style="vertical-align: middle; padding-right: 14px;">
+                          <div style="width: 38px; height: 38px; border-radius: 10px; background-color: #1b4332; border: 1px solid #143527; text-align: center; line-height: 38px; color: #ffffff; font-family: Georgia, serif; font-size: 16px; font-weight: 700;">
+                            A
+                          </div>
+                        </td>
+                        <!-- Brand Title & Tagline -->
+                        <td style="vertical-align: middle;">
+                          <div style="font-size: 21px; font-weight: 700; letter-spacing: -0.4px; color: #1c1917; font-family: Georgia, serif; line-height: 1.2;">
+                            Atten<span style="color: #2d6a4f;">-</span>Dance
+                          </div>
+                          <div style="font-size: 12px; color: #78716c; margin-top: 3px; font-style: italic; font-family: Georgia, serif; line-height: 1.3;">
+                            Because colleges make you dance for attendance.
+                          </div>
+                        </td>
+                      </tr>
+                    </table>
                   </td>
                 </tr>
               </table>
@@ -62,63 +75,74 @@ export function generateResetPasswordEmailHtml({
 
           <!-- Content Body -->
           <tr>
-            <td style="padding: 36px 36px 28px;">
-              <h1 style="margin: 0 0 16px; font-size: 22px; font-weight: 600; color: #1c1917; font-family: Georgia, serif; line-height: 1.3;">
-                Reset Your Password
+            <td style="padding: 40px 40px 32px;">
+              <h1 style="margin: 0 0 16px; font-size: 24px; font-weight: 600; color: #1c1917; font-family: Georgia, serif; line-height: 1.25; letter-spacing: -0.3px;">
+                Reset your password
               </h1>
               
               <p style="margin: 0 0 16px; font-size: 14px; line-height: 1.6; color: #44403c;">
-                Hello${name ? ` <strong>${name}</strong>` : ''},
+                Hi${name ? ` <strong>${name}</strong>` : ''},
               </p>
               
-              <p style="margin: 0 0 24px; font-size: 14px; line-height: 1.6; color: #44403c;">
-                We received a request to reset your password for your <strong>Atten-Dance</strong> account. Click the button below to choose a new password:
+              <p style="margin: 0 0 28px; font-size: 14px; line-height: 1.65; color: #44403c;">
+                We received a request to reset your password for your <strong>Atten-Dance</strong> account. Click the button below to choose a new password and regain access to your attendance tracking:
               </p>
 
-              <!-- Action Button -->
-              <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin: 28px 0;">
+              <!-- Prominent Action Button -->
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin: 0 0 30px;">
                 <tr>
-                  <td align="center" style="border-radius: 8px; background-color: #1b4332;">
-                    <a href="${url}" target="_blank" style="display: inline-block; padding: 13px 28px; font-size: 13px; font-weight: 600; color: #ffffff; text-decoration: none; border-radius: 8px; letter-spacing: 0.2px;">
-                      Reset Password &rarr;
+                  <td align="center" style="border-radius: 8px; background-color: #1b4332; box-shadow: 0 2px 6px rgba(27, 67, 50, 0.25);">
+                    <a href="${url}" target="_blank" style="display: inline-block; padding: 14px 32px; font-size: 14px; font-weight: 600; color: #ffffff; text-decoration: none; border-radius: 8px; letter-spacing: 0.2px;">
+                      Reset My Password &rarr;
                     </a>
                   </td>
                 </tr>
               </table>
 
-              <!-- Expiry Note -->
-              <div style="background-color: #f7fbf8; border: 1px solid #d8ebd9; border-radius: 6px; padding: 12px 16px; margin: 24px 0 20px;">
-                <p style="margin: 0; font-size: 12px; line-height: 1.5; color: #2d6a4f;">
-                  ⏱ <strong>Note:</strong> This password reset link expires in <strong>${expiresInMinutes} minutes</strong>.
-                </p>
+              <!-- Security & Expiration Card -->
+              <div style="background-color: #f7fbf8; border: 1px solid #d4ebd7; border-radius: 10px; padding: 14px 18px; margin: 0 0 26px;">
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                  <tr>
+                    <td style="vertical-align: top; padding-right: 10px; font-size: 15px;">
+                      ⏱
+                    </td>
+                    <td style="font-size: 12px; line-height: 1.55; color: #205c3b;">
+                      <strong>Security Notice:</strong> This reset link is single-use and will expire in <strong>${expiresInMinutes} minutes</strong>. If you did not make this request, you can safely disregard this email—your account remains secure.
+                    </td>
+                  </tr>
+                </table>
               </div>
 
-              <!-- Fallback Plain URL -->
-              <p style="margin: 20px 0 8px; font-size: 12px; line-height: 1.6; color: #78716c;">
-                If the button above does not work, copy and paste this link into your browser:
+              <!-- Fallback Plain-Text Link -->
+              <p style="margin: 0 0 8px; font-size: 12px; line-height: 1.6; color: #78716c;">
+                Button not working? Copy and paste this URL into your browser:
               </p>
-              <p style="margin: 0 0 24px; font-size: 11px; line-height: 1.5; word-break: break-all; color: #2d6a4f;">
-                <a href="${url}" target="_blank" style="color: #2d6a4f; text-decoration: underline;">
+              <div style="background-color: #fafaf9; border: 1px solid #f0ede9; border-radius: 8px; padding: 12px 14px; margin: 0 0 24px; word-break: break-all;">
+                <a href="${url}" target="_blank" style="font-size: 11px; line-height: 1.5; color: #2d6a4f; text-decoration: underline; font-family: monospace;">
                   ${url}
                 </a>
-              </p>
+              </div>
 
-              <hr style="border: none; border-top: 1px solid #e7e5e4; margin: 24px 0;" />
+              <hr style="border: none; border-top: 1px solid #f0ede9; margin: 28px 0 20px;" />
 
               <p style="margin: 0; font-size: 12px; line-height: 1.5; color: #a8a29e;">
-                If you didn't request a password reset, you can safely ignore this email. Your password won't be changed until you access the link above and create a new one.
+                This link was requested from the Atten-Dance web application. If you have any questions, feel free to reply to this message.
               </p>
             </td>
           </tr>
 
-          <!-- Footer -->
+          <!-- Branded Footer -->
           <tr>
-            <td style="padding: 20px 36px 28px; background-color: #fafaf9; border-top: 1px solid #f0ede9; text-align: center;">
-              <p style="margin: 0 0 6px; font-size: 11px; color: #78716c;">
-                Atten-Dance &bull; Local-first attendance strategizing with mathematical clarity
+            <td style="padding: 24px 40px 32px; background-color: #fafaf9; border-top: 1px solid #f0ede9; text-align: center;">
+              <p style="margin: 0 0 6px; font-size: 12px; font-weight: 600; color: #44403c; font-family: Georgia, serif;">
+                Atten-Dance
               </p>
-              <p style="margin: 0; font-size: 10px; color: #a8a29e;">
-                This is an automated notification. Please do not reply directly to this email.
+              <p style="margin: 0 0 8px; font-size: 11px; color: #78716c; font-style: italic;">
+                Because colleges make you dance for attendance.
+              </p>
+              <p style="margin: 0; font-size: 10px; color: #a8a29e; line-height: 1.5;">
+                Local-first attendance strategizing with mathematical clarity.<br />
+                Automated security transmission &bull; Please do not share this link with anyone.
               </p>
             </td>
           </tr>
@@ -139,21 +163,24 @@ export function generateResetPasswordEmailText({
   url: string;
   expiresInMinutes?: number;
 }) {
-  return `Atten-Dance Password Reset
+  return `Atten-Dance
+Because colleges make you dance for attendance.
+--------------------------------------------------
 
 Hello${name ? ` ${name}` : ''},
 
 We received a request to reset your password for your Atten-Dance account.
 
-Please visit the link below to choose a new password:
+Click or paste the link below into your browser to choose a new password:
 ${url}
 
-This link is valid for ${expiresInMinutes} minutes.
+⏱ For your security, this password reset link will expire in ${expiresInMinutes} minutes.
 
 If you did not request a password reset, you can safely ignore this email. Your password will remain unchanged.
 
 --
-Atten-Dance Team`;
+Atten-Dance
+Stop guessing, know exactly how many lectures you can skip.`;
 }
 
 export async function sendPasswordResetEmail({
