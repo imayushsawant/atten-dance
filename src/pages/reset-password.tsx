@@ -69,8 +69,8 @@ export default function ResetPasswordPage() {
       <div className="relative hidden lg:flex col-span-7 flex-col justify-between p-12 lg:p-16 border-r border-border-subtle bg-panel/30">
         <div>
           {/* Brand Mark */}
-          <div className="flex items-center gap-3.5 mb-12">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-panel border border-border-subtle text-accent p-2 shadow-xs">
+          <Link to="/" className="inline-flex items-center gap-3.5 mb-12 group transition-opacity hover:opacity-90">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-panel border border-border-subtle text-accent p-2 shadow-xs group-hover:border-forest-600/40 transition-colors">
               <Logo className="h-full w-full object-contain" />
             </div>
             <div>
@@ -81,7 +81,7 @@ export default function ResetPasswordPage() {
                 Because colleges make you dance for attendance.
               </p>
             </div>
-          </div>
+          </Link>
 
           <span className="eyebrow block mb-3">Security & Account</span>
           <h1 className="font-serif text-4xl lg:text-5xl font-normal tracking-tight text-text-primary max-w-xl leading-tight mb-4">
@@ -144,14 +144,14 @@ export default function ResetPasswordPage() {
       <div className="col-span-12 lg:col-span-5 flex flex-col justify-center p-6 sm:p-10 lg:p-12 min-h-[100dvh] lg:h-screen bg-card">
         <div className="w-full max-w-sm mx-auto">
           {/* Mobile Brand Mark */}
-          <div className="flex lg:hidden items-center gap-2.5 mb-8">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-panel border border-border-subtle text-accent p-1.5 shadow-xs">
+          <Link to="/" className="flex lg:hidden items-center gap-2.5 mb-8 group transition-opacity hover:opacity-90">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-panel border border-border-subtle text-accent p-1.5 shadow-xs group-hover:border-forest-600/40 transition-colors">
               <Logo className="h-full w-full object-contain" />
             </div>
             <span className="font-semibold text-base text-text-primary tracking-tight">
               Atten<span className="text-text-primary dark:text-white">-</span>Dance
             </span>
-          </div>
+          </Link>
 
           {isInvalidToken ? (
             /* Expired or Missing Token State */
