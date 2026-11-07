@@ -9,8 +9,8 @@ type ThemeContextType = {
 };
 
 const ThemeContext = createContext<ThemeContextType>({
-  theme: 'system',
-  resolved: 'dark',
+  theme: 'light',
+  resolved: 'light',
   setTheme: () => {},
 });
 
@@ -34,7 +34,7 @@ function applyTheme(resolved: 'dark' | 'light') {
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<Theme>(() => {
     const stored = localStorage.getItem('theme') as Theme | null;
-    return stored || 'system';
+    return stored || 'light';
   });
 
   const resolved = theme === 'system' ? getSystemTheme() : theme;

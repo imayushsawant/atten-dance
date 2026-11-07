@@ -21,6 +21,13 @@ export default function LandingPage() {
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
+    // Default to light theme on landing page if no preference is explicitly stored
+    if (!localStorage.getItem('theme')) {
+      setTheme('light');
+    }
+  }, [setTheme]);
+
+  useEffect(() => {
     const handleScroll = () => {
       const scrolled = window.scrollY > 30;
       setIsScrolled(scrolled);
@@ -90,7 +97,7 @@ export default function LandingPage() {
               </Link>
             </div>
 
-            {/* Right Section: GitHub, Theme Toggle, Login, Signup */}
+            {/* Right Section: GitHub, Login, Signup */}
             <div
               className={`pointer-events-auto flex items-center gap-1.5 sm:gap-2.5 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
                 isScrolled
@@ -109,19 +116,6 @@ export default function LandingPage() {
                 <GithubIcon className="h-3.5 w-3.5" />
                 <span className="hidden md:inline text-[11px]">GitHub</span>
               </a>
-
-              {/* Theme Toggle */}
-              <button
-                onClick={() => setTheme(resolved === 'dark' ? 'light' : 'dark')}
-                className="p-1.5 text-text-secondary hover:text-text-primary hover:bg-panel rounded-full transition-colors"
-                aria-label="Toggle visual theme"
-              >
-                {resolved === 'dark' ? (
-                  <SunIcon className="h-4 w-4 text-warn" />
-                ) : (
-                  <MoonIcon className="h-4 w-4" />
-                )}
-              </button>
 
               {/* Secondary CTA: Log in */}
               <Link
@@ -435,8 +429,39 @@ export default function LandingPage() {
             </Link>
           </div>
 
-          {/* Copyright & Local First Notice */}
-          <div className="text-xs text-text-muted text-center sm:text-right">
+          {/* Theme Selector & Copyright */}
+          <div className="flex flex-col sm:flex-row items-center gap-4 text-xs text-text-muted">
+            {/* Theme Selector */}
+            <div className="inline-flex items-center gap-1 p-0.5 rounded-lg border border-border-subtle bg-panel/80">
+              <button
+                type="button"
+                onClick={() => setTheme('light')}
+                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer ${
+                  resolved === 'light'
+                    ? 'bg-card text-text-primary shadow-2xs font-semibold'
+                    : 'text-text-muted hover:text-text-primary'
+                }`}
+                title="Light mode"
+              >
+                <SunIcon className="h-3.5 w-3.5 text-warn" />
+                <span>Light</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setTheme('dark')}
+                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer ${
+                  resolved === 'dark'
+                    ? 'bg-card text-text-primary shadow-2xs font-semibold'
+                    : 'text-text-muted hover:text-text-primary'
+                }`}
+                title="Dark mode"
+              >
+                <MoonIcon className="h-3.5 w-3.5" />
+                <span>Dark</span>
+              </button>
+            </div>
+
+            <span className="hidden sm:inline text-border-subtle">&bull;</span>
             <span>© {new Date().getFullYear()} Atten-Dance. All rights reserved.</span>
           </div>
         </div>
