@@ -47,7 +47,7 @@ const DEMO_TABS: TabDefinition[] = [
     label: '1. Mark Attendance',
     shortLabel: 'Mark Class',
     icon: PenLineIcon,
-    caption: 'Mark sample sessions as Present (Save) or Bunked (Skip). Every click recalculates your real-time standing.',
+    caption: 'Select Present or Bunk for sample sessions, then click "Save Sessions" below. The overall attendance above recalculates upon saving.',
   },
   {
     id: 'recovery',
@@ -85,72 +85,100 @@ export function InteractiveDemo() {
   const [tally, setTally] = useState<SubjectTally>(INITIAL_TALLY);
   const [records, setRecords] = useState<AttendanceRecord[]>(INITIAL_RECORDS);
   const [lastActionToast, setLastActionToast] = useState<string | null>(null);
+  const [resetCount, setResetCount] = useState(0);
 
   // In-memory analytics calculation
   const analytics = useMemo(() => {
     return calculateDemoAnalytics(INITIAL_SEMESTER, INITIAL_SUBJECTS, tally);
   }, [tally]);
 
-  // Handle Save (Present) or Skip (Bunked)
-  const handleAction = (subjectId: string, type: 'lecture' | 'lab', status: 'attended' | 'skipped') => {
-    const subject = INITIAL_SUBJECTS.find((s) => s.id === subjectId);
-    const subjectName = subject?.name || 'Subject';
+  // Handle Save from InputPage: updates tally & recalculates overall standing
+  const handleDemoSave = (
+    newEntries: Array<{ subjectId: string; type: 'lecture' | 'lab'; status: 'attended' | 'skipped' }>
+  ) => {
+    if (newEntries.length === 0) return;
 
     // 1. Update in-memory tally
     setTally((prev) => {
-      const currentSubj = prev[subjectId] || {
-        lecture: { attended: 0, total: 0 },
-        lab: { attended: 0, total: 0 },
-      };
-      const currentKind = currentSubj[type];
+      const next = { ...prev };
+      for (const entry of newEntries) {
+        const currentSubj = next[entry.subjectId] || {
+          lecture: { attended: 0, total: 0 },
+          lab: { attended: 0, total: 0 },
+        };
+        const currentKind = currentSubj[entry.type];
+        next[entry.subjectId] = {
+          ...currentSubj,
+          [entry.type]: {
+            attended: currentKind.attended + (entry.status === 'attended' ? 1 : 0),
+            total: currentKind.total + 1,
+          },
+        };
+      }
+      return next;
+    });
+
+    // 2. Append timestamped entries to demo History
+    const now = new Date();
+    const createdRecords: AttendanceRecord[] = newEntries.map((e, idx) => ({
+      id: `demo-rec-${Date.now()}-${idx}-${Math.random().toString(36).substring(2, 6)}`,
+      subjectId: e.subjectId,
+      semesterId: INITIAL_SEMESTER.id,
+      type: e.type,
+      status: e.status,
+      date: now.toISOString().split('T')[0],
+      orderIndex: records.length + idx,
+      createdAt: now.toISOString(),
+    }));
+
+    setRecords((prev) => [...createdRecords, ...prev]);
+
+    // 3. Trigger feedback toast
+    const attendedCount = newEntries.filter((e) => e.status === 'attended').length;
+    const skippedCount = newEntries.filter((e) => e.status === 'skipped').length;
+    const summary = [];
+    if (attendedCount > 0) summary.push(`${attendedCount} Present`);
+    if (skippedCount > 0) summary.push(`${skippedCount} Bunked`);
+    setLastActionToast(
+      `Saved ${newEntries.length} ${newEntries.length === 1 ? 'session' : 'sessions'} (${summary.join(', ')}) — Overall percentage updated!`
+    );
+    setTimeout(() => setLastActionToast(null), 3500);
+  };
+
+  // Handle deleting a record from demo
+  const handleDeleteRecord = (id: string) => {
+    const record = records.find((r) => r.id === id);
+    if (!record) return;
+
+    setRecords((prev) => prev.filter((r) => r.id !== id));
+
+    setTally((prev) => {
+      const currentSubj = prev[record.subjectId];
+      if (!currentSubj) return prev;
+      const currentKind = currentSubj[record.type];
       return {
         ...prev,
-        [subjectId]: {
+        [record.subjectId]: {
           ...currentSubj,
-          [type]: {
-            attended: currentKind.attended + (status === 'attended' ? 1 : 0),
-            total: currentKind.total + 1,
+          [record.type]: {
+            attended: Math.max(0, currentKind.attended - (record.status === 'attended' ? 1 : 0)),
+            total: Math.max(0, currentKind.total - 1),
           },
         },
       };
     });
 
-    // 2. Append timestamped entry to demo History
-    const now = new Date();
-    const newRecord: AttendanceRecord = {
-      id: `demo-rec-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
-      subjectId,
-      semesterId: INITIAL_SEMESTER.id,
-      type,
-      status,
-      date: now.toISOString().split('T')[0],
-      orderIndex: records.length,
-      createdAt: now.toISOString(),
-    };
-
-    setRecords((prev) => [newRecord, ...prev]);
-
-    // 3. Trigger feedback toast
-    const actionLabel = status === 'attended' ? 'Present (+Save)' : 'Bunked (+Skip)';
-    setLastActionToast(`${subjectName} marked ${actionLabel}`);
-    setTimeout(() => setLastActionToast(null), 3000);
+    setLastActionToast('Record deleted — Attendance recalculated');
+    setTimeout(() => setLastActionToast(null), 2500);
   };
 
   // Reset demo in-memory state
   const handleReset = () => {
     setTally(INITIAL_TALLY);
     setRecords(INITIAL_RECORDS);
+    setResetCount((c) => c + 1);
     setLastActionToast('Demo state reset to default');
     setTimeout(() => setLastActionToast(null), 2500);
-  };
-
-  // Quick Action Buttons
-  const handleQuickAttendDBMS = () => {
-    handleAction('sub-dbms', 'lecture', 'attended');
-  };
-
-  const handleQuickSkipOS = () => {
-    handleAction('sub-os', 'lecture', 'skipped');
   };
 
   // Safe Skips / At Risk counts
@@ -167,7 +195,7 @@ export function InteractiveDemo() {
       {/* Outer Ledger Container */}
       <div className="ledger-card overflow-hidden shadow-xs border-border-strong/60 transition-all duration-300">
         {/* Top Control Bar: Context & Quick Actions */}
-        <div className="border-b border-border-subtle bg-panel/50 p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="border-b border-border-subtle bg-panel/50 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex flex-wrap items-center gap-2.5">
             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-forest-800 text-text-on-dark shadow-2xs">
               <TargetIcon className="h-3 w-3 text-accent" />
@@ -178,34 +206,15 @@ export function InteractiveDemo() {
             </span>
           </div>
 
-          <div className="flex items-center gap-2 self-start md:self-auto">
-            {/* Quick Test Bunk / Attend Triggers */}
-            <button
-              onClick={handleQuickAttendDBMS}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-ok/40 bg-ok-bg/70 text-ok text-xs font-medium hover:bg-ok-bg transition-colors"
-              title="Add 1 attended lecture to Database Systems"
-            >
-              <CheckIcon className="h-3.5 w-3.5" />
-              <span>Attend DBMS</span>
-            </button>
-
-            <button
-              onClick={handleQuickSkipOS}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-risk/40 bg-risk-bg/70 text-risk text-xs font-medium hover:bg-risk-bg transition-colors"
-              title="Add 1 skipped lecture to Operating Systems"
-            >
-              <CloseIcon className="h-3.5 w-3.5" />
-              <span>Bunk OS</span>
-            </button>
-
+          <div className="flex items-center gap-2 self-start sm:self-auto">
             {/* Reset Demo Button */}
             <button
               onClick={handleReset}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-border-strong bg-card text-xs font-medium text-text-secondary hover:text-text-primary hover:bg-panel transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border-strong bg-card text-xs font-medium text-text-secondary hover:text-text-primary hover:bg-panel transition-colors cursor-pointer"
               title="Reset all demo actions"
             >
               <RotateCcwIcon className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Reset</span>
+              <span>Reset Demo</span>
             </button>
           </div>
         </div>
@@ -337,9 +346,11 @@ export function InteractiveDemo() {
           {activeTab === 'input' && (
             <div className="animate-fade-in">
               <InputPage
+                key={`input-${resetCount}`}
                 injectedSubjects={INITIAL_SUBJECTS}
                 injectedRecords={records}
-                onDemoAction={handleAction}
+                onDemoSave={handleDemoSave}
+                onDemoDeleteRecord={handleDeleteRecord}
                 isDemo={true}
                 hideHeader={true}
               />
@@ -369,13 +380,10 @@ export function InteractiveDemo() {
           {activeTab === 'history' && (
             <div className="animate-fade-in">
               <HistoryPage
+                key={`history-${resetCount}`}
                 injectedSubjects={INITIAL_SUBJECTS}
                 injectedRecords={records}
-                onDeleteRecord={(id) => {
-                  setRecords((prev) => prev.filter((r) => r.id !== id));
-                  setLastActionToast('Record deleted from verification log');
-                  setTimeout(() => setLastActionToast(null), 2500);
-                }}
+                onDeleteRecord={handleDeleteRecord}
                 isDemo={true}
                 hideHeader={true}
               />

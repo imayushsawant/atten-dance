@@ -50,6 +50,8 @@ export interface InputPageProps {
   injectedSubjects?: Subject[];
   injectedRecords?: AttendanceRecord[];
   onDemoAction?: (subjectId: string, type: 'lecture' | 'lab', status: 'attended' | 'skipped') => void;
+  onDemoSave?: (records: Array<{ subjectId: string; type: 'lecture' | 'lab'; status: 'attended' | 'skipped' }>) => void;
+  onDemoDeleteRecord?: (id: string) => void;
   isDemo?: boolean;
   hideHeader?: boolean;
 }
@@ -58,6 +60,8 @@ export default function InputPage({
   injectedSubjects,
   injectedRecords,
   onDemoAction,
+  onDemoSave,
+  onDemoDeleteRecord,
   isDemo,
   hideHeader,
 }: InputPageProps = {}) {
@@ -105,11 +109,13 @@ export default function InputPage({
       setSubjects(injectedSubjects);
       setNoSemester(false);
       setLoading(false);
-      setEntries(buildEntries(injectedSubjects, injectedRecords || []));
+      const forDate = (injectedRecords || []).filter(r => r.date === date);
+      setDayRecords(forDate);
+      setEntries(buildEntries(injectedSubjects, forDate));
       return;
     }
     loadActiveSemester();
-  }, [injectedSubjects, injectedRecords]);
+  }, [injectedSubjects, injectedRecords, date]);
 
   useEffect(() => {
     if (isDemo) return;
@@ -256,10 +262,6 @@ export default function InputPage({
       )
     );
 
-    if (!isTogglingOff && status !== null && isDemo && onDemoAction && currentEntry) {
-      onDemoAction(currentEntry.subjectId, currentEntry.type, status);
-    }
-
     setMarkedOrder((prev) => {
       if (isTogglingOff) {
         return prev.filter(id => id !== instanceId);
@@ -386,8 +388,40 @@ export default function InputPage({
   }, [entries, markedOrder]);
 
   async function handleSubmit() {
+    if (orderedMarkedEntries.length === 0) return;
+
     if (isDemo) {
       setSaving(true);
+      const payload = orderedMarkedEntries.map((e) => ({
+        subjectId: e.subjectId,
+        type: e.type,
+        status: e.status!,
+      }));
+
+      if (onDemoSave) {
+        onDemoSave(payload);
+      } else if (onDemoAction) {
+        payload.forEach((p) => onDemoAction(p.subjectId, p.type, p.status));
+      }
+
+      const now = new Date();
+      const newDemoRecords: AttendanceRecord[] = orderedMarkedEntries.map((e, index) => ({
+        id: `demo-rec-${Date.now()}-${index}`,
+        subjectId: e.subjectId,
+        semesterId: 'demo-semester',
+        type: e.type,
+        status: e.status!,
+        date,
+        orderIndex: dayRecords.length + index,
+        createdAt: now.toISOString(),
+      }));
+
+      setDayRecords((prev) => [...prev, ...newDemoRecords]);
+
+      const savedInstanceIds = new Set(orderedMarkedEntries.map((e) => e.instanceId));
+      setEntries((prev) => prev.filter((e) => !savedInstanceIds.has(e.instanceId)));
+      setMarkedOrder([]);
+
       setTimeout(() => {
         setSaving(false);
         setJustSaved(true);
@@ -395,7 +429,8 @@ export default function InputPage({
       }, 300);
       return;
     }
-    if (!semesterId || orderedMarkedEntries.length === 0) return;
+
+    if (!semesterId) return;
     setSaving(true);
     setJustSaved(false);
     try {
@@ -419,6 +454,13 @@ export default function InputPage({
   }
 
   async function handleDeleteRecord(id: string) {
+    if (isDemo) {
+      setDayRecords((prev) => prev.filter((r) => r.id !== id));
+      if (onDemoDeleteRecord) {
+        onDemoDeleteRecord(id);
+      }
+      return;
+    }
     try {
       await api.attendance.delete(id);
       await loadDayRecords();
