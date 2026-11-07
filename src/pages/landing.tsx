@@ -50,7 +50,9 @@ export default function LandingPage() {
       {/* ──────────────── Animated Floating Dynamic Navbar ──────────────── */}
       <header
         className={`fixed top-0 left-0 right-0 z-50 pointer-events-none transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
-          isScrolled ? 'pt-3 sm:pt-4' : 'pt-4 sm:pt-6'
+          isScrolled
+            ? 'pt-[calc(0.75rem+env(safe-area-inset-top,0px))] sm:pt-4'
+            : 'pt-[calc(1rem+env(safe-area-inset-top,0px))] sm:pt-6'
         }`}
       >
         <div
@@ -140,7 +142,7 @@ export default function LandingPage() {
 
       <main>
         {/* ──────────────── Hero Section ──────────────── */}
-        <section className="pt-24 sm:pt-28 lg:pt-36 pb-10 sm:pb-14 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        <section className="pt-[calc(6.5rem+env(safe-area-inset-top,0px))] sm:pt-28 lg:pt-36 pb-10 sm:pb-14 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
           <div className="max-w-3xl mx-auto text-center space-y-5">
             {/* H1 Display Headline */}
             <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-normal tracking-tight text-text-primary leading-[1.15]">
@@ -384,7 +386,7 @@ export default function LandingPage() {
       </main>
 
       {/* ──────────────── Footer ──────────────── */}
-      <footer className="border-t border-border-subtle bg-card py-12 px-4 sm:px-6 lg:px-8 transition-colors">
+      <footer className="border-t border-border-subtle bg-card py-12 pb-[calc(3rem+env(safe-area-inset-bottom,0px))] px-4 sm:px-6 lg:px-8 transition-colors">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
           {/* Logo & Tagline */}
           <div className="flex items-center gap-3">

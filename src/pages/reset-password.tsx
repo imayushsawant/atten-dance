@@ -141,7 +141,7 @@ export default function ResetPasswordPage() {
       </div>
 
       {/* 40% Right Side - Reset Password Card */}
-      <div className="col-span-12 lg:col-span-5 flex flex-col justify-center p-6 sm:p-10 lg:p-12 min-h-[100dvh] lg:h-screen bg-card">
+      <div className="col-span-12 lg:col-span-5 flex flex-col justify-center p-6 sm:p-10 lg:p-12 pt-[calc(1.5rem+env(safe-area-inset-top,0px))] pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))] min-h-[100dvh] lg:h-screen bg-card">
         <div className="w-full max-w-sm mx-auto">
           {/* Mobile Brand Mark */}
           <Link to="/" className="flex lg:hidden items-center gap-2.5 mb-8 group transition-opacity hover:opacity-90">
