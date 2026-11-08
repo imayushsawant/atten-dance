@@ -1,202 +1,181 @@
-# 🎓 Atten-Dance
+# Atten-Dance
 
-> *Because college makes you dance for attendance.*
+> Attendance tracking, safe-absence calculation, and recovery planning for university students.
 
-A sleek, dark-mode attendance tracker built for students who want to know exactly how many classes they can skip — and how many they need to attend to recover. Featuring a premium glassmorphism UI and deep analytics.
-
-🌍 **[Live Application](https://atten-dance.ayushsawant.dev/)**
-
-![React](https://img.shields.io/badge/React-19-blue?logo=react)
-![Vite](https://img.shields.io/badge/Vite-8-purple?logo=vite)
-![TypeScript](https://img.shields.io/badge/TypeScript-6-blue?logo=typescript)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Supabase-green?logo=postgresql)
-![TailwindCSS](https://img.shields.io/badge/Tailwind-4-cyan?logo=tailwindcss)
-![Vercel](https://img.shields.io/badge/Vercel-Serverless-black?logo=vercel)
+[![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)](https://github.com/imayushsawant/atten-dance)
+[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/imayushsawant/atten-dance/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![React](https://img.shields.io/badge/React-19.x-blue.svg?logo=react)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-6.x-blue.svg?logo=typescript)](https://www.typescriptlang.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4-cyan.svg?logo=tailwindcss)](https://tailwindcss.com/)
+[![Drizzle ORM](https://img.shields.io/badge/ORM-Drizzle-black.svg)](https://orm.drizzle.team/)
 
 ---
 
-##  Features
-###  Authentication
-- **Email & Password**: Sign up or sign in with a traditional email/password flow.
-- **Google OAuth**: One-click sign-in via Google for seamless onboarding.
-- **Session-based Auth**: Powered by BetterAuth with secure, server-side session management.
+## Description
 
-###  Dashboard & Analytics
-- **Dashboard Overview**: Overall attendance percentage (averaged across lectures & labs) and subject-wise visual progress bars with color-coded status indicators.
-- **Deep Analytics**: Trend charts powered by Recharts detailing your attendance distribution, progress patterns, and habits over time.
-- **Quick Actions**: One-tap navigation to log attendance, view analytics, or check safe skips.
+Mandatory academic attendance thresholds (such as 75% or 80%) often leave students uncertain about where they stand and how an absence might affect their record. In many curriculum models, practical labs and lectures carry different weights, meaning a single missed laboratory session has a disproportionate impact that generic spreadsheets or notes apps fail to account for.
 
-###  Log & Track Attendance
-- **Smart Input**: Mark lectures and labs as attended or skipped per day. Easily log multiple occurrences of the same subject (e.g., 2 lectures in a day) with adjustable counts. Already-marked subjects collapse to avoid clutter.
-- **Calendar Integration**: Log attendance with visual cues — pre-marked dates show up right on the calendar to prevent double entries.
-- **History View**: Dedicated historical timeline of your attendance, letting you review exactly what happened on past days.
-
-###  Safe Skips & Target Planning
-- **Safe Skips Calculator**: Know exactly how many lectures/labs you can still skip per subject without dropping below your minimum threshold.
-- **Recovery Planner**:
-  - **Status Banner**: Overall status with exact percentage deficit/surplus.
-  - **"On Thin Ice" Warnings**: Alerts for subjects that are currently safe but one skip away from danger.
-  - **Dynamic Combinations**: Algorithm-generated recovery paths (e.g., "Attend 3 Lectures & 2 Labs → 76.54%").
-  - **Custom Target Slider**: Simulate recovery strategies for any target percentage (50–100%).
-
-###  Attendance Predictor
-- **Overall Mode**: Global simulators to test scenarios by adding skipped or attended lectures/labs and see the direct impact on your overall percentage.
-- **Subject Mode**: Interactive log-attendance style interface to precisely predict how bunking or attending specific upcoming classes will affect both that subject's attendance and your overall average.
-- **Live Diff**: Side-by-side comparison of current vs. predicted percentages with color-coded deltas.
-
-###  Semester Sharing
-- **Share Codes**: Generate a unique 6-character code for any semester and share it with friends.
-- **One-click Import**: Friends can import your semester structure (name, subjects, threshold) using the share code — no manual setup required.
-- **Import from Dashboard**: New users can import a semester right from the welcome screen, or from the semesters management page.
-
-###  Semester & App Management
-- **Semester Lifecycle**: Fully manage semesters — create, edit details, activate, deactivate, and delete them.
-- **Flexible Subjects**: Setup classes with toggleable lecture/lab configurations.
-- **Custom Thresholds**: Configure your required attendance threshold per semester (e.g., 75%, 80%).
-- **Dark/Light Mode**: System-aware theme with manual override.
+**Atten-Dance** is a full-stack web application that models real university grading structures. By evaluating lecture and laboratory percentages independently, it delivers exact mathematical insight into:
+- The exact number of upcoming sessions a student can safely miss without violating minimum attendance criteria.
+- Feasible recovery pathways (lecture and lab combinations) needed to regain compliance following an absence deficit.
+- Projected attendance outcomes across hypothetical future schedules through interactive scenario modeling.
 
 ---
 
-##  How the Math Works
+## Key Features
 
-**Overall Attendance** is calculated as the **average of total lecture % and total lab %** — not a flat session count. This matches how most Indian colleges weigh attendance:
-
-```
-Overall % = (Total Lecture % + Total Lab %) / 2
-```
-
-This ensures missing a lab (which happens less frequently) impacts your average significantly more than a standard lecture.
-
-**Safe Skips:**
-```
-floor((attended - threshold × total) / threshold)
-```
-
-**Recovery (sessions needed to reach threshold):**
-```
-ceil((threshold × total - attended) / (1 - threshold))
-```
-
-**Combination Recovery** simulates adding `L` lectures and `B` labs to find all `(L, B)` pairs where the resulting average safely crosses the threshold.
+- **Weighted Calculation Model**: Calculates total attendance as `(Lecture % + Lab %) / 2` instead of a flat session count, accurately reflecting the higher individual weight of infrequent laboratory periods.
+- **Safe Skips Calculator**: Determines how many upcoming lectures or lab sessions can be missed on a per-subject basis while remaining above the configured threshold.
+- **Dynamic Recovery Planner**:
+  - Identifies subjects categorized as high-risk (within one absence of falling below the requirement).
+  - Computes optimal attendance combinations (e.g., *"Attend 3 Lectures and 1 Lab to reach 75.4%"*).
+  - Configurable target slider for modeling recovery scenarios between 50% and 100%.
+- **Interactive Predictor**: Enables students to test potential attendance scenarios at both the subject and semester levels, displaying live percentage deltas before any decisions are made.
+- **Session-Based Attendance Logging**: Daily attendance marking with multi-session steppers, past-entry protection to prevent duplicate logs, and historical audit logs.
+- **Curriculum Sharing via Import Codes**: Generates compact 6-character codes for sharing semester configurations (subjects, components, and thresholds) with peers.
+- **Visual Analytics**: Interactive Recharts graphs detailing attendance progression and distribution patterns over time.
+- **Authentication**: Built with BetterAuth, supporting secure session management via email/password credentials and Google OAuth.
+- **Interface & Themes**: Responsive interface with accessible dark and light modes built on Tailwind CSS v4.
 
 ---
 
-##  Tech Stack
+## Tech Stack
 
-| Layer       | Technology                        |
-|-------------|-----------------------------------|
-| Frontend    | React 19, React Router, Recharts  |
-| Styling     | Tailwind CSS 4, Lucide Icons      |
-| Backend     | Express 5 (Vercel Serverless)     |
-| Database    | PostgreSQL (Supabase)             |
-| ORM         | Drizzle ORM                       |
-| Auth        | BetterAuth (Email & Google OAuth) |
-| Build       | Vite 8, TypeScript 6              |
-| Deployment  | Vercel                            |
+| Component | Technology |
+| :--- | :--- |
+| **Frontend** | React 19, TypeScript, React Router v8, Recharts, Lucide Icons |
+| **Styling** | Tailwind CSS v4, Class Variance Authority (`cva`), `clsx`, `tailwind-merge` |
+| **Backend** | Node.js, Express 5, Vercel Serverless Functions |
+| **Database & ORM** | PostgreSQL (Supabase), Drizzle ORM, Drizzle Kit |
+| **Authentication** | BetterAuth (Session-based, Email/Password, Google OAuth) |
+| **Email Service** | Resend |
+| **Build & Tooling** | Vite 8, `tsx`, ESLint |
 
 ---
 
-##  Getting Started
+## Prerequisites & Installation
 
 ### Prerequisites
-- [Node.js](https://nodejs.org/) (v20+)
-- [pnpm](https://pnpm.io/)
 
-### Install & Run
+Verify that the following dependencies are installed locally:
+- [Node.js](https://nodejs.org/) (version 20.0.0 or higher)
+- [npm](https://www.npmjs.com/) or [pnpm](https://pnpm.io/)
+- A running PostgreSQL database (e.g., [Supabase](https://supabase.com/))
+
+### Installation
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/imayushsawant/atten-dance.git
+   cd atten-dance
+   ```
+
+2. **Install project dependencies:**
+   ```bash
+   npm install
+   # or: pnpm install
+   ```
+
+3. **Configure environment variables:**
+   ```bash
+   cp .env.example .env
+   ```
+   Provide the required connection strings and secrets as described in the [Configuration](#configuration) section below.
+
+4. **Synchronize database schema:**
+   Push the schema definitions to your PostgreSQL instance:
+   ```bash
+   npm run db:push
+   # or: pnpm run db:push
+   ```
+
+---
+
+## Usage
+
+### Local Development
+
+Start both the Vite frontend development server and the Express backend concurrently:
 
 ```bash
-# Clone the repo
-git clone https://github.com/imayushsawant/atten-dance.git
-cd atten-dance
-
-# Install dependencies
-pnpm install
-
-# Setup Environment Variables (Copy .env.example to .env)
-# You will need:
-#   - A Supabase PostgreSQL DATABASE_URL
-#   - A BETTER_AUTH_SECRET (random string)
-#   - Google OAuth Client ID & Secret (for Google sign-in)
-cp .env.example .env
-
-# Push the database schema to Supabase
-pnpm run db:push
-
-# Start dev server (frontend + backend concurrently)
-pnpm dev
+npm run dev
+# or: pnpm dev
 ```
 
-The app will be available at **http://localhost:5173**.
+- **Frontend client**: `http://localhost:5173`
+- **Backend API server**: `http://localhost:3000`
 
 ### Available Scripts
 
-| Command             | Description                                    |
-|---------------------|------------------------------------------------|
-| `pnpm dev`          | Start frontend (Vite) + backend (Express) concurrently |
-| `pnpm dev:client`   | Start only the Vite frontend                   |
-| `pnpm dev:server`   | Start only the Express backend                 |
-| `pnpm build`        | Build the frontend for production              |
-| `pnpm preview`      | Preview the production build locally           |
-| `pnpm db:generate`  | Generate Drizzle ORM migrations                |
-| `pnpm db:push`      | Push schema changes to the database            |
-| `pnpm db:studio`    | Open Drizzle Studio (database GUI)             |
+| Script | Description |
+| :--- | :--- |
+| `npm run dev` | Runs both the client (Vite) and server (Express via `tsx`) concurrently |
+| `npm run dev:client` | Starts only the Vite frontend development server |
+| `npm run dev:server` | Starts only the Express API server with automatic reload |
+| `npm run build` | Compiles and builds the frontend for production |
+| `npm run preview` | Serves the production build locally for verification |
+| `npm run db:push` | Applies Drizzle schema changes directly to the database |
+| `npm run db:studio` | Launches the Drizzle Studio database administration UI |
+| `npm run lint` | Executes ESLint to check for syntax and style violations |
+
+### Workflow Overview
+
+1. **Authentication**: Register a new account or sign in with Google.
+2. **Semester Setup**: Create an active semester (e.g., *"Semester 6"*) and set your target threshold (e.g., `75%`).
+3. **Subject Configuration**: Add your subjects, toggling lectures, labs, or both depending on the course syllabus.
+4. **Mark Attendance**: Open the **Mark Attendance** tab each day to record attended or missed periods.
+5. **Monitor & Predict**: Review the **Safe Skips** and **Recovery** tabs to plan upcoming leaves or determine how to offset missed classes.
 
 ---
 
-##  Project Structure
+## Configuration
 
-```
-atten-dance/
-├── api/                    # Vercel Serverless Function entry point
-│   └── index.ts
-├── server/                 # Express backend
-│   ├── db/
-│   │   ├── schema.ts       # Drizzle schema (auth, semesters, subjects, attendance)
-│   │   ├── queries.ts      # DB queries, analytics, recovery math
-│   │   └── index.ts        # Supabase PostgreSQL connection
-│   ├── middleware/
-│   │   └── auth.ts         # Session validation middleware
-│   ├── routes/
-│   │   ├── semesters.ts    # CRUD for semesters, subjects, sharing & import
-│   │   ├── attendance.ts   # Attendance record management
-│   │   ├── analytics.ts    # Analytics & target calculation endpoints
-│   │   └── settings.ts     # Global configuration API
-│   ├── auth.ts             # BetterAuth configuration (Email/Google)
-│   └── index.ts            # Express server entry point
-├── src/                    # React frontend
-│   ├── pages/
-│   │   ├── login.tsx       # Authentication (Email + Google OAuth)
-│   │   ├── dashboard.tsx   # Main dashboard with overview & charts
-│   │   ├── input.tsx       # Mark attendance with calendar
-│   │   ├── calendar.tsx    # Monthly calendar view
-│   │   ├── history.tsx     # Past attendance records tracker
-│   │   ├── safe-skips.tsx  # Safe skips calculator
-│   │   ├── recovery.tsx    # Recovery planner & combinations
-│   │   ├── predictor.tsx   # Interactive attendance predictor
-│   │   ├── analytics.tsx   # Charts & trends visualization
-│   │   ├── settings.tsx    # App settings & threshold configuration
-│   │   └── semesters/      # Semester management (create, edit, list, share)
-│   ├── components/
-│   │   ├── layout/
-│   │   │   └── app-shell.tsx   # Navigation shell with sidebar & mobile nav
-│   │   └── logo.tsx            # Custom SVG logo component
-│   ├── lib/
-│   │   ├── api.ts              # API client & TypeScript types
-│   │   ├── auth-client.ts      # BetterAuth client instance
-│   │   ├── theme-provider.tsx  # Dark/light theme context provider
-│   │   └── utils.ts            # Utility functions (cn, etc.)
-│   ├── assets/                 # Static assets (SVG logo, etc.)
-│   └── main.tsx                # App entry with routing
-├── drizzle/                    # Generated migrations
-├── package.json
-├── vite.config.ts
-├── drizzle.config.ts
-├── vercel.json
-└── tsconfig.json
+Set the following variables in your root `.env` file:
+
+```env
+# Database (Supabase PostgreSQL)
+DATABASE_URL="postgresql://postgres:[PASSWORD]@db.[PROJECT-REF].supabase.co:5432/postgres"
+
+# Authentication (BetterAuth)
+BETTER_AUTH_SECRET="your-generated-secret-key"
+BETTER_AUTH_URL="http://localhost:3000"
+VITE_APP_URL="http://localhost:5173"
+
+# Google OAuth (Optional for local testing)
+GOOGLE_CLIENT_ID="your-client-id.apps.googleusercontent.com"
+GOOGLE_CLIENT_SECRET="your-client-secret"
+
+# Resend Email Delivery (Optional)
+RESEND_API_KEY="re_123456789"
+RESEND_FROM_EMAIL="noreply@yourdomain.com"
 ```
 
 ---
 
-## 📝 License
+## Contributing
 
-MIT — do whatever you want with it. Just don't bunk too many classes.
+Contributions from the developer community are welcome. To contribute:
+
+1. Fork the repository.
+2. Create a dedicated branch for your change:
+   ```bash
+   git checkout -b feature/your-feature-name
+   ```
+3. Commit your changes following conventional commit syntax:
+   ```bash
+   git commit -m "feat: add semester archive functionality"
+   ```
+4. Push to your branch:
+   ```bash
+   git push origin feature/your-feature-name
+   ```
+5. Open a Pull Request detailing the problem solved and testing steps performed.
+
+Please run `npm run lint` and verify your build passes before submitting changes.
+
+---
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
