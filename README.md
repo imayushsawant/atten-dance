@@ -2,6 +2,8 @@
 
 > Attendance tracking, safe-absence calculation, and recovery planning for university students.
 
+**Live Deployment:** [canibunk.in](https://canibunk.in)
+
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)](https://github.com/imayushsawant/atten-dance)
 [![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/imayushsawant/atten-dance/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
