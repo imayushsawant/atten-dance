@@ -1,23 +1,26 @@
 import { forwardRef } from 'react';
-import { HugeiconsIcon } from '@hugeicons/react';
-import type { IconSvgElement, HugeiconsProps } from '@hugeicons/react';
-import * as H from '@hugeicons/core-free-icons';
+import type { IconProps as PhosphorIconProps } from '@phosphor-icons/react';
+import * as P from '@phosphor-icons/react';
 
-export interface IconProps extends Omit<HugeiconsProps, 'icon'> {
+export interface IconProps extends Omit<PhosphorIconProps, 'ref'> {
   className?: string;
   size?: number | string;
   strokeWidth?: number;
 }
 
-export function createIcon(svgIcon: IconSvgElement, displayName?: string) {
+export function createPhosphorIcon(
+  IconComponent: React.ComponentType<PhosphorIconProps>,
+  displayName?: string
+) {
   const Component = forwardRef<SVGSVGElement, IconProps>(
-    ({ className, size = 20, strokeWidth = 1.5, ...props }, ref) => {
+    ({ className, size = 20, strokeWidth, ...props }, ref) => {
+      // Map strokeWidth to weight if desired: strokeWidth >= 2 => bold, etc.
+      const weight = props.weight || (strokeWidth && strokeWidth >= 2 ? 'bold' : 'regular');
       return (
-        <HugeiconsIcon
-          ref={ref}
-          icon={svgIcon}
+        <IconComponent
+          ref={ref as any}
           size={size}
-          strokeWidth={strokeWidth}
+          weight={weight}
           className={className}
           {...props}
         />
@@ -29,66 +32,64 @@ export function createIcon(svgIcon: IconSvgElement, displayName?: string) {
 }
 
 // ──────────────── Navigation & Workspaces ────────────────
-export const DashboardIcon = createIcon(H.DashboardSquare01Icon, 'DashboardIcon');
-export const PenLineIcon = createIcon(H.PencilEdit02Icon, 'PenLineIcon');
-export const CalendarIcon = createIcon(H.Calendar03Icon, 'CalendarIcon');
-export const AnalyticsIcon = createIcon(H.Analytics01Icon, 'AnalyticsIcon');
-export const HistoryIcon = createIcon(H.HistoryIcon, 'HistoryIcon');
-export const CalculatorIcon = createIcon(H.Calculator01Icon, 'CalculatorIcon');
-export const TimeWindowIcon = createIcon(H.CalendarClockIcon, 'TimeWindowIcon');
-export const ShieldCheckIcon = createIcon(H.ShieldCheckIcon, 'ShieldCheckIcon');
-export const AlertTriangleIcon = createIcon(H.Alert02Icon, 'AlertTriangleIcon');
-export const AlertCircleIcon = createIcon(H.AlertCircleIcon, 'AlertCircleIcon');
-export const SemestersIcon = createIcon(H.GraduationCapIcon, 'SemestersIcon');
-export const SettingsIcon = createIcon(H.Settings02Icon, 'SettingsIcon');
+export const DashboardIcon = createPhosphorIcon(P.SquaresFour, 'DashboardIcon');
+export const PenLineIcon = createPhosphorIcon(P.PencilSimpleLine, 'PenLineIcon');
+export const CalendarIcon = createPhosphorIcon(P.CalendarBlank, 'CalendarIcon');
+export const AnalyticsIcon = createPhosphorIcon(P.ChartBar, 'AnalyticsIcon');
+export const HistoryIcon = createPhosphorIcon(P.ClockCounterClockwise, 'HistoryIcon');
+export const CalculatorIcon = createPhosphorIcon(P.Calculator, 'CalculatorIcon');
+export const TimeWindowIcon = createPhosphorIcon(P.Hourglass, 'TimeWindowIcon');
+export const ShieldCheckIcon = createPhosphorIcon(P.ShieldCheck, 'ShieldCheckIcon');
+export const AlertTriangleIcon = createPhosphorIcon(P.Warning, 'AlertTriangleIcon');
+export const AlertCircleIcon = createPhosphorIcon(P.WarningCircle, 'AlertCircleIcon');
+export const SemestersIcon = createPhosphorIcon(P.GraduationCap, 'SemestersIcon');
+export const SettingsIcon = createPhosphorIcon(P.Gear, 'SettingsIcon');
 
 // ──────────────── Subjects & Analytics Metrics ────────────────
-export const BookOpenIcon = createIcon(H.BookOpen01Icon, 'BookOpenIcon');
-export const FlaskConicalIcon = createIcon(H.FlaskConicalIcon, 'FlaskConicalIcon');
-export const GraduationCapIcon = createIcon(H.GraduationCapIcon, 'GraduationCapIcon');
-export const TargetIcon = createIcon(H.Target02Icon, 'TargetIcon');
-export const TrendingUpIcon = createIcon(H.TrendingUpIcon, 'TrendingUpIcon');
-export const TrendingDownIcon = createIcon(H.TrendingDownIcon, 'TrendingDownIcon');
+export const BookOpenIcon = createPhosphorIcon(P.BookOpen, 'BookOpenIcon');
+export const FlaskConicalIcon = createPhosphorIcon(P.Flask, 'FlaskConicalIcon');
+export const GraduationCapIcon = createPhosphorIcon(P.GraduationCap, 'GraduationCapIcon');
+export const TargetIcon = createPhosphorIcon(P.Target, 'TargetIcon');
+export const TrendingUpIcon = createPhosphorIcon(P.TrendUp, 'TrendingUpIcon');
+export const TrendingDownIcon = createPhosphorIcon(P.TrendDown, 'TrendingDownIcon');
 
 // ──────────────── Chevrons & Directional Controls ────────────────
-export const ChevronRightIcon = createIcon(H.ChevronRightIcon, 'ChevronRightIcon');
-export const ChevronLeftIcon = createIcon(H.ChevronLeftIcon, 'ChevronLeftIcon');
-export const ChevronDownIcon = createIcon(H.ChevronDownIcon, 'ChevronDownIcon');
-export const ChevronUpIcon = createIcon(H.ChevronUpIcon, 'ChevronUpIcon');
-export const ArrowUpIcon = createIcon(H.ArrowUp01Icon, 'ArrowUpIcon');
-export const ArrowDownIcon = createIcon(H.ArrowDown01Icon, 'ArrowDownIcon');
-export const CheckCircleIcon = createIcon(H.CheckmarkCircle01Icon, 'CheckCircleIcon');
+export const ChevronRightIcon = createPhosphorIcon(P.CaretRight, 'ChevronRightIcon');
+export const ChevronLeftIcon = createPhosphorIcon(P.CaretLeft, 'ChevronLeftIcon');
+export const ChevronDownIcon = createPhosphorIcon(P.CaretDown, 'ChevronDownIcon');
+export const ChevronUpIcon = createPhosphorIcon(P.CaretUp, 'ChevronUpIcon');
+export const ArrowUpIcon = createPhosphorIcon(P.ArrowUp, 'ArrowUpIcon');
+export const ArrowDownIcon = createPhosphorIcon(P.ArrowDown, 'ArrowDownIcon');
+export const CheckCircleIcon = createPhosphorIcon(P.CheckCircle, 'CheckCircleIcon');
 
 // ──────────────── Actions & Editing ────────────────
-export const PlusIcon = createIcon(H.Add01Icon, 'PlusIcon');
-export const MinusIcon = createIcon(H.MinusSignIcon, 'MinusIcon');
-export const CheckIcon = createIcon(H.Tick01Icon, 'CheckIcon');
-export const CloseIcon = createIcon(H.Cancel01Icon, 'CloseIcon');
-export const TrashIcon = createIcon(H.Delete02Icon, 'TrashIcon');
-export const SaveIcon = createIcon(H.FloppyDiskIcon, 'SaveIcon');
-export const EditIcon = createIcon(H.PencilEdit01Icon, 'EditIcon');
-export const RotateCcwIcon = createIcon(H.RotateCcwIcon, 'RotateCcwIcon');
-export const CopyIcon = createIcon(H.Copy01Icon, 'CopyIcon');
-export const ShareIcon = createIcon(H.Share01Icon, 'ShareIcon');
-export const DownloadIcon = createIcon(H.Download01Icon, 'DownloadIcon');
-export const LogoutIcon = createIcon(H.Logout01Icon, 'LogoutIcon');
-export const ClockIcon = createIcon(H.Clock01Icon, 'ClockIcon');
-export const StickyNoteIcon = createIcon(H.StickyNote01Icon, 'StickyNoteIcon');
-export const SearchIcon = createIcon(H.Search01Icon, 'SearchIcon');
-export const SendIcon = createIcon(H.SendIcon, 'SendIcon');
-export const GripVerticalIcon = createIcon(H.GripVerticalIcon, 'GripVerticalIcon');
-export const PowerIcon = createIcon(H.PowerIcon, 'PowerIcon');
-export const ExternalLinkIcon = createIcon(H.ExternalLinkIcon, 'ExternalLinkIcon');
-export const GithubIcon = createIcon(H.GithubIcon, 'GithubIcon');
+export const PlusIcon = createPhosphorIcon(P.Plus, 'PlusIcon');
+export const MinusIcon = createPhosphorIcon(P.Minus, 'MinusIcon');
+export const CheckIcon = createPhosphorIcon(P.Check, 'CheckIcon');
+export const CloseIcon = createPhosphorIcon(P.X, 'CloseIcon');
+export const TrashIcon = createPhosphorIcon(P.Trash, 'TrashIcon');
+export const SaveIcon = createPhosphorIcon(P.FloppyDisk, 'SaveIcon');
+export const EditIcon = createPhosphorIcon(P.PencilSimple, 'EditIcon');
+export const RotateCcwIcon = createPhosphorIcon(P.ArrowCounterClockwise, 'RotateCcwIcon');
+export const CopyIcon = createPhosphorIcon(P.Copy, 'CopyIcon');
+export const ShareIcon = createPhosphorIcon(P.ShareNetwork, 'ShareIcon');
+export const DownloadIcon = createPhosphorIcon(P.DownloadSimple, 'DownloadIcon');
+export const LogoutIcon = createPhosphorIcon(P.SignOut, 'LogoutIcon');
+export const ClockIcon = createPhosphorIcon(P.Clock, 'ClockIcon');
+export const StickyNoteIcon = createPhosphorIcon(P.Note, 'StickyNoteIcon');
+export const SearchIcon = createPhosphorIcon(P.MagnifyingGlass, 'SearchIcon');
+export const SendIcon = createPhosphorIcon(P.PaperPlaneTilt, 'SendIcon');
+export const GripVerticalIcon = createPhosphorIcon(P.DotsSixVertical, 'GripVerticalIcon');
+export const PowerIcon = createPhosphorIcon(P.Power, 'PowerIcon');
+export const ExternalLinkIcon = createPhosphorIcon(P.ArrowSquareOut, 'ExternalLinkIcon');
+export const GithubIcon = createPhosphorIcon(P.GithubLogo, 'GithubIcon');
 
 // ──────────────── Appearance & Shell ────────────────
-export const SunIcon = createIcon(H.Sun01Icon, 'SunIcon');
-export const MoonIcon = createIcon(H.Moon02Icon, 'MoonIcon');
-export const MonitorIcon = createIcon(H.ComputerIcon, 'MonitorIcon');
-export const MenuIcon = createIcon(H.Menu01Icon, 'MenuIcon');
-export const MoreHorizontalIcon = createIcon(H.MoreHorizontalIcon, 'MoreHorizontalIcon');
-export const HeartPulseIcon = createIcon(H.HeartPulseIcon, 'HeartPulseIcon');
+export const SunIcon = createPhosphorIcon(P.Sun, 'SunIcon');
+export const MoonIcon = createPhosphorIcon(P.Moon, 'MoonIcon');
+export const MonitorIcon = createPhosphorIcon(P.Desktop, 'MonitorIcon');
+export const MenuIcon = createPhosphorIcon(P.List, 'MenuIcon');
+export const MoreHorizontalIcon = createPhosphorIcon(P.DotsThree, 'MoreHorizontalIcon');
+export const HeartPulseIcon = createPhosphorIcon(P.Heartbeat, 'HeartPulseIcon');
 
-export { HugeiconsIcon };
 export { Logo } from '@/components/logo';
-export type { IconSvgElement, HugeiconsProps };

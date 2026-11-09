@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useNavigate } from 'react-router';
 import {
+  DashboardIcon,
   PenLineIcon,
   ShieldCheckIcon,
   AlertTriangleIcon,
@@ -27,18 +28,24 @@ import { cn } from '@/lib/utils';
 import { useTheme } from '@/lib/theme-provider';
 import { Logo } from '@/components/logo';
 import { GitHubLink } from '@/components/github-link';
+import {
+  INITIAL_SEMESTER,
+  INITIAL_SUBJECTS,
+  INITIAL_TALLY,
+  calculateDemoAnalytics,
+} from '@/pages/landing/mock-data';
 
 function getChartStyles(resolved: 'dark' | 'light') {
   const isDark = resolved === 'dark';
   return {
-    tick: isDark ? '#7F8C80' : '#8A8F85',
-    grid: isDark ? '#233229' : '#E6E1D5',
-    tooltipBg: isDark ? '#16211B' : '#FBF9F5',
-    tooltipBorder: isDark ? '#33463B' : '#D9D3C4',
-    tooltipColor: isDark ? '#F1EDE0' : '#1F3329',
-    ok: isDark ? '#9DB38A' : '#7A8B6A',
-    warn: isDark ? '#E3B766' : '#D4A04A',
-    risk: isDark ? '#E27D67' : '#C65F4A',
+    tick: isDark ? '#a3a3a3' : '#737373',
+    grid: isDark ? 'rgba(255, 255, 255, 0.08)' : '#e5e5e5',
+    tooltipBg: isDark ? '#262626' : '#ffffff',
+    tooltipBorder: isDark ? 'rgba(255, 255, 255, 0.15)' : '#e5e5e5',
+    tooltipColor: isDark ? '#fafafa' : '#171717',
+    ok: isDark ? '#22c55e' : '#16a34a',
+    warn: isDark ? '#f59e0b' : '#d97706',
+    risk: isDark ? '#ef4444' : '#dc2626',
   };
 }
 
@@ -123,13 +130,25 @@ export default function Dashboard() {
           <p className="text-sm text-text-secondary mb-8 leading-relaxed">
             Because colleges make you dance for attendance. Set up your first semester to track sessions, forecast safe bunks, and preserve your attendance margin.
           </p>
-          <Link
-            to="/semesters/new"
-            className="inline-flex items-center gap-2 rounded-lg bg-forest-800 dark:bg-cta-bg px-6 py-3 text-sm font-medium text-text-on-dark transition-opacity hover:opacity-95"
-          >
-            <GraduationCapIcon className="h-4 w-4" />
-            Create Your First Semester
-          </Link>
+          <div className="flex flex-col sm:flex-row items-center gap-3">
+            <Link
+              to="/semesters/new"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 shadow-xs"
+            >
+              <GraduationCapIcon className="h-4 w-4" />
+              Create Semester
+            </Link>
+            <button
+              onClick={() => {
+                setAnalytics(calculateDemoAnalytics(INITIAL_SEMESTER, INITIAL_SUBJECTS, INITIAL_TALLY));
+                setNoSemester(false);
+              }}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-card px-5 py-2.5 text-sm font-medium text-foreground hover:bg-muted transition-colors shadow-xs"
+            >
+              <DashboardIcon className="h-4 w-4 text-primary" />
+              Preview Demo Dashboard
+            </button>
+          </div>
           <div className="mt-6 flex flex-col items-center gap-1.5">
             <span className="text-xs text-text-muted">or</span>
             <button

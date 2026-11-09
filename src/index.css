@@ -1,95 +1,162 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@fontsource-variable/ibm-plex-sans";
+@import "@fontsource-variable/source-sans-3";
 
 @custom-variant dark (&:where(.dark, .dark *, [data-theme="dark"], [data-theme="dark"] *));
 
 :root {
-  /* Surfaces */
-  --bg-page: #F3F0E8;
-  --bg-card: #FBF9F5;
-  --bg-panel: #EBE6DA;
-  --bg-chip: #E8E4D6;
-  --bg-track: #E9E4DC;
-  --border-subtle: #E6E1D5;
-  --border-strong: #D9D3C4;
+  /* Preset: b7PaZO816h (Vega / Neutral / Green) */
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.527 0.154 150.069);
+  --primary-foreground: oklch(0.982 0.018 155.826);
+  --secondary: oklch(0.967 0.001 286.375);
+  --secondary-foreground: oklch(0.21 0.006 285.885);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.527 0.154 150.069);
+  --chart-2: oklch(0.62 0.14 155);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.556 0 0);
+  --chart-5: oklch(0.87 0 0);
+  --radius: 0.875rem;
 
-  /* Brand */
-  --forest-900: #1F3329;
-  --forest-800: #25392F;
-  --forest-700: #2F4739;
-  --accent: #D9663F;
+  /* Inverted-translucent sidebar */
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.527 0.154 150.069);
+  --sidebar-primary-foreground: oklch(0.982 0.018 155.826);
+  --sidebar-accent: oklch(0.95 0 0);
+  --sidebar-accent-foreground: oklch(0.145 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
 
-  /* Sidebar */
-  --sidebar-bg: #25392F;
-  --sidebar-divider: #3A4F43;
-  --sidebar-text: #D9DDD3;
-  --sidebar-text-muted: #9FAC9F;
-  --nav-active-bg: #EBE3D3;
-  --nav-active-text: #1F3329;
+  /* Semantic application mappings */
+  --bg-page: var(--background);
+  --bg-card: var(--card);
+  --bg-panel: var(--secondary);
+  --bg-chip: var(--muted);
+  --bg-track: oklch(0.94 0 0);
+  --border-subtle: var(--border);
+  --border-strong: oklch(0.86 0 0);
 
-  /* Text */
-  --text-primary: #1F3329;
-  --text-secondary: #5E665E;
-  --text-muted: #8A8F85;
-  --text-on-dark: #F3F0E8;
+  --forest-900: oklch(0.25 0.08 150);
+  --forest-800: var(--primary);
+  --forest-700: oklch(0.42 0.14 150);
 
-  /* Status */
-  --ok: #7A8B6A;
-  --warn: #D4A04A;
-  --risk: #C65F4A;
-  --ok-bg: #E6EADF;
-  --risk-bg: #F7E4DE;
+  --sidebar-bg: var(--sidebar);
+  --sidebar-divider: var(--sidebar-border);
+  --sidebar-text: var(--sidebar-foreground);
+  --sidebar-text-muted: var(--muted-foreground);
+  --nav-active-bg: var(--sidebar-accent);
+  --nav-active-text: var(--primary);
 
-  /* CTA */
-  --cta-bg: #25392F;
-  --cta-text: #F3F0E8;
-  --cta-tile: #2F4739;
+  --text-primary: var(--foreground);
+  --text-secondary: var(--muted-foreground);
+  --text-muted: oklch(0.60 0 0);
+  --text-on-dark: var(--primary-foreground);
 
-  /* Shape */
-  --radius-card: 12px;
-  --radius-btn: 8px;
-  --radius-pill: 999px;
+  --ok: var(--primary);
+  --warn: oklch(0.74 0.15 68);
+  --risk: oklch(0.58 0.22 27);
+  --ok-bg: oklch(0.96 0.03 150);
+  --risk-bg: oklch(0.96 0.04 27);
+
+  --cta-bg: var(--primary);
+  --cta-text: var(--primary-foreground);
+  --cta-tile: var(--primary);
+
+  --radius-card: var(--radius);
+  --radius-btn: calc(var(--radius) * 0.7);
+  --radius-pill: 9999px;
 }
 
 .dark, [data-theme="dark"] {
-  --bg-page: #0F1713;
-  --bg-card: #16211B;
-  --bg-panel: #121C17;
-  --bg-chip: #1F2D25;
-  --bg-track: #26352D;
-  --border-subtle: #233229;
-  --border-strong: #33463B;
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.627 0.194 149.214);
+  --primary-foreground: oklch(0.145 0 0);
+  --secondary: oklch(0.274 0.006 286.033);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 12%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+  --chart-1: oklch(0.627 0.194 149.214);
+  --chart-2: oklch(0.52 0.16 150);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.556 0 0);
+  --chart-5: oklch(0.87 0 0);
 
-  --forest-900: #F1EDE0;
-  --forest-800: #2C4236;
-  --forest-700: #3A5446;
-  --accent: #E8794F;
+  --sidebar: oklch(0.18 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.627 0.194 149.214);
+  --sidebar-primary-foreground: oklch(0.145 0 0);
+  --sidebar-accent: oklch(0.25 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 12%);
+  --sidebar-ring: oklch(0.556 0 0);
 
-  --sidebar-bg: #0A100D;
-  --sidebar-divider: #1C2A22;
-  --sidebar-text: #C9D0C4;
-  --sidebar-text-muted: #7F8C80;
-  --nav-active-bg: #1F2D25;
-  --nav-active-text: #F1EDE0;
+  /* Semantic dark mappings */
+  --bg-page: var(--background);
+  --bg-card: var(--card);
+  --bg-panel: var(--secondary);
+  --bg-chip: var(--muted);
+  --bg-track: oklch(0.24 0 0);
+  --border-subtle: var(--border);
+  --border-strong: oklch(1 0 0 / 20%);
 
-  --text-primary: #F1EDE0;
-  --text-secondary: #B7BFB2;
-  --text-muted: #7F8B80;
-  --text-on-dark: #F1EDE0;
+  --forest-900: var(--foreground);
+  --forest-800: var(--primary);
+  --forest-700: oklch(0.55 0.16 150);
 
-  --ok: #9DB38A;
-  --warn: #E3B766;
-  --risk: #E27D67;
-  --ok-bg: #1E2E22;
-  --risk-bg: #3A211C;
+  --sidebar-bg: var(--sidebar);
+  --sidebar-divider: var(--sidebar-border);
+  --sidebar-text: var(--sidebar-foreground);
+  --sidebar-text-muted: var(--muted-foreground);
+  --nav-active-bg: var(--sidebar-accent);
+  --nav-active-text: var(--primary);
 
-  --cta-bg: #2C4236;
-  --cta-text: #F1EDE0;
-  --cta-tile: #3A5446;
+  --text-primary: var(--foreground);
+  --text-secondary: var(--muted-foreground);
+  --text-muted: oklch(0.65 0 0);
+  --text-on-dark: var(--foreground);
+
+  --ok: var(--primary);
+  --warn: oklch(0.78 0.14 75);
+  --risk: oklch(0.70 0.19 22);
+  --ok-bg: oklch(0.24 0.06 150);
+  --risk-bg: oklch(0.26 0.07 27);
+
+  --cta-bg: var(--primary);
+  --cta-text: var(--primary-foreground);
+  --cta-tile: var(--primary);
 }
 
 @theme {
-  --font-serif: "Source Serif 4", Georgia, serif;
-  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  --font-serif: "Source Sans 3 Variable", system-ui, sans-serif;
+  --font-heading: "Source Sans 3 Variable", system-ui, sans-serif;
+  --font-sans: "IBM Plex Sans Variable", system-ui, -apple-system, sans-serif;
 
   --color-page: var(--bg-page);
   --color-card: var(--bg-card);
@@ -127,15 +194,15 @@
   --color-cta-tile: var(--cta-tile);
 
   /* Semantic shortcuts */
-  --color-background: var(--bg-page);
-  --color-foreground: var(--text-primary);
-  --color-border: var(--border-subtle);
-  --color-muted: var(--bg-chip);
-  --color-muted-foreground: var(--text-muted);
-  --color-secondary: var(--bg-panel);
-  --color-secondary-foreground: var(--text-primary);
-  --color-primary: var(--forest-800);
-  --color-primary-foreground: var(--text-on-dark);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-border: var(--border);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
   --color-success: var(--ok);
   --color-warning: var(--warn);
   --color-danger: var(--risk);
@@ -143,7 +210,7 @@
 
 @layer base {
   * {
-    border-color: var(--border-subtle);
+    border-color: var(--border);
     -webkit-tap-highlight-color: transparent;
   }
 
@@ -154,15 +221,15 @@
   }
 
   body {
-    background-color: var(--bg-page);
-    color: var(--text-primary);
+    background-color: var(--background);
+    color: var(--foreground);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     transition: background-color 0.25s ease, color 0.25s ease;
   }
 
-  /* Custom scrollbar matching paper ledger style */
+  /* Custom scrollbar matching Vega clean style */
   ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
@@ -172,25 +239,32 @@
   }
   ::-webkit-scrollbar-thumb {
     background: var(--border-strong);
-    border-radius: 999px;
+    border-radius: 9999px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: var(--text-muted);
+    background: var(--muted-foreground);
   }
 }
 
-/* Ledger paper card utility */
+/* Vega style card utility */
 .ledger-card {
-  background-color: var(--bg-card);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-card);
-  box-shadow: 0 1px 0 rgba(31, 51, 41, 0.02);
+  background-color: var(--card);
+  color: var(--card-foreground);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.03), 0 1px 2px -1px rgb(0 0 0 / 0.03);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.ledger-card:hover {
+  border-color: color-mix(in oklch, var(--border), var(--primary) 30%);
 }
 
 .ledger-panel {
-  background-color: var(--bg-panel);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-card);
+  background-color: var(--secondary);
+  color: var(--secondary-foreground);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
 }
 
 .eyebrow {
@@ -198,8 +272,8 @@
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.2em;
-  color: var(--text-muted);
+  letter-spacing: 0.15em;
+  color: var(--muted-foreground);
 }
 
 /* Animations */
@@ -226,7 +300,7 @@
 }
 
 .shimmer {
-  background-color: var(--bg-chip);
+  background-color: var(--muted);
   animation: ledgerShimmer 1.8s ease-in-out infinite;
 }
 
