@@ -9,10 +9,22 @@ export const auth = betterAuth({
     provider: "pg",
     schema: schema,
   }),
+  baseURL: process.env.BETTER_AUTH_URL || {
+    allowedHosts: [
+      'www.canibunk.in',
+      'canibunk.in',
+      'atten-dance.ayushsawant.dev',
+      'localhost:5173',
+      'localhost:3000',
+      'localhost:3001',
+      '*.vercel.app',
+    ],
+    fallback: 'https://www.canibunk.in',
+  },
   emailAndPassword: {
     enabled: true,
     resetPasswordTokenExpiresIn: 3600, // 1 hour
-    sendResetPassword: async ({ user, url, token }) => {
+    sendResetPassword: async ({ user, url }) => {
       await sendPasswordResetEmail({
         to: user.email,
         name: user.name || undefined,
@@ -36,6 +48,12 @@ export const auth = betterAuth({
   },
   trustedOrigins: [
     'http://localhost:5173',
+    'http://localhost:3000',
+    'http://localhost:3001',
+    'https://www.canibunk.in',
+    'https://canibunk.in',
+    'https://*.canibunk.in',
+    'https://*.vercel.app',
     'https://atten-dance.ayushsawant.dev',
     'https://atten-dance.ayushsawant.dev/',
     process.env.VITE_APP_URL || '',

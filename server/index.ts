@@ -14,9 +14,28 @@ import authLinkingRoutes from './routes/auth-linking.js';
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'http://localhost:3001',
+  'https://www.canibunk.in',
+  'https://canibunk.in',
+  'https://atten-dance.ayushsawant.dev',
+  process.env.VITE_APP_URL,
+  process.env.BETTER_AUTH_URL,
+].filter(Boolean) as string[];
+
 // Middleware
 app.use(cors({
-  origin: process.env.VITE_APP_URL || 'http://localhost:5173',
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+    const cleanOrigin = origin.replace(/\/$/, '');
+    const isAllowed =
+      allowedOrigins.some((o) => o.replace(/\/$/, '') === cleanOrigin) ||
+      cleanOrigin.endsWith('.vercel.app') ||
+      cleanOrigin.endsWith('.canibunk.in');
+    return callback(null, isAllowed);
+  },
   credentials: true,
 }));
 app.use(express.json());
@@ -28,10 +47,11 @@ app.use('/api/auth-linking', authLinkingRoutes);
 app.all(/^\/api\/auth\/.*/, async (req, res) => {
   try {
     await toNodeHandler(auth)(req, res);
-  } catch (err: any) {
-    console.error("Auth Route Error:", err);
+  } catch (err: unknown) {
+    const error = err as Error;
+    console.error("Auth Route Error:", error);
     if (!res.headersSent) {
-      res.status(500).json({ error: "Auth Handler Error", message: err.message, stack: err.stack });
+      res.status(500).json({ error: "Auth Handler Error", message: error.message, stack: error.stack });
     }
   }
 });
