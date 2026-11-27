@@ -6,6 +6,8 @@ import AppShell from '@/components/layout/app-shell';
 import LoadingScreen from '@/components/loading-screen';
 
 import LandingPage from '@/pages/landing';
+import PublicCalculator from '@/pages/public-calculator';
+import { calculators } from '@/lib/public-calculators';
 const LoginPage = lazy(() => import('@/pages/login'));
 const ResetPasswordPage = lazy(() => import('@/pages/reset-password'));
 const Dashboard = lazy(() => import('@/pages/dashboard'));
@@ -79,6 +81,7 @@ export default function App() {
       <Routes>
         {/* Public homepage; host redirects cookie-bearing requests optimistically */}
         <Route path="/" element={<RootRoute />} />
+        {calculators.map(calculator => <Route key={calculator.path} path={calculator.path} element={<PublicCalculator calculator={calculator} />} />)}
 
         {/* Public route */}
         <Route

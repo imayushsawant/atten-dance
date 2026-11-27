@@ -14,6 +14,7 @@ import {
 } from '@/components/icons';
 import { Logo } from '@/components/logo';
 import { useTheme } from '@/lib/theme-provider';
+import { calculators } from '@/lib/public-calculators';
 import { InteractiveDemo } from './landing/interactive-demo';
 
 export default function LandingPage() {
@@ -382,6 +383,11 @@ export default function LandingPage() {
               </Link>
             </div>
           </div>
+        </section>
+        <section className="max-w-5xl mx-auto px-5 py-12 space-y-4">
+          <h2 className="font-serif text-3xl">Free attendance calculators</h2>
+          <p className="text-text-secondary">Calculate your attendance, safe bunks and recovery without creating an account.</p>
+          <nav className="grid sm:grid-cols-2 gap-4">{calculators.map(item=><Link key={item.path} to={item.path} className="ledger-card p-4"><h3 className="font-semibold">{item.title}</h3><p className="text-sm text-text-secondary mt-2">{item.description}</p></Link>)}</nav>
         </section>
       </main>
 
