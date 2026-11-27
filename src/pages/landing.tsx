@@ -153,7 +153,7 @@ export default function LandingPage() {
 
             {/* Benefit-Driven One-Sentence Subheadline */}
             <p className="text-base sm:text-lg text-text-secondary leading-relaxed max-w-2xl mx-auto">
-              Know exactly how many lectures you can skip, how many you must attend to recover, and where your attendance is heading, before it becomes a problem.
+              Use a free college attendance tracker and bunk calculator to check how many lectures you can skip, how many you must attend to recover, and whether you meet your 75% attendance target.
             </p>
 
             {/* CTA Cluster */}
@@ -360,10 +360,10 @@ export default function LandingPage() {
           <div className="rounded-2xl border border-border-strong bg-panel/70 p-8 sm:p-12 text-center shadow-xs space-y-6">
             <span className="eyebrow block">Ready For Total Attendance Control?</span>
             <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-normal text-text-primary tracking-tight max-w-xl mx-auto">
-              Never get debarred from semester exams again.
+              Stay on top of your semester attendance.
             </h2>
             <p className="text-sm text-text-secondary max-w-lg mx-auto leading-relaxed">
-              Join thousands of students who track their attendance with mathematical certainty. No spreadsheets, no mental arithmetic, no surprises.
+              Track your attendance with a clear view of your college's attendance requirements. No spreadsheets, no mental arithmetic, no surprises.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
