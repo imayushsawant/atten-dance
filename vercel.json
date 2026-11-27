@@ -1,5 +1,7 @@
 {
-  "regions": ["bom1"],
+  "regions": [
+    "bom1"
+  ],
   "headers": [
     {
       "source": "/assets/(.*)",
@@ -28,6 +30,30 @@
     {
       "source": "/((?!assets/|api/).*)",
       "destination": "/"
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "cookie",
+          "key": "__Secure-better-auth.session_token"
+        }
+      ],
+      "destination": "/dashboard",
+      "permanent": false
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "cookie",
+          "key": "better-auth.session_token"
+        }
+      ],
+      "destination": "/dashboard",
+      "permanent": false
     }
   ]
 }

@@ -21,6 +21,11 @@ export const auth = betterAuth({
     ],
     fallback: 'https://www.canibunk.in',
   },
+  // Short-lived signed cookie cache reduces repeated session database lookups.
+  // Revoked sessions may remain valid until the cache expires.
+  session: {
+    cookieCache: { enabled: true, maxAge: 60 },
+  },
   emailAndPassword: {
     enabled: true,
     resetPasswordTokenExpiresIn: 3600, // 1 hour

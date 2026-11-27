@@ -5,7 +5,7 @@ import { useSession } from '@/lib/auth-client';
 import AppShell from '@/components/layout/app-shell';
 import LoadingScreen from '@/components/loading-screen';
 
-const LandingPage = lazy(() => import('@/pages/landing'));
+import LandingPage from '@/pages/landing';
 const LoginPage = lazy(() => import('@/pages/login'));
 const ResetPasswordPage = lazy(() => import('@/pages/reset-password'));
 const Dashboard = lazy(() => import('@/pages/dashboard'));
@@ -23,28 +23,29 @@ const CreateSemester = lazy(() => import('@/pages/semesters/create-semester'));
 const EditSemester = lazy(() => import('@/pages/semesters/edit-semester'));
 
 function RootRoute() {
-  const { data: session, isPending } = useSession();
+  // Public content must never wait for session validation.
+  return <LandingPage />;
+}
 
-  if (isPending) {
-    return <LoadingScreen />;
-  }
-
-  if (session) {
-    return <Navigate to="/dashboard" replace />;
-  }
-
+function SessionUnavailable() {
   return (
-    <Suspense fallback={<LoadingScreen />}>
-      <LandingPage />
-    </Suspense>
+    <main className="min-h-screen grid place-content-center gap-4 p-6 text-center">
+      <h1 className="text-xl font-semibold">Unable to check your session</h1>
+      <p className="text-sm text-text-secondary">Please check your connection and try again.</p>
+      <button className="rounded-lg bg-panel border border-border-strong px-4 py-2" onClick={() => window.location.reload()}>Retry</button>
+    </main>
   );
 }
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { data: session, isPending } = useSession();
+  const { data: session, isPending, error } = useSession();
 
   if (isPending) {
     return <LoadingScreen />;
+  }
+
+  if (error && !session) {
+    return <SessionUnavailable />;
   }
 
   if (!session) {
@@ -55,10 +56,14 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 function PublicRoute({ children }: { children: React.ReactNode }) {
-  const { data: session, isPending } = useSession();
+  const { data: session, isPending, error } = useSession();
 
   if (isPending) {
     return <LoadingScreen />;
+  }
+
+  if (error && !session) {
+    return <SessionUnavailable />;
   }
 
   if (session) {
@@ -72,7 +77,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Root route: shows Landing Page to unauthenticated visitors, redirects authenticated users to app dashboard */}
+        {/* Public homepage; host redirects cookie-bearing requests optimistically */}
         <Route path="/" element={<RootRoute />} />
 
         {/* Public route */}
