@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { Link } from 'react-router';
 import {
   ShieldCheckIcon,
@@ -14,7 +14,9 @@ import {
 } from '@/components/icons';
 import { Logo } from '@/components/logo';
 import { useTheme } from '@/lib/theme-provider';
-import { InteractiveDemo } from './landing/interactive-demo';
+import { calculators } from '@/lib/public-calculators';
+const InteractiveDemo = lazy(() => import('./landing/interactive-demo').then(module => ({ default: module.InteractiveDemo })));
+function DemoPlaceholder() { return <div className="ledger-card p-8 text-text-secondary">Interactive attendance demo loads when JavaScript is available.</div>; }
 
 export default function LandingPage() {
   const { resolved, setTheme } = useTheme();
@@ -153,7 +155,7 @@ export default function LandingPage() {
 
             {/* Benefit-Driven One-Sentence Subheadline */}
             <p className="text-base sm:text-lg text-text-secondary leading-relaxed max-w-2xl mx-auto">
-              Know exactly how many lectures you can skip, how many you must attend to recover, and where your attendance is heading, before it becomes a problem.
+              Use a free college attendance tracker and bunk calculator to check how many lectures you can skip, how many you must attend to recover, and whether you meet your 75% attendance target.
             </p>
 
             {/* CTA Cluster */}
@@ -207,7 +209,7 @@ export default function LandingPage() {
               </p>
             </div>
 
-            <InteractiveDemo />
+            {typeof window === 'undefined' ? <DemoPlaceholder /> : <Suspense fallback={<DemoPlaceholder />}><InteractiveDemo /></Suspense>}
           </div>
         </section>
 
@@ -360,10 +362,10 @@ export default function LandingPage() {
           <div className="rounded-2xl border border-border-strong bg-panel/70 p-8 sm:p-12 text-center shadow-xs space-y-6">
             <span className="eyebrow block">Ready For Total Attendance Control?</span>
             <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-normal text-text-primary tracking-tight max-w-xl mx-auto">
-              Never get debarred from semester exams again.
+              Stay on top of your semester attendance.
             </h2>
             <p className="text-sm text-text-secondary max-w-lg mx-auto leading-relaxed">
-              Join thousands of students who track their attendance with mathematical certainty. No spreadsheets, no mental arithmetic, no surprises.
+              Track your attendance with a clear view of your college's attendance requirements. No spreadsheets, no mental arithmetic, no surprises.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
@@ -382,6 +384,11 @@ export default function LandingPage() {
               </Link>
             </div>
           </div>
+        </section>
+        <section className="max-w-5xl mx-auto px-5 py-12 space-y-4">
+          <h2 className="font-serif text-3xl">Free attendance calculators</h2>
+          <p className="text-text-secondary">Calculate your attendance, safe bunks and recovery without creating an account.</p>
+          <nav className="grid sm:grid-cols-2 gap-4">{calculators.map(item=><a key={item.path} href={item.path} className="ledger-card p-4"><h3 className="font-semibold">{item.title}</h3><p className="text-sm text-text-secondary mt-2">{item.description}</p></a>)}</nav>
         </section>
       </main>
 
