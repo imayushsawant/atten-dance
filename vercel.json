@@ -20,6 +20,15 @@
           "value": "public, max-age=0, must-revalidate"
         }
       ]
+    },
+    {
+      "source": "/app-shell.html",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, follow"
+        }
+      ]
     }
   ],
   "rewrites": [
@@ -28,8 +37,80 @@
       "destination": "/api/index.ts"
     },
     {
-      "source": "/((?!assets/|api/).*)",
-      "destination": "/"
+      "source": "/attendance-calculator",
+      "destination": "/attendance-calculator/index.html"
+    },
+    {
+      "source": "/75-percent-attendance-calculator",
+      "destination": "/75-percent-attendance-calculator/index.html"
+    },
+    {
+      "source": "/bunk-calculator",
+      "destination": "/bunk-calculator/index.html"
+    },
+    {
+      "source": "/attendance-recovery-calculator",
+      "destination": "/attendance-recovery-calculator/index.html"
+    },
+    {
+      "source": "/login",
+      "destination": "/app-shell.html"
+    },
+    {
+      "source": "/reset-password",
+      "destination": "/app-shell.html"
+    },
+    {
+      "source": "/dashboard",
+      "destination": "/app-shell.html"
+    },
+    {
+      "source": "/input",
+      "destination": "/app-shell.html"
+    },
+    {
+      "source": "/calendar",
+      "destination": "/app-shell.html"
+    },
+    {
+      "source": "/analytics",
+      "destination": "/app-shell.html"
+    },
+    {
+      "source": "/safe-skips",
+      "destination": "/app-shell.html"
+    },
+    {
+      "source": "/recovery",
+      "destination": "/app-shell.html"
+    },
+    {
+      "source": "/history",
+      "destination": "/app-shell.html"
+    },
+    {
+      "source": "/predictor",
+      "destination": "/app-shell.html"
+    },
+    {
+      "source": "/time-window",
+      "destination": "/app-shell.html"
+    },
+    {
+      "source": "/settings",
+      "destination": "/app-shell.html"
+    },
+    {
+      "source": "/semesters",
+      "destination": "/app-shell.html"
+    },
+    {
+      "source": "/semesters/new",
+      "destination": "/app-shell.html"
+    },
+    {
+      "source": "/semesters/:id/edit",
+      "destination": "/app-shell.html"
     }
   ],
   "redirects": [

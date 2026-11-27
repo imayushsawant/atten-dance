@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { Link } from 'react-router';
 import {
   ShieldCheckIcon,
@@ -15,7 +15,8 @@ import {
 import { Logo } from '@/components/logo';
 import { useTheme } from '@/lib/theme-provider';
 import { calculators } from '@/lib/public-calculators';
-import { InteractiveDemo } from './landing/interactive-demo';
+const InteractiveDemo = lazy(() => import('./landing/interactive-demo').then(module => ({ default: module.InteractiveDemo })));
+function DemoPlaceholder() { return <div className="ledger-card p-8 text-text-secondary">Interactive attendance demo loads when JavaScript is available.</div>; }
 
 export default function LandingPage() {
   const { resolved, setTheme } = useTheme();
@@ -208,7 +209,7 @@ export default function LandingPage() {
               </p>
             </div>
 
-            <InteractiveDemo />
+            {typeof window === 'undefined' ? <DemoPlaceholder /> : <Suspense fallback={<DemoPlaceholder />}><InteractiveDemo /></Suspense>}
           </div>
         </section>
 
@@ -387,7 +388,7 @@ export default function LandingPage() {
         <section className="max-w-5xl mx-auto px-5 py-12 space-y-4">
           <h2 className="font-serif text-3xl">Free attendance calculators</h2>
           <p className="text-text-secondary">Calculate your attendance, safe bunks and recovery without creating an account.</p>
-          <nav className="grid sm:grid-cols-2 gap-4">{calculators.map(item=><Link key={item.path} to={item.path} className="ledger-card p-4"><h3 className="font-semibold">{item.title}</h3><p className="text-sm text-text-secondary mt-2">{item.description}</p></Link>)}</nav>
+          <nav className="grid sm:grid-cols-2 gap-4">{calculators.map(item=><a key={item.path} href={item.path} className="ledger-card p-4"><h3 className="font-semibold">{item.title}</h3><p className="text-sm text-text-secondary mt-2">{item.description}</p></a>)}</nav>
         </section>
       </main>
 

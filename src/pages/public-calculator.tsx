@@ -27,7 +27,7 @@ export default function PublicCalculator({ calculator }: { calculator: Calculato
   return (
     <main className="min-h-screen bg-page text-text-primary px-5 py-10">
       <div className="max-w-2xl mx-auto space-y-7">
-        <nav className="flex justify-between items-center text-sm"><Link to="/" className="font-semibold">Atten-Dance</Link><Link to="/login?mode=signup">Create free account</Link></nav>
+        <nav className="flex justify-between items-center text-sm"><a href="/" className="font-semibold">Atten-Dance</a><Link to="/login?mode=signup">Create free account</Link></nav>
         <header className="space-y-3"><h1 className="font-serif text-4xl">{calculator.title}</h1><p className="text-text-secondary">{calculator.description}</p></header>
         <section className="ledger-card p-6 space-y-5" aria-label="Attendance calculator">
           <div className="grid sm:grid-cols-3 gap-4">
@@ -48,7 +48,7 @@ export default function PublicCalculator({ calculator }: { calculator: Calculato
           <p>This calculator counts all sessions equally. If your college calculates lecture and lab percentages separately, use the full Atten-Dance tracker to model your actual rules.</p>
           <Link to="/login?mode=signup" className="inline-block rounded-lg bg-forest-800 text-text-on-dark px-5 py-3">Track my attendance</Link>
         </section>
-        <section className="space-y-3"><h2 className="font-serif text-2xl">Other free calculators</h2><nav className="flex flex-wrap gap-4">{calculators.filter(item=>item.path!==calculator.path).map(item=><Link key={item.path} to={item.path} className="underline">{item.title}</Link>)}</nav></section>
+        <section className="space-y-3"><h2 className="font-serif text-2xl">Other free calculators</h2><nav className="flex flex-wrap gap-4">{calculators.filter(item=>item.path!==calculator.path).map(item=><a key={item.path} href={item.path} className="underline">{item.title}</a>)}</nav></section>
       </div>
     </main>
   );
